@@ -1,26 +1,454 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #e9e8e4;
+  --ink: #151513;
+  --mute: #77756d;
+  --line: #cfccc2;
+  --brand: #14ef1c;
+  --brand-ink: #6a1f78;
+  color-scheme: light;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-mute: var(--mute);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
+  --font-sans: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-archivo-black), "Helvetica Neue", Arial, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Faint grid of small hanger-hook outlines (Batch Merch wall). */
+.wall {
+  background-color: var(--paper);
+  transition: background-color 0.9s ease;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='46' height='37' viewBox='0 0 46 37'%3E%3Cg fill='none' stroke='%23151513' stroke-opacity='.05' stroke-width='1' stroke-linecap='round'%3E%3Ccircle cx='23' cy='21' r='4.5'/%3E%3Cpath d='M23 16.5 V14.5 c0-1.6 2.2-1.8 2.2-3.2'/%3E%3C/g%3E%3C/svg%3E");
+  background-position: center top;
+}
+
+/* ---------- Rail: polished chrome tube with wall brackets ---------- */
+.rail {
+  position: absolute;
+  height: var(--rod);
+  transform: translateY(-50%);
+  /* above the hanger photos: the rod covers the wire where the hook passes over/behind it */
+  z-index: 200;
+}
+.rail-tube {
+  position: absolute;
+  inset: 0 14px;
+  border-radius: calc(var(--rod) / 2);
+  background:
+    linear-gradient(90deg, transparent 32%, rgba(40, 40, 38, 0.28) 37%, rgba(40, 40, 38, 0.1) 44%, transparent 50%,
+      transparent 82%, rgba(40, 40, 38, 0.25) 88%, transparent 93%),
+    linear-gradient(180deg, #7d7e7a 0%, #c9cac5 18%, #fbfbf8 38%, #e2e3df 55%, #9c9d98 80%, #5f605c 100%);
+  box-shadow: 0 5px 6px -3px rgba(20, 20, 18, 0.22);
+}
+.rail-end {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 34px;
+  transform: translateY(-50%);
+}
+.rail-end.l { left: 0; }
+.rail-end.r { right: 0; }
+.rail-plate {
+  position: absolute;
+  inset: 0 3px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #cfd0cc, #f1f1ee 45%, #d6d7d3);
+  box-shadow: 0 1px 2px rgba(20, 20, 18, 0.18), inset 0 0 0 0.5px rgba(20, 20, 18, 0.15);
+}
+.rail-plate::before,
+.rail-plate::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #f4f4f2, #8e8f8b);
+}
+.rail-plate::before { top: 4px; }
+.rail-plate::after { bottom: 4px; }
+.rail-cap {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: calc(var(--rod) + 5px);
+  transform: translateY(-50%);
+  border-radius: 2px;
+  background: linear-gradient(180deg, #6c6d69 0%, #bdbeb9 22%, #f6f6f3 42%, #c4c5c0 62%, #7a7b77 100%);
+}
+.rail-end.l .rail-cap { left: 12px; }
+.rail-end.r .rail-cap { right: 12px; }
+
+/* ---------- Garment: hanger photo pinned at its hook tip (see components/Garment.tsx) ---------- */
+.garment {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  transform-origin: 0 0;
+  /* perspective on the card's direct parent so the turn squashes in true 3D */
+  perspective: 900px;
+  perspective-origin: 0 calc(var(--iw) * 0.6);
+}
+.garment-card {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+}
+.garment-layer {
+  position: absolute;
+  width: var(--iw);
+  pointer-events: none;
+}
+.garment-piece {
+  position: absolute;
+  inset: 0;
+}
+.garment-layer img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  -webkit-user-drag: none;
+}
+
+/* ---------- Focus view (bm-09…16 transition + layout, ANJAA info stack, prototype interactions) ---------- */
+.focus {
+  /* rendered photo width (garment ~55vh tall) and the hanging point's height */
+  --fiw: min(45vh, 70vw);
+  --fy: 12vh;
+  --fiw-px: var(--fiw);
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+}
+@property --fiw-px {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+.focus-backdrop {
+  position: absolute;
+  inset: 0;
+}
+/* zero-size anchors at the hanging point (middle of the hook loop) */
+.focus-anchor {
+  position: absolute;
+  left: 50%;
+  top: var(--fy);
+  width: 0;
+  height: 0;
+}
+.focus-slide {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  filter: drop-shadow(0 8px 10px rgba(20, 20, 18, 0.1));
+}
+.fg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  transform-origin: 0 0;
+  perspective: 1400px;
+  perspective-origin: 0 calc(var(--fiw) * 0.6);
+}
+.fg-card {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+}
+.fg-layer {
+  position: absolute;
+  pointer-events: none;
+}
+.fg-piece {
+  position: absolute;
+  inset: 0;
+}
+.fg-layer img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  -webkit-user-drag: none;
+}
+.fg-shade {
+  position: absolute;
+  inset: 0;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  pointer-events: none;
+}
+.fg-dye {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+/* drag area over the garment */
+.focus-hit {
+  position: absolute;
+  left: calc(var(--fiw) * -0.42);
+  top: calc(var(--fiw) * -0.06);
+  width: calc(var(--fiw) * 0.84);
+  height: calc(var(--fiw) * 1.24);
+  cursor: grab;
+  touch-action: none;
+}
+.focus-hit:active { cursor: grabbing; }
+.focus-arrow {
+  position: absolute;
+  top: calc(var(--fy) + var(--fiw) * 0.62);
+  width: 44px;
+  height: 44px;
+  margin-top: -22px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 5;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+.focus-arrow:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.focus-arrow.l { left: calc(50% - min(32vh, 42vw) - 22px); }
+.focus-arrow.r { left: calc(50% + min(32vh, 42vw) - 22px); }
+.focus-arrow:focus-visible,
+.seg button:focus-visible,
+.tag:focus-visible,
+.info-cta:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+.focus-info {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--fy) + var(--fiw) * 1.22 + 14px);
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.info {
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  text-align: center;
+  pointer-events: auto;
+}
+.info-hint { font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--mute); margin-bottom: 4px; }
+.info-count { font-size: 9.5px; letter-spacing: 0.14em; color: var(--mute); font-variant-numeric: tabular-nums; }
+.info-name {
+  margin: 2px 0 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(17px, 1.9vw, 24px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.info-sub { font-size: 9.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink); }
+.seg {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  padding: 3px;
+  width: 150px;
+}
+.seg-knob {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  border-radius: 999px;
+  background: var(--ink);
+}
+.seg button {
+  position: relative;
+  z-index: 1;
+  border: 0;
+  background: none;
+  padding: 6px 0;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+}
+.info-cta {
+  margin-top: 4px;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 2px;
+}
+.info-cta:hover { opacity: 0.65; }
+
+/* swing tags (prototype) */
+.focus-tags-wrap {
+  position: absolute;
+  left: calc(var(--fiw) * 0.44);
+  top: calc(var(--fiw) * 0.08);
+  --tag-string: 34px;
+  --tag-step: 22px;
+}
+.tags { display: flex; gap: 6px; pointer-events: none; }
+.tagwrap { position: relative; transform-origin: 50% 0; animation: sway 3.6s ease-in-out infinite; pointer-events: none; }
+.tagwrap .string { width: 1px; margin-inline: auto; background: var(--ink); opacity: 0.55; }
+.tag {
+  pointer-events: auto;
+  display: block;
+  width: 46px;
+  height: 96px;
+  padding: 14px 0 8px;
+  border: 0;
+  cursor: pointer;
+  background: var(--c);
+  color: var(--fgc);
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  clip-path: polygon(22% 0, 78% 0, 100% 12%, 100% 100%, 0 100%, 0 12%);
+  position: relative;
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.12);
+  transition: transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.tag::before {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+.tag:hover { transform: rotate(-7deg); }
+.tagwrap.on .tag { transform: translateY(14px); }
+.tagwrap.on .tag::after { content: ""; position: absolute; inset: auto 6px 6px; height: 2px; background: currentColor; }
+@keyframes sway {
+  0%, 100% { transform: rotate(2.2deg); }
+  50% { transform: rotate(-2.2deg); }
+}
+
+@media (max-width: 640px) {
+  .focus { --fiw: min(40vh, 72vw); --fy: 14vh; }
+  .focus-arrow { top: auto; bottom: calc(max(4.3vh, 32px) + 16px); margin-top: 0; width: 38px; height: 38px; }
+  .focus-arrow.l { left: 16px; }
+  .focus-arrow.r { left: auto; right: 16px; }
+  .focus-tags-wrap { left: calc(var(--fiw) * 0.36); top: calc(var(--fiw) * 0.16); --tag-string: 22px; --tag-step: 14px; }
+  .tags { gap: 3px; }
+  .tag { width: 22px; height: 62px; font-size: 7px; padding: 10px 0 4px; }
+  .tag::before { width: 4px; height: 4px; margin-left: -2px; top: 3px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tagwrap { animation: none; }
+}
+
+/* ---------- Marquee ---------- */
+.marquee-track {
+  display: inline-flex;
+  white-space: pre;
+  animation: marquee 72s linear infinite;
+}
+@keyframes marquee {
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none; }
+}
+
+/* ---------- Rack layout (proportions measured from the Batch Merch frames) ---------- */
+.rack {
+  /* rendered photo width: garment hook-to-hem ~ 44% of the viewport, like bm-01 */
+  --iw: min(36vh, 22.5vw);
+  --iw-px: 0; /* resolved in px below so Rack.tsx can read it */
+  --rail-y: 27.2%;
+  --rail-w: 74.5%;
+  /* rod fits inside every hook loop: typical loop inner gap (LOOP_GAP_RATIO in lib/products.ts) − 1px */
+  --rod: calc(var(--iw) * 0.03039 - 1px);
+  --pitch: calc(var(--iw) * 0.33);
+  position: absolute;
+  inset: 0;
+}
+@property --iw-px {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+.rack { --iw-px: var(--iw); }
+.rack-rail {
+  left: calc((100% - var(--rail-w)) / 2);
+  width: var(--rail-w);
+  top: var(--rail-y);
+}
+/* zero-size anchor where the hook loop rests: the rod's top edge, on the slot.
+   No z-index / transform / filter here, so its layers stack against the rod. */
+.rack-item {
+  position: absolute;
+  top: calc(var(--rail-y) - var(--rod) / 2);
+  left: calc(50% + var(--i) * var(--pitch));
+  width: 0;
+  height: 0;
+}
+.rack-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+}
+/* soft garment shadow, outside the 3D context */
+.rack-garment { filter: drop-shadow(0 6px 8px rgba(20, 20, 18, 0.08)); }
+/* metal on metal: a thin darker line on the rod right under each crest */
+.hook-contact-line {
+  position: absolute;
+  left: -5px;
+  top: 0;
+  width: 10px;
+  height: 1.5px;
+  border-radius: 1px;
+  background: rgba(20, 20, 18, 0.3);
+  filter: blur(0.4px);
 }
