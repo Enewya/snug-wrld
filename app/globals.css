@@ -137,20 +137,25 @@ body {
 
 /* ---------- Focus view (bm-09…16 transition + layout, ANJAA info stack, prototype interactions) ---------- */
 .focus {
-  /* rendered photo width (garment ~55vh tall) and the hanging point's height.
-     The 100vw − 468px cap keeps garment (0.45 fiw) + swing tags (0.44 fiw + 150px) clear of the
-     arrows (6vw in, 44px wide) on every desktop width. */
+  /* Fixed layout grid, identical for every product (8dp grid):
+     - the hook hangs at --fy; the garment stage runs from there down to the deepest hem of any
+       product (--stage × --fiw, the tank); shorter garments just end higher inside it
+     - the info stack sits a fixed 48px under the stage: name (fixed-height box), 24px, pill, 24px,
+       link. Nothing in it depends on the photo shown. */
   --fy: 12vh;
-  /* info stack spacing (bm-10/11): hem → name, name → pill, pill → link; shrink a little on short
-     screens, never collapse */
-  --g-hem: clamp(32px, 5.5vh, 48px);
-  --g-pill: clamp(16px, 2.75vh, 24px);
-  --g-cta: clamp(14px, 2.5vh, 22px);
-  /* height of the stack below the gap: name + pill + link + their gaps */
-  --stack: calc(24px + var(--g-pill) + 32px + var(--g-cta) + 18px);
-  /* room the deepest hem may use, above the stack and 16px clear of the marquee */
+  --g-hem: 48px;
+  --g-pill: 24px;
+  --g-cta: 24px;
+  --name-h: 32px;
+  --pill-h: 32px;
+  --cta-h: 16px;
+  --stack: calc(var(--name-h) + var(--g-pill) + var(--pill-h) + var(--g-cta) + var(--cta-h));
+  /* room for the stage above the stack, 16px clear of the marquee: if the screen is too short the
+     garment shrinks, the gaps never do */
   --fit-h: calc(100vh - max(4.3vh, 32px) - 16px - var(--fy) - var(--g-hem) - var(--stack));
-  --fiw: min(45vh, 70vw, 100vw - 468px, var(--fit-h) / var(--hem-max));
+  /* rendered photo width. The 100vw − 480px cap keeps garment (0.45 fiw) + swing tags
+     (0.44 fiw + 156px) clear of the arrows (6vw in, 48dp targets) on every desktop width. */
+  --fiw: min(45vh, 70vw, 100vw - 480px, var(--fit-h) / var(--stage));
   --fiw-px: var(--fiw);
   position: absolute;
   inset: 0;
@@ -241,38 +246,49 @@ body {
   width: calc(var(--fiw) * 0.84);
   height: calc(var(--fiw) * 1.24);
 }
+/* arrows: 48dp touch targets; the visible part is bm-10's 40px thin ink ring */
 .focus-arrow {
   position: absolute;
   top: calc(var(--fy) + var(--fiw) * 0.62);
-  width: 40px;
-  height: 40px;
-  margin-top: -20px;
+  width: 48px;
+  height: 48px;
+  margin-top: -24px;
   display: grid;
   place-items: center;
+  border: 0;
   border-radius: 50%;
-  /* bm-10: just a thin ink ring and an ink arrow */
-  border: 1px solid var(--ink);
   background: transparent;
   color: var(--ink);
   cursor: pointer;
   z-index: 5;
+}
+.focus-arrow::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  border: 1px solid var(--ink);
   transition: background-color 0.2s;
 }
-.focus-arrow:hover { background: rgba(21, 21, 19, 0.08); }
+.focus-arrow:hover::before { background: rgba(21, 21, 19, 0.08); }
+.focus-arrow svg { position: relative; }
 /* far apart, like bm-10: 6% in from each screen edge */
 .focus-arrow.l { left: 6vw; }
 .focus-arrow.r { right: 6vw; }
-.focus-arrow:focus-visible,
-.seg button:focus-visible,
-.tag:focus-visible,
-.info-cta:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
+/* visible keyboard focus everywhere */
+.focus a:focus-visible,
+.focus button:focus-visible,
+header a:focus-visible,
+header button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 4px; }
+.focus-arrow:focus-visible { border-radius: 50%; }
+
+/* info stack: fixed y under the stage, the same for every product */
 .focus-info {
   position: absolute;
   left: 0;
   right: 0;
-  /* 48px (clamped) below this product's actual hem */
-  top: calc(var(--fy) + var(--fiw) * var(--hem) + var(--g-hem));
+  top: calc(var(--fy) + var(--fiw) * var(--stage) + var(--g-hem));
   display: flex;
   justify-content: center;
   pointer-events: none;
@@ -283,26 +299,32 @@ body {
   text-align: center;
   pointer-events: auto;
 }
+/* fixed-height name box: one line on desktop (long names shrink to fit, min 18px) */
 .info-name {
   margin: 0;
+  height: var(--name-h);
+  max-width: calc(100vw - 2 * (6vw + 48px + 16px));
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: clamp(17px, 1.9vw, 24px);
-  line-height: 1;
+  font-size: 24px;
+  line-height: var(--name-h);
   letter-spacing: -0.02em;
   text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
   color: var(--ink);
-  text-wrap: balance;
 }
 .seg {
   margin-top: var(--g-pill);
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
+  height: var(--pill-h);
+  box-sizing: border-box;
   border: 1px solid var(--ink);
   border-radius: 999px;
   padding: 3px;
-  width: 150px;
+  width: 152px;
 }
 .seg-knob {
   position: absolute;
@@ -322,21 +344,34 @@ body {
   z-index: 1;
   border: 0;
   background: none;
-  padding: 6px 0;
+  padding: 0;
   font-size: 10px;
   letter-spacing: 0.14em;
   color: var(--ink);
   cursor: pointer;
 }
 .seg button.lit { color: var(--paper); }
+/* 48dp touch targets without changing the visual size */
+.seg button::after,
+.info-cta::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 48px;
+  transform: translateY(-50%);
+}
 .info-cta {
+  position: relative;
   margin-top: var(--g-cta);
+  height: var(--cta-h);
   font-size: 10.5px;
+  line-height: 14px;
   letter-spacing: 0.14em;
   color: var(--ink);
   text-decoration: none;
   border-bottom: 1px solid var(--ink);
-  padding-bottom: 2px;
 }
 .info-cta:hover { opacity: 0.65; }
 
@@ -349,16 +384,41 @@ body {
   --tag-step: 22px;
 }
 .tags { display: flex; gap: 6px; pointer-events: none; }
+/* each tag's button is a ≥48dp touch target around the visual tag */
+.tag-hit {
+  pointer-events: auto;
+  display: flex;
+  justify-content: center;
+  min-width: 48px;
+  min-height: 48px;
+  margin-inline: -1px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
 .tagwrap { position: relative; transform-origin: 50% 0; animation: sway 3.6s ease-in-out infinite; pointer-events: none; }
 .tagwrap .string { width: 1px; margin-inline: auto; background: var(--ink); opacity: 0.55; }
+/* tag shape: the outer span is the outline (1px ink at 20%, so a black tag still reads on the
+   wall and beside dark garments), the face is inset 1px inside it with the same shape */
 .tag {
-  pointer-events: auto;
   display: block;
+  position: relative;
   width: 46px;
   height: 96px;
-  padding: 14px 0 8px;
-  border: 0;
-  cursor: pointer;
+  padding: 1px;
+  box-sizing: border-box;
+  background: rgba(21, 21, 19, 0.2);
+  clip-path: polygon(22% 0, 78% 0, 100% 12%, 100% 100%, 0 100%, 0 12%);
+  transition: transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.tag-face {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 13px 0 7px;
+  box-sizing: border-box;
   background: var(--c);
   color: var(--fgc);
   font-size: 8.5px;
@@ -367,14 +427,11 @@ body {
   writing-mode: vertical-rl;
   text-orientation: mixed;
   clip-path: polygon(22% 0, 78% 0, 100% 12%, 100% 100%, 0 100%, 0 12%);
-  position: relative;
-  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.12);
-  transition: transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
 }
-.tag::before {
+.tag-face::before {
   content: "";
   position: absolute;
-  top: 5px;
+  top: 4px;
   left: 50%;
   width: 6px;
   height: 6px;
@@ -383,21 +440,31 @@ body {
   background: var(--paper);
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
 }
-.tag:hover { transform: rotate(-7deg); }
+.tag-hit:hover .tag { transform: rotate(-7deg); }
 .tagwrap.on .tag { transform: translateY(14px); }
-.tagwrap.on .tag::after { content: ""; position: absolute; inset: auto 6px 6px; height: 2px; background: currentColor; }
+.tagwrap.on .tag-face::after { content: ""; position: absolute; inset: auto 5px 5px; height: 2px; background: currentColor; }
 @keyframes sway {
   0%, 100% { transform: rotate(2.2deg); }
   50% { transform: rotate(-2.2deg); }
 }
 
 @media (max-width: 640px) {
-  .focus { --fiw: min(40vh, 72vw, var(--fit-h) / var(--hem-max)); --fy: 14vh; }
+  /* two lines reserved for every name, so nothing below shifts */
+  .focus { --fiw: min(40vh, 58vw, var(--fit-h) / var(--stage)); --fy: 14vh; --name-h: 48px; }
+  .info-name { max-width: calc(100vw - 32px); font-size: 20px; line-height: 24px; white-space: normal; text-wrap: balance; }
   .focus-arrow { top: auto; bottom: calc(max(4.3vh, 32px) + 16px); margin-top: 0; }
-  .focus-tags-wrap { left: calc(var(--fiw) * 0.36); top: calc(var(--fiw) * 0.16); --tag-string: 22px; --tag-step: 14px; }
-  .tags { gap: 3px; }
-  .tag { width: 22px; height: 62px; font-size: 7px; padding: 10px 0 4px; }
-  .tag::before { width: 4px; height: 4px; margin-left: -2px; top: 3px; }
+  /* swing tags in their own column right of the garment, never over it: 8px clear of its widest
+     reach (--tag-x, measured from the photos) and ≥16px from the screen edge. One under another,
+     each on its own string; every button stays a 48dp target around a 28×64 tag. */
+  .focus-tags-wrap { left: calc(var(--fiw) * var(--tag-x) + 8px); top: calc(var(--fiw) * 0.12); }
+  .tags { flex-direction: column; gap: 0; }
+  .tagwrap .string { height: 8px !important; }
+  .tagwrap:first-child .string { height: 20px !important; }
+  .tag-hit { margin-inline: 0; width: 48px; }
+  .tag { width: 28px; height: 64px; }
+  .tag-face { font-size: 7px; padding: 10px 0 4px; }
+  .tag-face::before { width: 4px; height: 4px; margin-left: -2px; top: 3px; }
+  .tagwrap.on .tag { transform: translateY(4px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -470,7 +537,7 @@ body {
   font-size: 12px;
   font-weight: 400;
   letter-spacing: 0.01em;
-  color: #6f6d66;
+  color: #66645e; /* #6f6d66 is 4.2:1 on the wall; this is the nearest grey that meets AA (4.8:1) */
   transition: opacity 150ms ease;
 }
 @media (max-width: 640px) {

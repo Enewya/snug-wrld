@@ -8,7 +8,7 @@ import {
   useReducedMotion,
   type AnimationPlaybackControls,
 } from "framer-motion";
-import FocusGarment, { hemOf } from "./FocusGarment";
+import FocusGarment, { hemOf, rightOf } from "./FocusGarment";
 import InfoStack from "./InfoStack";
 import SwingTags from "./SwingTags";
 import { products } from "@/lib/products";
@@ -57,8 +57,19 @@ type Status = "opening" | "open" | "closing";
 
 /** Hem depth below the hanging point (× --fiw) for a product view: the lower of front and back. */
 const hemOfView = (v: { front: string; back?: string }) => Math.max(hemOf(v.front), v.back ? hemOf(v.back) : 0);
-/** The deepest hem of any product: sizes the garment so the info stack always fits above the marquee. */
-const HEM_MAX = Math.max(...products.flatMap((p) => (p.colourways ?? [p]).map(hemOfView)));
+/**
+ * The garment stage: one fixed height for every product, from the hook down to the deepest hem
+ * (the tank's). Garments keep their real relative size, so shorter ones simply end higher in it;
+ * the info stack sits at a fixed y under the stage and never moves between products.
+ */
+const STAGE = Math.max(...products.flatMap((p) => (p.colourways ?? [p]).map(hemOfView)));
+/** The widest reach right of the hook of any garment that has swing tags (front or back): the
+ *  mobile tag column hangs just clear of it. */
+const TAG_X = Math.max(
+  ...products
+    .filter((p) => p.colourways)
+    .flatMap((p) => p.colourways!.flatMap((w) => [rightOf(w.front), w.back ? rightOf(w.back, true) : 0])),
+);
 
 const FocusView = forwardRef<FocusHandle, Props>(function FocusView(
   { start, origin, getOrigin, onIndex, onTint, onCloseStart, onClosed },
@@ -304,7 +315,7 @@ const FocusView = forwardRef<FocusHandle, Props>(function FocusView(
     <div
       className="focus"
       data-status={status}
-      style={{ "--hem": hemOfView(view), "--hem-max": HEM_MAX } as React.CSSProperties}
+      style={{ "--stage": STAGE, "--tag-x": TAG_X } as React.CSSProperties}
     >
       <div className="focus-backdrop" onPointerDown={onBgDown} onPointerUp={onBgUp} />
 

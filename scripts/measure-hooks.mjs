@@ -12,6 +12,7 @@
 //   neckY            top of the walnut neck (where the hook enters the wood)
 //   garmentTopY/garmentBottomY  alpha bounds of hook + hanger + garment
 //   shoulderY/X0/X1  the widest row in the garment's top third (shoulders / sleeve tips)
+//   garmentX0/X1     horizontal alpha bounds of the garment below the hanger neck
 // The rack runs the rod through the loop's inner gap and scales photos by garment height.
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -79,6 +80,12 @@ function measure(data, W, H) {
 
   let bottom = 0;
   for (let yy = H - 1; yy >= 0 && !bottom; yy--) if (rowXs(yy).length) bottom = yy;
+  // horizontal alpha bounds of the whole garment (below the hanger neck)
+  let left = W, right = 0;
+  for (let yy = neckY; yy <= bottom; yy += 2) {
+    const xs = rowXs(yy);
+    if (xs.length) { left = Math.min(left, xs[0]); right = Math.max(right, xs[xs.length - 1]); }
+  }
 
   // shoulder line: the widest row in the top third of the garment (below the hanger neck)
   let shoulder = { y: neckY, x0: 0, x1: 0 };
@@ -86,7 +93,7 @@ function measure(data, W, H) {
     const xs = rowXs(yy);
     if (xs.length && xs[xs.length - 1] - xs[0] > shoulder.x1 - shoulder.x0) shoulder = { y: yy, x0: xs[0], x1: xs[xs.length - 1] };
   }
-  return { apexX, apexY, cx, innerTop, innerBottom, neckY, bottom, shoulder };
+  return { apexX, apexY, cx, innerTop, innerBottom, neckY, bottom, shoulder, left, right };
 }
 
 const rows = [];
@@ -99,7 +106,8 @@ for (const src of files) {
     `  "${src}": { width: ${info.width}, height: ${info.height}, hookApexX: ${m.apexX}, hookApexY: ${m.apexY}, ` +
       `loopTopY: ${m.apexY}, loopCenterX: ${m.cx}, loopInnerTopY: ${m.innerTop}, loopInnerBottomY: ${m.innerBottom}, ` +
       `neckY: ${m.neckY}, garmentTopY: ${m.apexY}, garmentBottomY: ${m.bottom}, ` +
-      `shoulderY: ${m.shoulder.y}, shoulderX0: ${m.shoulder.x0}, shoulderX1: ${m.shoulder.x1} },`,
+      `shoulderY: ${m.shoulder.y}, shoulderX0: ${m.shoulder.x0}, shoulderX1: ${m.shoulder.x1}, ` +
+      `garmentX0: ${m.left}, garmentX1: ${m.right} },`,
   );
   console.log(
     src.padEnd(46),

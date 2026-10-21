@@ -58,6 +58,17 @@ export function hemOf(src: string) {
   return ((p.y + photos[src].garmentBottomY * sy - hookY(p.ref)) * (photoScale[p.ref] ?? 1)) / r.width;
 }
 
+/** How far right of the hanging point the garment reaches, as a multiple of --fiw. The back photo
+ *  is turned half a turn about the hook, so its left edge becomes its right. */
+export function rightOf(src: string, back = false) {
+  const p = placement(src);
+  const r = photos[p.ref];
+  const m = photos[src];
+  const sx = p.w / m.width;
+  const k = (photoScale[p.ref] ?? 1) / r.width;
+  return back ? (r.loopCenterX - (p.x + m.garmentX0 * sx)) * k : (p.x + m.garmentX1 * sx - r.loopCenterX) * k;
+}
+
 const imgProps = (src: string) => {
   const m = photos[src];
   return getImageProps({ src, width: m.width, height: m.height, sizes: SIZES, alt: "" }).props;

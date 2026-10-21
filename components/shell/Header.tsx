@@ -33,6 +33,8 @@ export default function Header({ focus = false, onClose }: { focus?: boolean; on
           }`}
           tabIndex={focus ? undefined : -1}
           aria-hidden={!focus}
+          aria-label="Close detail view"
+          style={{ minHeight: 48, minWidth: 48, justifyContent: "flex-end" }}
         >
           Close <span aria-hidden="true" className="text-[13px] font-semibold">✕</span>
         </button>
