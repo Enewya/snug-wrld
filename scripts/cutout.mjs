@@ -6,7 +6,8 @@
 //   (a) Apple Vision's subject mask (scripts/lift.swift), which keeps white garments whole where
 //   their shading matches the backdrop, and (b) a flood fill of the backdrop from the image border
 //   with a soft 2px edge, which keeps thin details like the hook crisp.
-//   Output: public/products/cut/<file>.png. Originals are never modified.
+//   Output: assets/products-src/cut/<file>.png. Originals are never modified.
+//   Then run scripts/optimize-images.mjs to write the served WebPs.
 // - -back photos already have alpha and are used as-is.
 // - Then run scripts/measure-hooks.mjs to record each photo's hook apex in lib/products.ts.
 import { execFileSync } from "node:child_process";
@@ -14,7 +15,7 @@ import { mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-const SRC = "public/products";
+const SRC = "assets/products-src";
 const OUT = join(SRC, "cut");
 const BG_TOL = 14; // max per-channel distance from the background that still counts as background
 const EDGE_LO = 5; // edge alpha ramp (per-channel distance)

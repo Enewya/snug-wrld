@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import Image, { getImageProps } from "next/image";
+import Image from "next/image";
 import { motion, useTransform, type MotionValue } from "framer-motion";
 import { colourFit, photos, photoScale } from "@/lib/products";
 import { DIP_MS, dipPath, makeFingers } from "@/lib/dyeDip";
+import { FOCUS_SIZES, focusImgProps, preloadFocus, readyUrl } from "@/lib/preload";
 
 export type FocusViewSet = { side: string; front: string; back?: string };
 
-const SIZES = "(max-width: 640px) 80vw, 50vh";
+const SIZES = FOCUS_SIZES;
 
 const hookY = (src: string) => (photos[src].loopInnerTopY + photos[src].loopInnerBottomY) / 2;
 const shoulderC = (src: string) => (photos[src].shoulderX0 + photos[src].shoulderX1) / 2;
@@ -69,22 +70,7 @@ export function rightOf(src: string, back = false) {
   return back ? (r.loopCenterX - (p.x + m.garmentX0 * sx)) * k : (p.x + m.garmentX1 * sx - r.loopCenterX) * k;
 }
 
-const imgProps = (src: string) => {
-  const m = photos[src];
-  return getImageProps({ src, width: m.width, height: m.height, sizes: SIZES, alt: "" }).props;
-};
-const imgSrc = (src: string) => imgProps(src).src;
-
-/** Loads a photo exactly as next/image renders it (same srcset + sizes, so the same file the face
- *  <img> uses) and resolves with the URL the browser picked. */
-function loadLikeFace(src: string): Promise<string> {
-  const p = imgProps(src);
-  const i = new window.Image();
-  if (p.sizes) i.sizes = p.sizes;
-  if (p.srcSet) i.srcset = p.srcSet;
-  i.src = p.src;
-  return i.decode().catch(() => {}).then(() => i.currentSrc || p.src);
-}
+const imgSrc = (src: string) => focusImgProps(src).src;
 
 const sinOf = (a: number) => Math.sin((a * Math.PI) / 180);
 
@@ -169,28 +155,37 @@ function DyeDip({
   useEffect(() => {
     cb.current = { onStart, onDone };
   }, [onStart, onDone]);
-  const [hrefs, setHrefs] = useState<{ from: string; to: string } | null>(null);
+  // Photos already decoded (preloaded on idle / when the view opened) are used straight away. If the
+  // new one isn't ready the dip starts anyway and it appears the moment its decode finishes; until
+  // then the old photo simply stays visible underneath.
+  const [fromHref] = useState(() => readyUrl(from) ?? imgSrc(from));
+  const [toHref, setToHref] = useState(() => readyUrl(to) ?? null);
+  const [loaded, setLoaded] = useState({ from: false, to: false });
 
-  // wait for both photos (the same files the faces show), so nothing ever flashes empty
   useEffect(() => {
+    if (toHref) return;
     let cancelled = false;
-    Promise.all([loadLikeFace(from), loadLikeFace(to)]).then(([a, b]) => {
-      if (!cancelled) setHrefs({ from: a, to: b });
+    preloadFocus(to).then((url) => {
+      if (!cancelled) setToHref(url);
     });
     return () => {
       cancelled = true;
     };
-  }, [from, to]);
+  }, [to, toHref]);
 
+  // the old face may hide only once both photos are actually drawn in the dip
   useEffect(() => {
-    if (!hrefs) return;
+    if (loaded.from && loaded.to) cb.current.onStart();
+  }, [loaded.from, loaded.to]);
+
+  // the wave starts on mount: on the click's frame, never waiting for the network
+  useEffect(() => {
     let raf = 0;
     const fingers = makeFingers(r.width);
     const set = (d: string) => {
       reveal.current?.setAttribute("d", d);
       hide.current?.setAttribute("d", d);
     };
-    cb.current.onStart();
     const t0 = performance.now();
     const tick = (now: number) => {
       const t = Math.min(1, (now - t0) / DIP_MS);
@@ -198,11 +193,11 @@ function DyeDip({
       if (t < 1) raf = requestAnimationFrame(tick);
       else cb.current.onDone();
     };
+    set(dipPath(0, t0, r.width, r.height, fingers));
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [hrefs, r.width, r.height]);
+  }, [r.width, r.height]);
 
-  if (!hrefs) return null;
   const place = (src: string) => {
     const p = placement(src);
     return { x: p.x, y: p.y, width: p.w, height: p.h };
@@ -223,8 +218,22 @@ function DyeDip({
             <path ref={hide} fill="#000" d={empty} />
           </mask>
         </defs>
-        <image href={hrefs.from} {...place(from)} preserveAspectRatio="none" mask={`url(#old-${id})`} />
-        <image href={hrefs.to} {...place(to)} preserveAspectRatio="none" mask={`url(#new-${id})`} />
+        <image
+          href={fromHref}
+          {...place(from)}
+          preserveAspectRatio="none"
+          mask={`url(#old-${id})`}
+          onLoad={() => setLoaded((l) => ({ ...l, from: true }))}
+        />
+        {toHref && (
+          <image
+            href={toHref}
+            {...place(to)}
+            preserveAspectRatio="none"
+            mask={`url(#new-${id})`}
+            onLoad={() => setLoaded((l) => ({ ...l, to: true }))}
+          />
+        )}
       </svg>
     </div>
   );

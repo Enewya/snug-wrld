@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import Header from "@/components/shell/Header";
 import Marquee from "@/components/shell/Marquee";
 import AvailabilityPill from "@/components/shell/AvailabilityPill";
 import Rack, { rackOrigin, type RackOrigin } from "@/components/rack/Rack";
 import FocusView, { type FocusHandle } from "@/components/focus/FocusView";
+import { preloadFrontsWhenIdle } from "@/lib/preload";
 
 type Focus = { start: number; origin: RackOrigin; key: number };
 
@@ -18,6 +19,13 @@ export default function Showroom() {
   const [shown, setShown] = useState<number | null>(null);
   const [wall, setWall] = useState<string | null>(null);
   const view = useRef<FocusHandle>(null);
+
+  // once the rack is up and the page is idle, decode every front photo in the background
+  useEffect(() => {
+    if (document.readyState === "complete") preloadFrontsWhenIdle();
+    else window.addEventListener("load", preloadFrontsWhenIdle, { once: true });
+    return () => window.removeEventListener("load", preloadFrontsWhenIdle);
+  }, []);
 
   const open = useCallback((i: number, origin: RackOrigin) => {
     setFocus({ start: i, origin, key: Date.now() });

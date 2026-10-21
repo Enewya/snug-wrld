@@ -14,6 +14,7 @@ import SwingTags from "./SwingTags";
 import { products } from "@/lib/products";
 import { tint } from "@/lib/dyeDip";
 import { useHangerSpring } from "@/lib/useHangerSpring";
+import { preloadProduct } from "@/lib/preload";
 import type { RackOrigin } from "@/components/rack/Rack";
 
 export type FocusHandle = { close: () => void };
@@ -154,6 +155,8 @@ const FocusView = forwardRef<FocusHandle, Props>(function FocusView(
   }, []);
 
   useEffect(() => onIndex(index), [index, onIndex]);
+  // this product's colourway fronts and backs (and the neighbours' for the arrows), before any click
+  useEffect(() => preloadProduct(index, true), [index]);
   useEffect(() => onTint(way ? tint(way.hex) : null), [way, onTint]);
 
   const close = useCallback(() => {
