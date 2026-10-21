@@ -137,9 +137,20 @@ body {
 
 /* ---------- Focus view (bm-09…16 transition + layout, ANJAA info stack, prototype interactions) ---------- */
 .focus {
-  /* rendered photo width (garment ~55vh tall) and the hanging point's height */
-  --fiw: min(45vh, 70vw);
+  /* rendered photo width (garment ~55vh tall) and the hanging point's height.
+     The 100vw − 468px cap keeps garment (0.45 fiw) + swing tags (0.44 fiw + 150px) clear of the
+     arrows (6vw in, 44px wide) on every desktop width. */
   --fy: 12vh;
+  /* info stack spacing (bm-10/11): hem → name, name → pill, pill → link; shrink a little on short
+     screens, never collapse */
+  --g-hem: clamp(32px, 5.5vh, 48px);
+  --g-pill: clamp(16px, 2.75vh, 24px);
+  --g-cta: clamp(14px, 2.5vh, 22px);
+  /* height of the stack below the gap: name + pill + link + their gaps */
+  --stack: calc(24px + var(--g-pill) + 32px + var(--g-cta) + 18px);
+  /* room the deepest hem may use, above the stack and 16px clear of the marquee */
+  --fit-h: calc(100vh - max(4.3vh, 32px) - 16px - var(--fy) - var(--g-hem) - var(--stack));
+  --fiw: min(45vh, 70vw, 100vw - 468px, var(--fit-h) / var(--hem-max));
   --fiw-px: var(--fiw);
   position: absolute;
   inset: 0;
@@ -176,8 +187,9 @@ body {
   top: 0;
   width: 0;
   height: 0;
+  /* pivot = the hook (the anchor); perspective on the card's parent */
   transform-origin: 0 0;
-  perspective: 1400px;
+  perspective: 1200px;
   perspective-origin: 0 calc(var(--fiw) * 0.6);
 }
 .fg-card {
@@ -185,6 +197,12 @@ body {
   left: 0;
   top: 0;
   transform-origin: 0 0;
+  transform-style: preserve-3d;
+}
+/* front and back are real faces: each hides its back side, so they swap exactly at 90° */
+.fg-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 .fg-layer {
   position: absolute;
@@ -215,36 +233,35 @@ body {
   width: 100%;
   height: 100%;
 }
-/* drag area over the garment */
-.focus-hit {
+/* the garment's own area (catches taps so they don't close the view) */
+.focus-garment-area {
   position: absolute;
   left: calc(var(--fiw) * -0.42);
   top: calc(var(--fiw) * -0.06);
   width: calc(var(--fiw) * 0.84);
   height: calc(var(--fiw) * 1.24);
-  cursor: grab;
-  touch-action: none;
 }
-.focus-hit:active { cursor: grabbing; }
 .focus-arrow {
   position: absolute;
   top: calc(var(--fy) + var(--fiw) * 0.62);
-  width: 44px;
-  height: 44px;
-  margin-top: -22px;
+  width: 40px;
+  height: 40px;
+  margin-top: -20px;
+  display: grid;
+  place-items: center;
   border-radius: 50%;
-  border: 1px solid var(--line);
+  /* bm-10: just a thin ink ring and an ink arrow */
+  border: 1px solid var(--ink);
   background: transparent;
   color: var(--ink);
-  font-size: 16px;
-  line-height: 1;
   cursor: pointer;
   z-index: 5;
-  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+  transition: background-color 0.2s;
 }
-.focus-arrow:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-.focus-arrow.l { left: calc(50% - min(32vh, 42vw) - 22px); }
-.focus-arrow.r { left: calc(50% + min(32vh, 42vw) - 22px); }
+.focus-arrow:hover { background: rgba(21, 21, 19, 0.08); }
+/* far apart, like bm-10: 6% in from each screen edge */
+.focus-arrow.l { left: 6vw; }
+.focus-arrow.r { right: 6vw; }
 .focus-arrow:focus-visible,
 .seg button:focus-visible,
 .tag:focus-visible,
@@ -254,7 +271,8 @@ body {
   position: absolute;
   left: 0;
   right: 0;
-  top: calc(var(--fy) + var(--fiw) * 1.22 + 14px);
+  /* 48px (clamped) below this product's actual hem */
+  top: calc(var(--fy) + var(--fiw) * var(--hem) + var(--g-hem));
   display: flex;
   justify-content: center;
   pointer-events: none;
@@ -262,14 +280,11 @@ body {
 .info {
   display: grid;
   justify-items: center;
-  gap: 7px;
   text-align: center;
   pointer-events: auto;
 }
-.info-hint { font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--mute); margin-bottom: 4px; }
-.info-count { font-size: 9.5px; letter-spacing: 0.14em; color: var(--mute); font-variant-numeric: tabular-nums; }
 .info-name {
-  margin: 2px 0 0;
+  margin: 0;
   font-family: var(--font-display);
   font-weight: 400;
   font-size: clamp(17px, 1.9vw, 24px);
@@ -279,8 +294,8 @@ body {
   color: var(--ink);
   text-wrap: balance;
 }
-.info-sub { font-size: 9.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink); }
 .seg {
+  margin-top: var(--g-pill);
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -294,10 +309,14 @@ body {
   top: 3px;
   bottom: 3px;
   left: 3px;
+  /* fixed width: only ever translated, never resized */
   width: calc(50% - 3px);
   border-radius: 999px;
   background: var(--ink);
 }
+/* the knob slides only when the user clicks FRONT / BACK */
+.seg-animate .seg-knob { transition: transform 250ms ease; }
+.seg-animate button { transition: color 250ms ease; }
 .seg button {
   position: relative;
   z-index: 1;
@@ -306,10 +325,12 @@ body {
   padding: 6px 0;
   font-size: 10px;
   letter-spacing: 0.14em;
+  color: var(--ink);
   cursor: pointer;
 }
+.seg button.lit { color: var(--paper); }
 .info-cta {
-  margin-top: 4px;
+  margin-top: var(--g-cta);
   font-size: 10.5px;
   letter-spacing: 0.14em;
   color: var(--ink);
@@ -371,10 +392,8 @@ body {
 }
 
 @media (max-width: 640px) {
-  .focus { --fiw: min(40vh, 72vw); --fy: 14vh; }
-  .focus-arrow { top: auto; bottom: calc(max(4.3vh, 32px) + 16px); margin-top: 0; width: 38px; height: 38px; }
-  .focus-arrow.l { left: 16px; }
-  .focus-arrow.r { left: auto; right: 16px; }
+  .focus { --fiw: min(40vh, 72vw, var(--fit-h) / var(--hem-max)); --fy: 14vh; }
+  .focus-arrow { top: auto; bottom: calc(max(4.3vh, 32px) + 16px); margin-top: 0; }
   .focus-tags-wrap { left: calc(var(--fiw) * 0.36); top: calc(var(--fiw) * 0.16); --tag-string: 22px; --tag-step: 14px; }
   .tags { gap: 3px; }
   .tag { width: 22px; height: 62px; font-size: 7px; padding: 10px 0 4px; }
@@ -438,6 +457,24 @@ body {
   top: 0;
   width: 0;
   height: 0;
+}
+/* hover caption: centred under the hovered slot, 28px below the deepest hem on the rack */
+.rack-caption {
+  position: absolute;
+  top: calc(var(--rail-y) + var(--iw) * var(--hem) + 28px);
+  left: calc(50% + var(--i) * var(--pitch));
+  transform: translateX(-50%);
+  margin: 0;
+  white-space: nowrap;
+  pointer-events: none;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: #6f6d66;
+  transition: opacity 150ms ease;
+}
+@media (max-width: 640px) {
+  .rack-caption { display: none; }
 }
 /* soft garment shadow, outside the 3D context */
 .rack-garment { filter: drop-shadow(0 6px 8px rgba(20, 20, 18, 0.08)); }

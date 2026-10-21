@@ -11,6 +11,7 @@
 //                    ball tip if that comes first (a rod through the curl must hide the tip)
 //   neckY            top of the walnut neck (where the hook enters the wood)
 //   garmentTopY/garmentBottomY  alpha bounds of hook + hanger + garment
+//   shoulderY/X0/X1  the widest row in the garment's top third (shoulders / sleeve tips)
 // The rack runs the rod through the loop's inner gap and scales photos by garment height.
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -78,7 +79,14 @@ function measure(data, W, H) {
 
   let bottom = 0;
   for (let yy = H - 1; yy >= 0 && !bottom; yy--) if (rowXs(yy).length) bottom = yy;
-  return { apexX, apexY, cx, innerTop, innerBottom, neckY, bottom };
+
+  // shoulder line: the widest row in the top third of the garment (below the hanger neck)
+  let shoulder = { y: neckY, x0: 0, x1: 0 };
+  for (let yy = neckY; yy < neckY + (bottom - neckY) * 0.35; yy += 2) {
+    const xs = rowXs(yy);
+    if (xs.length && xs[xs.length - 1] - xs[0] > shoulder.x1 - shoulder.x0) shoulder = { y: yy, x0: xs[0], x1: xs[xs.length - 1] };
+  }
+  return { apexX, apexY, cx, innerTop, innerBottom, neckY, bottom, shoulder };
 }
 
 const rows = [];
@@ -90,13 +98,14 @@ for (const src of files) {
   rows.push(
     `  "${src}": { width: ${info.width}, height: ${info.height}, hookApexX: ${m.apexX}, hookApexY: ${m.apexY}, ` +
       `loopTopY: ${m.apexY}, loopCenterX: ${m.cx}, loopInnerTopY: ${m.innerTop}, loopInnerBottomY: ${m.innerBottom}, ` +
-      `neckY: ${m.neckY}, garmentTopY: ${m.apexY}, garmentBottomY: ${m.bottom} },`,
+      `neckY: ${m.neckY}, garmentTopY: ${m.apexY}, garmentBottomY: ${m.bottom}, ` +
+      `shoulderY: ${m.shoulder.y}, shoulderX0: ${m.shoulder.x0}, shoulderX1: ${m.shoulder.x1} },`,
   );
   console.log(
     src.padEnd(46),
     `apex ${m.apexX},${m.apexY}`.padEnd(13),
     `loop cx ${m.cx} inner ${m.innerTop}..${m.innerBottom} (gap ${m.innerBottom - m.innerTop})`.padEnd(36),
-    `neck ${m.neckY}  garment ${m.apexY}..${m.bottom} (h ${m.bottom - m.apexY})`,
+    `neck ${m.neckY}  garment ${m.apexY}..${m.bottom} (h ${m.bottom - m.apexY})  shoulders ${m.shoulder.x0}..${m.shoulder.x1} @${m.shoulder.y}`,
     m.apexY === 0 ? " <- hook touches the top edge (cropped)" : "",
   );
 }

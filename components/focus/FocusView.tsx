@@ -1,8 +1,14 @@
 "use client";
 
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
-import { animate, motion, useMotionValue, useMotionValueEvent, useReducedMotion, type AnimationPlaybackControls } from "framer-motion";
-import FocusGarment from "./FocusGarment";
+import {
+  animate,
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  type AnimationPlaybackControls,
+} from "framer-motion";
+import FocusGarment, { hemOf } from "./FocusGarment";
 import InfoStack from "./InfoStack";
 import SwingTags from "./SwingTags";
 import { products } from "@/lib/products";
@@ -30,8 +36,29 @@ type Props = {
 const HOVER_BODY_SCALE = 1.12; // must match RackItem
 const FLIGHT = { type: "spring", stiffness: 70, damping: 15, mass: 1 } as const;
 const SWIPE_PX = 50;
+/** FRONT ⇄ BACK: half a turn about the hook, edge-on (and the face swap) exactly at the midpoint. */
+const FLIP = { duration: 0.5, ease: "easeInOut" } as const;
+
+/** Showing the back? (angle 0 = front, 180 = back, any number of whole turns) */
+const showsBack = (a: number) => {
+  const n = ((a % 360) + 360) % 360;
+  return n > 90 && n < 270;
+};
+
+function ArrowIcon({ dir }: { dir: "l" | "r" }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" style={{ transform: dir === "l" ? "scaleX(-1)" : undefined }}>
+      <path d="M3 9h11.5M10 4.5 14.5 9 10 13.5" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
 type Status = "opening" | "open" | "closing";
+
+/** Hem depth below the hanging point (× --fiw) for a product view: the lower of front and back. */
+const hemOfView = (v: { front: string; back?: string }) => Math.max(hemOf(v.front), v.back ? hemOf(v.back) : 0);
+/** The deepest hem of any product: sizes the garment so the info stack always fits above the marquee. */
+const HEM_MAX = Math.max(...products.flatMap((p) => (p.colourways ?? [p]).map(hemOfView)));
 
 const FocusView = forwardRef<FocusHandle, Props>(function FocusView(
   { start, origin, getOrigin, onIndex, onTint, onCloseStart, onClosed },
@@ -40,7 +67,10 @@ const FocusView = forwardRef<FocusHandle, Props>(function FocusView(
   const reduce = useReducedMotion();
   const [index, setIndex] = useState(start);
   const [colour, setColour] = useState(0);
-  const [dye, setDye] = useState<{ src: string; to: number; key: number } | null>(null);
+  const [dye, setDye] = useState<{ from: string; to: string; back: boolean; toIndex: number; key: number } | null>(null);
+  /** FRONT / BACK pill. Changes only on a pill click (animated) or a product switch (instant reset). */
+  const [pill, setPill] = useState<{ face: "front" | "back"; animate: boolean }>({ face: "front", animate: false });
+  const [flipping, setFlipping] = useState(false);
   const [status, setStatus] = useState<Status>("opening");
   const statusRef = useRef<Status>("opening");
   const setStat = (s: Status) => {
@@ -52,7 +82,7 @@ const FocusView = forwardRef<FocusHandle, Props>(function FocusView(
   const way = product.colourways?.[colour];
   const view = way ?? product;
 
-  // motion: flight (x, y, s), open/close turn (phase), drag turn (angle), pendulum (swing)
+  // motion: flight (x, y, s), open/close turn (phase), front/back turn (angle), pendulum (swing)
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const s = useMotionValue(1);
@@ -102,20 +132,13 @@ const FocusView = forwardRef<FocusHandle, Props>(function FocusView(
       fade.set(0);
       phase.set(180);
       bodyScale.set(1);
-      animate(fade, 1, { duration: 0.3 });
-      setStat("open");
+      animate(fade, 1, { duration: 0.3 }).finished.then(() => setStat("open"));
       return;
     }
     x.set(dx);
     y.set(dy);
     s.set(k);
-    fly({ x: 0, y: 0, s: 1, phase: 180, body: 1 }, () => {
-      setStat("open");
-      // first-visit nudge: a small turn shows the piece can be moved
-      setTimeout(() => {
-        if (statusRef.current === "open" && !drag.current && !busy.current) springTo(35, { onDone: () => springTo(0) });
-      }, 350);
-    });
+    fly({ x: 0, y: 0, s: 1, phase: 180, body: 1 }, () => setStat("open"));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -147,6 +170,8 @@ const FocusView = forwardRef<FocusHandle, Props>(function FocusView(
       if (statusRef.current !== "open" || busy.current) return;
       busy.current = true;
       setDye(null);
+      // the next piece opens on its front: reset the pill now, instantly, before anything moves
+      setPill({ face: "front", animate: false });
       const next = (index + d + products.length) % products.length;
       if (reduce) {
         animate(fade, 0, { duration: 0.15 }).finished.then(() => {
@@ -175,41 +200,71 @@ const FocusView = forwardRef<FocusHandle, Props>(function FocusView(
     [index, reduce, springTo, angle, slide, fade],
   );
 
-  // FRONT / BACK
-  const face = useCallback(
-    (back: boolean) => {
-      if (statusRef.current !== "open" || busy.current) return;
-      if (back && !view.back) {
-        springTo(angle.get(), { kick: 5 }); // no back photo: just sway
-        return;
+  /** Turn to the front or back photo: half a turn about the hook (the faces swap exactly at 90°),
+   *  then a small pendulum settle. Resolves when the turn is done. */
+  const flip = useCallback(
+    (toBack: boolean) => {
+      if (toBack === showsBack(angle.get())) return Promise.resolve();
+      stop();
+      const target = angle.get() + 180; // always the same way round
+      if (reduce) {
+        angle.set(target);
+        return Promise.resolve();
       }
-      const base = Math.round(angle.get() / 360) * 360;
-      springTo(base + (back ? 180 : 0), { kick: 3 });
+      setFlipping(true);
+      return animate(angle, target, FLIP).finished.then(() => {
+        setFlipping(false);
+        springTo(target, { kick: 3 });
+      });
     },
-    [view.back, springTo, angle],
+    [angle, reduce, springTo, stop],
   );
 
-  // colourway: dye-dip the new photo up from the hem, then swap
+  // FRONT / BACK pill
+  const face = useCallback(
+    (back: boolean) => {
+      if (statusRef.current !== "open" || busy.current || !view.back) return;
+      busy.current = true;
+      setPill({ face: back ? "back" : "front", animate: true });
+      flip(back).then(() => (busy.current = false));
+    },
+    [view.back, flip],
+  );
+
+  // colourway: dye-dip the new photo up from the hem on whichever face is showing, then swap
   const pick = useCallback(
     (i: number) => {
       if (!product.colourways || i === colour || busy.current || statusRef.current !== "open") return;
-      if (Math.abs(angle.get() % 360) > 1) springTo(Math.round(angle.get() / 360) * 360);
-      const to = product.colourways[i];
+      const ways = product.colourways;
+      const to = ways[i];
+      const back = pill.face === "back" && !!ways[colour].back && !!to.back;
       onTint(tint(to.hex));
       if (reduce) {
         setColour(i);
         return;
       }
       busy.current = true;
-      setDye({ src: to.front, to: i, key: Date.now() });
-      if (Math.abs(angle.get() % 360) <= 1) springTo(angle.get(), { kick: 2.5 });
+      setDye({
+        from: back ? ways[colour].back! : ways[colour].front,
+        to: back ? to.back! : to.front,
+        back,
+        toIndex: i,
+        key: Date.now(),
+      });
+      springTo(angle.get(), { kick: 2.5 });
     },
-    [product.colourways, colour, angle, springTo, onTint, reduce],
+    [product.colourways, colour, angle, springTo, onTint, reduce, pill.face],
   );
   const dyeDone = useCallback(() => {
-    if (dye) setColour(dye.to);
-    setDye(null);
-    busy.current = false;
+    if (!dye) return;
+    // the old photo unmounts now; the dip keeps showing the new one for a few frames while its
+    // own face takes over, then unmounts too
+    setColour(dye.toIndex);
+    const key = dye.key;
+    setTimeout(() => {
+      setDye((d) => (d && d.key === key ? null : d));
+      busy.current = false;
+    }, 160);
   }, [dye]);
 
   // keys
@@ -223,64 +278,42 @@ const FocusView = forwardRef<FocusHandle, Props>(function FocusView(
     return () => window.removeEventListener("keydown", onKey);
   }, [close, go]);
 
-  // drag to turn (prototype)
-  const drag = useRef<{ x: number; a: number; lastX: number; t: number; vel: number; id: number } | null>(null);
-  const onDown = (e: React.PointerEvent) => {
-    if (statusRef.current !== "open" || busy.current) return;
-    stop();
-    drag.current = { x: e.clientX, a: angle.get(), lastX: e.clientX, t: performance.now(), vel: 0, id: e.pointerId };
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-  };
-  const onMove = (e: React.PointerEvent) => {
-    const d = drag.current;
-    if (!d) return;
-    const now = performance.now();
-    const dx = e.clientX - d.x;
-    d.vel = (e.clientX - d.lastX) / Math.max(1, now - d.t);
-    d.lastX = e.clientX;
-    d.t = now;
-    let a = d.a + dx * 0.55;
-    if (!view.back) {
-      const off = a - d.a;
-      a = d.a + Math.sign(off) * Math.min(70, Math.abs(off) * 0.5); // resist: no back to show
-    }
-    angle.set(a);
-    swing.set(Math.max(-6, Math.min(6, -d.vel * 4)));
-  };
-  const onUp = () => {
-    const d = drag.current;
-    if (!d) return;
-    drag.current = null;
-    const target = !view.back ? d.a : Math.round((angle.get() + d.vel * 220) / 180) * 180;
-    springTo(target, { kick: -angle.get() * 0.02 });
-  };
-
   // background: tap closes, horizontal swipe changes piece
   const bg = useRef<{ x: number; y: number } | null>(null);
   const onBgDown = (e: React.PointerEvent) => (bg.current = { x: e.clientX, y: e.clientY });
-  const onBgUp = (e: React.PointerEvent) => {
+  /** Horizontal swipe → next / previous piece. Returns whether it was a swipe. */
+  const swiped = (e: React.PointerEvent) => {
     const b = bg.current;
     bg.current = null;
-    if (!b) return;
+    if (!b) return false;
     const dx = e.clientX - b.x;
-    if (Math.abs(dx) > SWIPE_PX && Math.abs(dx) > Math.abs(e.clientY - b.y)) go(dx < 0 ? 1 : -1);
-    else close();
+    if (Math.abs(dx) > SWIPE_PX && Math.abs(dx) > Math.abs(e.clientY - b.y)) {
+      go(dx < 0 ? 1 : -1);
+      return true;
+    }
+    return false;
+  };
+  const onBgUp = (e: React.PointerEvent) => {
+    if (!swiped(e)) close();
   };
 
-  // FRONT/BACK knob follows the drag live (0 front … 1 back)
-  const knob = useMotionValue(0);
-  useMotionValueEvent(angle, "change", (a) => {
-    const n = ((a % 360) + 360) % 360;
-    knob.set(1 - Math.abs(((n / 180) % 2) - 1));
-  });
 
   const shown = status === "open";
 
   return (
-    <div className="focus" data-status={status}>
+    <div
+      className="focus"
+      data-status={status}
+      style={{ "--hem": hemOfView(view), "--hem-max": HEM_MAX } as React.CSSProperties}
+    >
       <div className="focus-backdrop" onPointerDown={onBgDown} onPointerUp={onBgUp} />
 
-      <motion.div className="focus-anchor" ref={anchorRef} style={{ x, y, scale: s, opacity: fade }}>
+      {/* flight transform only while flying: once open the garment layers raster at full size */}
+      <motion.div
+        className="focus-anchor"
+        ref={anchorRef}
+        style={{ x, y, scale: s, opacity: fade, willChange: status === "open" ? "auto" : "transform" }}
+      >
         <motion.div className="focus-slide" style={{ x: slide }}>
           <FocusGarment
             view={view}
@@ -290,18 +323,13 @@ const FocusView = forwardRef<FocusHandle, Props>(function FocusView(
             bodyScale={bodyScale}
             dye={dye}
             onDyeDone={dyeDone}
+            moving={status !== "open" || flipping}
           />
-          <div
-            className="focus-hit"
-            onPointerDown={onDown}
-            onPointerMove={onMove}
-            onPointerUp={onUp}
-            onPointerCancel={onUp}
-            aria-label="Drag to rotate"
-          />
+          {/* the garment itself: a tap here doesn't close the view; a swipe still changes piece */}
+          <div className="focus-garment-area" onPointerDown={onBgDown} onPointerUp={swiped} />
           {product.colourways && (
             <motion.div className="focus-tags-wrap" initial={false} animate={{ opacity: shown ? 1 : 0 }} transition={{ duration: 0.3 }}>
-              <SwingTags ways={product.colourways} active={dye ? dye.to : colour} onPick={pick} />
+              <SwingTags ways={product.colourways} active={dye ? dye.toIndex : colour} onPick={pick} />
             </motion.div>
           )}
         </motion.div>
@@ -316,7 +344,7 @@ const FocusView = forwardRef<FocusHandle, Props>(function FocusView(
         animate={{ opacity: shown ? 1 : 0 }}
         style={{ pointerEvents: shown ? "auto" : "none" }}
       >
-        ←
+        <ArrowIcon dir="l" />
       </motion.button>
       <motion.button
         type="button"
@@ -327,17 +355,15 @@ const FocusView = forwardRef<FocusHandle, Props>(function FocusView(
         animate={{ opacity: shown ? 1 : 0 }}
         style={{ pointerEvents: shown ? "auto" : "none" }}
       >
-        →
+        <ArrowIcon dir="r" />
       </motion.button>
 
       <motion.div className="focus-info" initial={{ opacity: 0 }} animate={{ opacity: shown ? 1 : 0 }} transition={{ duration: 0.3 }}>
         <InfoStack
-          index={index}
-          count={products.length}
           name={product.name}
-          colour={dye ? product.colourways?.[dye.to]?.label : way?.label}
           url={product.url}
-          knob={knob}
+          face={pill.face}
+          animateFace={pill.animate}
           hasBack={!!view.back}
           onFace={face}
         />

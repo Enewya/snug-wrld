@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Rail from "./Rail";
 import RackItem from "./RackItem";
-import { products } from "@/lib/products";
+import { captionOf, photos, photoScale, products } from "@/lib/products";
 
 /** Must match .rack in globals.css. All widths below are in rendered photo widths (--iw). */
 const RAIL_Y = 0.272;
@@ -13,6 +13,24 @@ const PUSH = 0.25;
 const FALLOFF = 0.55;
 /** While hovered, a piece keeps the pointer until it leaves its front-facing half-width. */
 const HOLD = 0.45;
+
+/**
+ * Deepest hem on the rack below the rod's centre line, in photo widths (--iw): side photos at rest
+ * and front photos hovered (hanger + garment scaled 1.12 from the walnut neck). The hover caption
+ * sits at one fixed height under it, so it never jumps between garments.
+ */
+const HOVER_SCALE = 1.12; // must match RackItem
+const DEEPEST_HEM = Math.max(
+  ...products.flatMap((p) =>
+    [p.side, p.front].map((src) => {
+      const m = photos[src];
+      const k = (photoScale[src] ?? 1) / m.width;
+      const gapMid = (m.loopInnerTopY + m.loopInnerBottomY) / 2;
+      const body = src === p.front ? HOVER_SCALE : 1;
+      return ((m.neckY - gapMid) + (m.garmentBottomY - m.neckY) * body) * k;
+    }),
+  ),
+);
 
 function shiftFor(i: number, hovered: number | null) {
   if (hovered === null || i === hovered) return 0;
@@ -117,6 +135,17 @@ export default function Rack({ onSelect, hiddenIndex = null, paused = false }: P
           pushDir={pushDir}
           hidden={hiddenIndex === i}
         />
+      ))}
+      {/* "Name — Colour" under the hovered garment (bm-03…08): fixed height, no swing, no mobile */}
+      {products.map((product, i) => (
+        <p
+          key={product.slug}
+          className="rack-caption"
+          style={{ "--i": i - c, "--hem": DEEPEST_HEM, opacity: hovered === i ? 1 : 0 } as React.CSSProperties}
+          aria-hidden={hovered !== i}
+        >
+          {captionOf(product)}
+        </p>
       ))}
     </div>
   );
