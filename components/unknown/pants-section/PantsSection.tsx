@@ -1,9 +1,11 @@
 "use client";
 
-/* Plain <img> on purpose: this markup mirrors the Shopify Liquid section one to one, where
-   images come from Shopify's CDN, not next/image. */
+/* Model images use next/image so they are served at display size with a srcset, exactly what
+   `image_url` + `image_tag: widths:` produces in the Liquid version. The thumbnail stays a plain
+   <img> (it is tiny). */
 /* eslint-disable @next/next/no-img-element */
 
+import Image from "next/image";
 import { useEffect, useRef } from "react";
 import { PANTS_BASE_IMAGE, PANTS_LABEL, pants } from "./pants.data";
 import { initPantsSection } from "./pants-section";
@@ -11,6 +13,7 @@ import "./pants-section.css";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const IMG = { width: 1086, height: 1448, decoding: "async" as const };
+const MODEL = { width: 1086, height: 1448, sizes: "(max-width: 760px) 90vw, (max-aspect-ratio: 5/4) 70vw, 60vh" };
 
 /**
  * Pinned, scroll-scrubbed pants showcase (see HANDOFF.md). React only renders the markup; all
@@ -33,14 +36,14 @@ export default function PantsSection() {
 
         {/* one fixed 3:4 frame; every layer fills it identically (no per-product sizing) */}
         <div className="unk-pants__figure" aria-hidden="true">
-          <img className="unk-pants__layer" data-pants-base src={PANTS_BASE_IMAGE} alt="" {...IMG} style={{ opacity: 0 }} />
+          <Image className="unk-pants__layer" data-pants-base src={PANTS_BASE_IMAGE} alt="" {...MODEL} style={{ opacity: 0 }} />
           {pants.map((p, i) => (
-            <img key={p.handle} className="unk-pants__layer" data-pants-layer src={p.image} alt="" {...IMG}
+            <Image key={p.handle} className="unk-pants__layer" data-pants-layer src={p.image} alt="" {...MODEL}
               loading={i < 2 ? "eager" : "lazy"} style={{ opacity: i === 0 ? 1 : 0 }} />
           ))}
           {/* grey copies: the peek at the right at rest, the ghost while a pair slides in */}
           {pants.map((p, i) => (
-            <img key={p.handle} className="unk-pants__layer" data-pants-grey src={p.grey} alt="" {...IMG}
+            <Image key={p.handle} className="unk-pants__layer" data-pants-grey src={p.grey} alt="" {...MODEL}
               loading={i < 2 ? "eager" : "lazy"} style={{ opacity: i === 1 ? "var(--peek-opacity)" : 0 }} />
           ))}
         </div>

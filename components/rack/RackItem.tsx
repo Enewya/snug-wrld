@@ -79,6 +79,7 @@ export default function RackItem({ product, index, count, hovered, shift, zIndex
     <div
       className="rack-item"
       style={{ "--i": index - (count - 1) / 2, visibility: hidden ? "hidden" : undefined } as React.CSSProperties}
+      role="img"
       aria-label={product.name}
     >
       <motion.div className="rack-layer rack-garment" style={{ translate, zIndex: 3 + zIndex } as MotionStyle}>
