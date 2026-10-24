@@ -45,17 +45,19 @@ export default function PantsSection() {
           </div>
           <h2 id="unk-pants-title" className="unk-pants__label">{PANTS_LABEL}</h2>
 
-          {/* one fixed 3:4 frame; every layer fills it identically (no per-product sizing) */}
+          {/* one fixed 3:4 frame; every layer fills it identically (no per-product sizing). All
+              eager: each is decoded right after load anyway (pants-section.js), and any of them can
+              become the largest image on screen as the visitor scrolls. */}
           <div className="unk-pants__figure" aria-hidden="true">
             <Image className="unk-pants__layer" data-pants-layer src={PANTS_BASE_IMAGE} alt="" {...MODEL} loading="eager" fetchPriority="high" style={{ opacity: 1 }} />
             {pants.map((p, i) => (
               <Image key={p.handle} className="unk-pants__layer" data-pants-layer src={p.image} alt="" {...MODEL}
-                loading={i < 1 ? "eager" : "lazy"} style={{ opacity: 0 }} />
+                loading="eager" style={{ opacity: 0 }} />
             ))}
             {/* grey copies: the ghost waiting at the right, sliding onto the body */}
             {pants.map((p, i) => (
               <Image key={p.handle} className="unk-pants__layer" data-pants-grey src={p.grey} alt="" {...MODEL}
-                loading={i < 1 ? "eager" : "lazy"} style={{ opacity: i === 0 ? "var(--peek-opacity)" : 0 }} />
+                loading="eager" style={{ opacity: i === 0 ? "var(--peek-opacity)" : 0 }} />
             ))}
           </div>
           {/* soft mist over the waist, where the crop fades out */}
