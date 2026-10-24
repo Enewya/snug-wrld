@@ -1,21 +1,26 @@
 import type { Product } from "./products";
 
-/** Working names only. Shopify IDs, prices and availability belong to the production integration. */
-const tops = [
-  ["beige-panel-jacket", "Beige Panel Jacket"],
-  ["black-jacket", "Black Graphic Jacket"],
-  ["blue-striped-tee", "Blue Striped Tee"],
-  ["green-film-tee", "Green Film Tee"],
-  ["green-photo-tee", "Green Photo Tee"],
-  ["green-plaid-shirt", "Green Panel Plaid Shirt"],
-  ["grey-zip-hoodie", "Grey Zip Hoodie"],
-  ["ivory-hoodie", "Ivory Hoodie"],
-  ["orange-bird-vest", "Orange Bird Knit Vest"],
-  ["white-film-tee", "White Film Tee"],
-  ["yellow-misunderstood-tee", "Yellow Misunderstood Tee"],
+/**
+ * Working names only. Shopify IDs, prices and availability belong to the production integration.
+ * Rack order = this order. `on: false` keeps a garment in the data but off the rack.
+ * TODO(draft parity): the draft hero shows 7 of these; set the other 4 to `on: false` and reorder
+ * to match once the draft screenshot / list is confirmed. Until then all 11 are on.
+ */
+const tops: { slug: string; name: string; on: boolean }[] = [
+  { slug: "beige-panel-jacket", name: "Beige Panel Jacket", on: true },
+  { slug: "black-jacket", name: "Black Graphic Jacket", on: true },
+  { slug: "blue-striped-tee", name: "Blue Striped Tee", on: true },
+  { slug: "green-film-tee", name: "Green Film Tee", on: true },
+  { slug: "green-photo-tee", name: "Green Photo Tee", on: true },
+  { slug: "green-plaid-shirt", name: "Green Panel Plaid Shirt", on: true },
+  { slug: "grey-zip-hoodie", name: "Grey Zip Hoodie", on: true },
+  { slug: "ivory-hoodie", name: "Ivory Hoodie", on: true },
+  { slug: "orange-bird-vest", name: "Orange Bird Knit Vest", on: true },
+  { slug: "white-film-tee", name: "White Film Tee", on: true },
+  { slug: "yellow-misunderstood-tee", name: "Yellow Misunderstood Tee", on: true },
 ];
 
-export const unknownProducts: Product[] = tops.map(([slug, name]) => ({
+export const unknownProducts: Product[] = tops.filter((t) => t.on).map(({ slug, name }) => ({
   slug, name,
   side: `/products/unknown/${slug}-side.webp`,
   front: `/products/unknown/${slug}-front.webp`,

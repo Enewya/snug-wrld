@@ -1,17 +1,13 @@
 "use client";
 
-import { createElement, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import Rack, { rackOrigin, type RackOrigin } from "@/components/rack/Rack";
 import FocusView, { type FocusHandle } from "@/components/focus/FocusView";
 import { unknownProducts } from "@/lib/unknown-products";
 import { preloadFocus } from "@/lib/preload";
 
-import { Search02, User02, ShoppingCart02 } from "./icon-paths";
-
-function Icon({ paths }: { paths: typeof Search02 | typeof User02 | typeof ShoppingCart02 }) {
-  return <svg viewBox="0 0 24 24" fill="none" width="24" height="24" aria-hidden="true">{paths.map(([tag, attrs]) => createElement(tag, attrs))}</svg>;
-}
+import { UNKNOWN_LOGO } from "@/lib/unknown-brand";
 
 type Selection = { start: number; origin: RackOrigin; key: number };
 const keepWhite = () => {};
@@ -46,14 +42,13 @@ export default function UnknownShowroom() {
   return (
     <div className="unknown-showroom">
       <header className="unknown-header">
-        <a className="unknown-about" href="https://www.unk-nown.com/pages/about-unknown">About Us</a>
-        <a className="unknown-wordmark" href="/unknown" aria-label="UNKNOWN home">UNKNOWN</a>
+        <a className="unknown-about" href="https://www.unk-nown.com/pages/about-unknown">About</a>
+        <a className="unknown-wordmark" href="/unknown" aria-label="UNKNOWN home">
+          {/* eslint-disable-next-line @next/next/no-img-element -- SVG wordmark, swapped by file */}
+          <img src={UNKNOWN_LOGO.src} width={UNKNOWN_LOGO.width} height={UNKNOWN_LOGO.height} alt={UNKNOWN_LOGO.alt} />
+        </a>
         {selection ? <button className="unknown-close" type="button" onClick={() => view.current?.close()}>Close <span aria-hidden="true">×</span></button> :
-          <nav className="unknown-actions" aria-label="Store navigation">
-            <a href="https://www.unk-nown.com/search" aria-label="Search"><Icon paths={Search02} /></a>
-            <a href="https://www.unk-nown.com/account" aria-label="Account"><Icon paths={User02} /></a>
-            <a href="https://www.unk-nown.com/cart" aria-label="Cart"><Icon paths={ShoppingCart02} /></a>
-          </nav>}
+          <a className="unknown-contact" href="#visit">Contact</a>}
       </header>
       <div className="unknown-wall" aria-hidden="true" />
       <main>
