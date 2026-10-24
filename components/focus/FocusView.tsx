@@ -11,7 +11,7 @@ import {
 import FocusGarment, { hemOf, rightOf } from "./FocusGarment";
 import InfoStack from "./InfoStack";
 import SwingTags from "./SwingTags";
-import { products } from "@/lib/products";
+import { products as defaultProducts, type Product } from "@/lib/products";
 import { tint } from "@/lib/dyeDip";
 import { useHangerSpring } from "@/lib/useHangerSpring";
 import { preloadProduct } from "@/lib/preload";
@@ -20,6 +20,7 @@ import type { RackOrigin } from "@/components/rack/Rack";
 export type FocusHandle = { close: () => void };
 
 type Props = {
+  products?: Product[];
   start: number;
   origin: RackOrigin;
   /** Rack slot to fly back to (read at close time). */
@@ -63,19 +64,20 @@ const hemOfView = (v: { front: string; back?: string }) => Math.max(hemOf(v.fron
  * (the tank's). Garments keep their real relative size, so shorter ones simply end higher in it;
  * the info stack sits at a fixed y under the stage and never moves between products.
  */
+const FocusView = forwardRef<FocusHandle, Props>(function FocusView(
+  { products = defaultProducts, start, origin, getOrigin, onIndex, onTint, onCloseStart, onClosed },
+  ref,
+) {
 const STAGE = Math.max(...products.flatMap((p) => (p.colourways ?? [p]).map(hemOfView)));
 /** The widest reach right of the hook of any garment that has swing tags (front or back): the
  *  mobile tag column hangs just clear of it. */
 const TAG_X = Math.max(
-  ...products
+  0, ...products
     .filter((p) => p.colourways)
     .flatMap((p) => p.colourways!.flatMap((w) => [rightOf(w.front), w.back ? rightOf(w.back, true) : 0])),
 );
 
-const FocusView = forwardRef<FocusHandle, Props>(function FocusView(
-  { start, origin, getOrigin, onIndex, onTint, onCloseStart, onClosed },
-  ref,
-) {
+
   const reduce = useReducedMotion();
   const [index, setIndex] = useState(start);
   const [colour, setColour] = useState(0);
@@ -156,7 +158,7 @@ const FocusView = forwardRef<FocusHandle, Props>(function FocusView(
 
   useEffect(() => onIndex(index), [index, onIndex]);
   // this product's colourway fronts and backs (and the neighbours' for the arrows), before any click
-  useEffect(() => preloadProduct(index, true), [index]);
+  useEffect(() => preloadProduct(index, true, products), [index, products]);
   useEffect(() => onTint(way ? tint(way.hex) : null), [way, onTint]);
 
   const close = useCallback(() => {
@@ -211,7 +213,7 @@ const FocusView = forwardRef<FocusHandle, Props>(function FocusView(
         },
       });
     },
-    [index, reduce, springTo, angle, slide, fade],
+    [index, reduce, springTo, angle, slide, fade, products],
   );
 
   /** Turn to the front or back photo: half a turn about the hook (the faces swap exactly at 90°),

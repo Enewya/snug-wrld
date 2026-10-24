@@ -1,0 +1,63 @@
+/* UNKNOWN-only shell. Shared rack movement and the Snug homepage are unchanged. */
+.unknown-showroom {
+  --paper: #fff;
+  --ink: #101010;
+  position: relative;
+  isolation: isolate;
+  height: 100dvh;
+  overflow: hidden;
+  background: #fff;
+  color: var(--ink);
+}
+.unknown-wall {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='144' height='144' viewBox='0 0 144 144'%3E%3Cg fill='none' stroke='%23101010' stroke-width='.8' stroke-opacity='.065' stroke-linecap='round'%3E%3Cpath d='M35 24a5 5 0 1 0 5 5'/%3E%3Cpath d='M104 29h6m-3-3v6M32 101h6m-3-3v6'/%3E%3Cpath d='M107 96a5 5 0 1 0 5 5'/%3E%3C/g%3E%3Cg fill='%23101010' fill-opacity='.075'%3E%3Ccircle cx='72' cy='65' r='.8'/%3E%3Ccircle cx='0' cy='137' r='.8'/%3E%3C/g%3E%3C/svg%3E");
+  background-position: center top;
+  mask-image: radial-gradient(ellipse at 50% 48%, rgba(0,0,0,.28) 0%, rgba(0,0,0,.65) 48%, #000 100%);
+}
+.unknown-header {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 60;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  height: clamp(88px, 17.4dvh, 128px);
+  padding-inline: 4.17vw;
+  background: transparent;
+}
+.unknown-about { justify-self: start; font-size: clamp(14px, 1.39vw, 20px); text-decoration: none; }
+.unknown-wordmark { justify-self: center; font-family: Arial, Helvetica, sans-serif; font-size: clamp(24px, 2.22vw, 32px); font-weight: 900; letter-spacing: -.045em; text-decoration: none; line-height: 1; }
+.unknown-actions { justify-self: end; display: flex; align-items: center; gap: 0; margin-right: -10px; }
+.unknown-actions a { display: grid; place-items: center; width: 40px; height: 44px; color: #141b34; transition: opacity .2s; }
+.unknown-actions a:hover, .unknown-about:hover { opacity: .55; }
+.unknown-close { justify-self: end; min-height: 44px; cursor: pointer; font-size: 14px; }
+.unknown-close span { font-size: 24px; margin-left: 10px; vertical-align: middle; }
+.unknown-rack-wrap { position: absolute; inset: 0; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; }
+.unknown-showroom .rack { --iw: min(36dvh, 18vw); --rail-w: 78%; --rod: max(2px, calc(var(--iw) * .024 - 1px)); }
+/* Keep a keyboard-accessible product chooser without adding a second visual focal point. */
+.unknown-intro { position: absolute; left: 50%; bottom: 6dvh; transform: translateX(-50%); z-index: 25; }
+.unknown-intro select { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.unknown-intro select:focus { position: static; width: auto; height: 44px; clip-path: none; background: #fff; padding: 0 20px; border: 1px solid #101010; border-radius: 24px; outline-offset: 4px; }
+.unknown-showroom .rack-caption { color: #626262; }
+.unknown-showroom .focus { --fy: max(110px, 15dvh); --fiw: min(45dvh, 68vw, var(--fit-h) / var(--stage)); --g-cta: 0px; --cta-h: 0px; --g-hem: 32px; --fit-h: calc(100dvh - 75px - var(--fy) - var(--g-hem) - var(--stack)); }
+@media (max-width: 640px) {
+  .unknown-header { padding-inline: 16px; height: 88px; }
+  .unknown-about { font-size: 12px; }
+  .unknown-wordmark { font-size: 22px; }
+  .unknown-actions { margin-right: -6px; }
+  .unknown-actions a { width: 32px; height: 44px; }
+  .unknown-actions svg { width: 20px; height: 20px; }
+  .unknown-wall { background-size: 120px 120px; }
+  .unknown-showroom .rack { --iw: min(34dvh, 220px); width: max(100%, calc(var(--iw) * 4.4)); --rail-w: 94%; }
+  .unknown-showroom .focus { --fy: max(110px, 16dvh); --fiw: min(40dvh, 72vw, var(--fit-h) / var(--stage)); --g-hem: 24px; --fit-h: calc(100dvh - 95px - var(--fy) - var(--g-hem) - var(--stack)); }
+  .unknown-showroom .focus-arrow { bottom: 32px; }
+}
+@media (max-width: 360px) {
+  .unknown-header { padding-inline: 12px; }
+  .unknown-wordmark { font-size: 19px; }
+  .unknown-actions a { width: 28px; }
+}

@@ -1,7 +1,8 @@
 "use client";
 
 import { getImageProps } from "next/image";
-import { photos, products, type Product } from "./products";
+import { products, type Product } from "./products";
+import { photos } from "./photo-catalog";
 
 /** `sizes` of the detail view's photos. Preloads must use the same value so the cache hit is real. */
 export const FOCUS_SIZES = "(max-width: 640px) 80vw, 50vh";
@@ -50,10 +51,10 @@ export function productPhotos(p: Product) {
 }
 
 /** Preload a product's detail photos (and optionally its neighbours') in the background. */
-export function preloadProduct(index: number, neighbours = false) {
-  const n = products.length;
+export function preloadProduct(index: number, neighbours = false, catalog: Product[] = products) {
+  const n = catalog.length;
   const list = neighbours ? [index, (index + 1) % n, (index - 1 + n) % n] : [index];
-  for (const i of list) productPhotos(products[i]).forEach(preloadFocus);
+  for (const i of list) productPhotos(catalog[i]).forEach(preloadFocus);
 }
 
 /** Once the rack is up and the page is idle: every product's and colourway's front photo. */

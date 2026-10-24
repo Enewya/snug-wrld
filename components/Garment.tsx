@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import { motion, type MotionValue } from "framer-motion";
-import { photos, photoScale, type Photo } from "@/lib/products";
+import type { Photo } from "@/lib/products";
+import { photos, photoScale } from "@/lib/photo-catalog";
 
 export type GarmentLayer = {
   src: string;

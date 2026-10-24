@@ -4,7 +4,7 @@ import { useLayoutEffect, useRef } from "react";
 
 type Props = {
   name: string;
-  url: string;
+  url?: string;
   /** Which photo the pill shows as selected. Comes only from FRONT / BACK clicks (never the turn). */
   face: "front" | "back";
   /** Slide the knob (a click) or move it instantly (reset on a product switch). */
@@ -62,9 +62,9 @@ export default function InfoStack({ name, url, face, animateFace, hasBack, onFac
           BACK
         </button>
       </div>
-      <a className="info-cta" href={url} target="_blank" rel="noopener" aria-label={`See availability of ${name} (opens in a new tab)`}>
+      {url && <a className="info-cta" href={url} target="_blank" rel="noopener" aria-label={`See availability of ${name} (opens in a new tab)`}>
         SEE AVAILABILITY ↗
-      </a>
+      </a>}
     </div>
   );
 }

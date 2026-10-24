@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Rail from "./Rail";
 import RackItem from "./RackItem";
-import { captionOf, photos, photoScale, products } from "@/lib/products";
+import { captionOf, products as defaultProducts, type Product } from "@/lib/products";
+import { photos, photoScale } from "@/lib/photo-catalog";
 
 /** Must match .rack in globals.css. All widths below are in rendered photo widths (--iw). */
 const RAIL_Y = 0.272;
@@ -20,7 +21,7 @@ const HOLD = 0.45;
  * sits at one fixed height under it, so it never jumps between garments.
  */
 const HOVER_SCALE = 1.12; // must match RackItem
-const DEEPEST_HEM = Math.max(
+const deepestHem = (products: Product[]) => Math.max(
   ...products.flatMap((p) =>
     [p.side, p.front].map((src) => {
       const m = photos[src];
@@ -53,6 +54,7 @@ export function rackOrigin(i: number, hovered = false): RackOrigin | null {
 }
 
 type Props = {
+  products?: Product[];
   /** Click / tap on a garment. */
   onSelect?: (index: number, origin: RackOrigin) => void;
   /** Garment currently shown in the focus view (hidden here). */
@@ -61,7 +63,7 @@ type Props = {
   paused?: boolean;
 };
 
-export default function Rack({ onSelect, hiddenIndex = null, paused = false }: Props) {
+export default function Rack({ products = defaultProducts, onSelect, hiddenIndex = null, paused = false }: Props) {
   const n = products.length;
   const c = (n - 1) / 2;
   const ref = useRef<HTMLDivElement>(null);
@@ -141,7 +143,7 @@ export default function Rack({ onSelect, hiddenIndex = null, paused = false }: P
         <p
           key={product.slug}
           className="rack-caption"
-          style={{ "--i": i - c, "--hem": DEEPEST_HEM, opacity: hovered === i ? 1 : 0 } as React.CSSProperties}
+          style={{ "--i": i - c, "--hem": deepestHem(products), opacity: hovered === i ? 1 : 0 } as React.CSSProperties}
           aria-hidden={hovered !== i}
         >
           {captionOf(product)}

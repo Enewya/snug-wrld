@@ -16,7 +16,7 @@ export type Product = {
   back?: string;
   /** First colourway is the one hanging on the rack. */
   colourways?: Colourway[];
-  url: string;
+  url?: string;
 };
 
 /** Measured in image pixels by scripts/measure-hooks.mjs. */

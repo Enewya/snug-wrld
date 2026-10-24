@@ -3,7 +3,8 @@
 import { useEffect, useId, useRef, useState } from "react";
 import Image from "next/image";
 import { motion, useTransform, type MotionValue } from "framer-motion";
-import { colourFit, photos, photoScale } from "@/lib/products";
+import { colourFit } from "@/lib/products";
+import { photos, photoScale } from "@/lib/photo-catalog";
 import { DIP_MS, dipPath, makeFingers } from "@/lib/dyeDip";
 import { FOCUS_SIZES, focusImgProps, preloadFocus, readyUrl } from "@/lib/preload";
 
