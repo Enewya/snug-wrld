@@ -312,19 +312,46 @@ export function initPantsSection(root) {
   const onPrev = () => go(active - 1);
   const onNext = () => go(active + 1);
 
-  // decode every pair image up front, off the critical path, so no swap waits for a decode
+  // decode every pair image up front, off the critical path, so no swap waits for a decode; then
+  // warm up: for two frames, invisibly (opacity 0.001) lay the section over the hero exactly as in
+  // the entry, so the browser does its one-time drawing work while the visitor is still on the
+  // hero instead of during the first scroll (measured: the first pass otherwise drops frames,
+  // later passes don't).
   let alive = true;
   const predecode = () => {
     if (!alive) return;
-    [...colour, ...greys, cloudBack, cloudFront, mist].forEach((img) => {
+    const decode = (/** @type {HTMLElement[]} */ list) => Promise.all(list.filter(Boolean).map((img) => {
       const el = /** @type {HTMLImageElement} */ (img);
-      if (!el) return;
       el.loading = "eager";
-      el.decode?.().catch(() => {});
-    });
+      return el.decode ? el.decode().catch(() => {}) : Promise.resolve();
+    }));
+    // what the entry shows first (base, first pair + its ghost, clouds), then warm, then the rest
+    decode([colour[0], colour[1], greys[0], cloudBack, cloudFront, mist])
+      .then(warm)
+      .then(() => decode([...colour.slice(2), ...greys.slice(1)]));
   };
-  if ("requestIdleCallback" in window) window.requestIdleCallback(predecode, { timeout: 1500 });
-  else setTimeout(predecode, 300);
+  const warm = () => {
+    if (!alive || window.scrollY > 0 || reduced.matches) return;
+    const r = root.getBoundingClientRect();
+    if (r.top < window.innerHeight) return; // already in view: nothing to warm
+    // three overlap positions (as in the entry), ~7 frames each, then back
+    const spots = [0.75, 0.45, 0.1];
+    let f = 0;
+    root.style.opacity = "0.001";
+    const step = () => {
+      if (!alive || window.scrollY > 0 || f >= spots.length * 7) {
+        root.style.transform = "";
+        root.style.opacity = "";
+        return;
+      }
+      root.style.transform = `translate3d(0, ${-(r.top - window.innerHeight * spots[Math.floor(f / 7)])}px, 0)`;
+      f++;
+      requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
+  if ("requestIdleCallback" in window) window.requestIdleCallback(predecode, { timeout: 600 });
+  else setTimeout(predecode, 200);
 
   layoutLines();
   measure();
