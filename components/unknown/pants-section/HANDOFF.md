@@ -118,9 +118,11 @@ model images are decorative (`alt=""`) because the name is announced.
 
 - **Section settings:** `label` (text, default "PANTS"), `base_image` (image_picker).
 - **Blocks:** type `pair`, limit 8, settings `product` (product picker), `model_image`
-  (image_picker: that pair worn by the model, already cut out and aligned) and an optional
-  `display_name` text (title case; defaults to the product title). Name, price and URL come from
-  the product.
+  (image_picker: that pair worn by the model, already cut out and aligned), `grey_image`
+  (image_picker: the matching `-grey.webp` from the image script) and an optional `display_name`
+  text (title case; defaults to the product title). Name, price and URL come from the product.
+  If a merchant ever skips the grey image, fall back to the colour image with CSS
+  `filter: grayscale(1)` (works, but costs frames on low-end devices).
 - **Markup:** loop the blocks for the layers, again for the grey copies, again for the articles;
   `block.shopify_attributes` on each article; `style="--unk-pants-count: {{ section.blocks.size }}"`.
   Images: `{{ block.settings.model_image | image_url: width: 1086 | image_tag: widths: '540, 800, 1086', sizes: '(max-width: 760px) 90vw, 45vh', alt: '' }}`.

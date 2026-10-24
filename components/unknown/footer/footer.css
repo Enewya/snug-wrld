@@ -52,5 +52,6 @@
   .unk-footer { padding-block: var(--unk-s7) var(--unk-s4); }
   .unk-footer__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .unk-footer__brand { grid-column: 1 / -1; }
+  .unk-footer__brand img { height: 22px; }
   .unk-footer__base { flex-wrap: wrap; }
 }

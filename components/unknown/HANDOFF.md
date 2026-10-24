@@ -147,6 +147,20 @@ npx netlify-cli deploy --build --alias unknown-preview
 `deploy` without `--prod` is a **draft**: it never replaces the live site. It prints a URL like
 `https://unknown-preview--snugwrld.netlify.app`; add `/unknown`. Never add `--prod`.
 
+## Verification (what was measured, and how)
+
+- **60 fps recordings:** headed Chromium on a virtual display, captured with ffmpeg x11grab at
+  60 fps, a continuous trackpad-like scroll through the whole page (desktop 1440×900, phone
+  390×844), plus an in-page frame-time log. Final run: desktop 968 frames, median 16.7 ms, p95
+  16.7 ms, 8 frames over 25 ms; phone 1053 frames, 2 over 25 ms. The remaining long frames are the
+  pinned stage's one-time first paint on a cold load (repeat passes: 0). This machine has no GPU
+  (software compositing), which is harsher than real devices.
+- **What fixed the drops:** baking the grey peek copies and the top fade into the images instead
+  of CSS `filter`/`mask` (swaps ~15% → 0 dropped frames); hero parallax off by default (entry
+  32–44 → 0–14 long frames of ~150); card-sized images in New Arrivals.
+- **Lighthouse (desktop, production build):** performance 98, accessibility 100, best practices
+  100; LCP 1.1 s, TBT 10–30 ms, CLS 0–0.003.
+
 ## Quality notes
 
 - Every interactive element has hover, focus-visible and active states; 44px targets; WCAG AA.
