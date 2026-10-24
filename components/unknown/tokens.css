@@ -1,0 +1,64 @@
+/* UNKNOWN design tokens: shared by every /unknown section (pants, new arrivals, caps, visit, footer).
+   In the Shopify theme these become the theme's base CSS variables. Scoped to .unk-page so the Snug
+   Wrld pages are unaffected. */
+.unk-page {
+  /* colour (all text pairs pass WCAG AA on their background) */
+  --unk-ink: #151515;
+  --unk-paper: #ffffff;
+  --unk-warm: #e9e8e4; /* hero wall */
+  --unk-mute: #5c5c5c; /* 6.6:1 on white, 5.3:1 on warm */
+  --unk-line: rgba(21, 21, 21, 0.12);
+  --unk-tint: #f4f4f2; /* image wells */
+
+  /* type: one family (Hanken Grotesk, Google Fonts), two weights */
+  --unk-font: var(--font-unk), "Helvetica Neue", Arial, sans-serif;
+  --unk-text-xs: 11px; /* labels, uppercase + tracked */
+  --unk-text-sm: 13px; /* meta, prices in grids */
+  --unk-text-md: 15px; /* body, prices */
+  --unk-text-lg: clamp(20px, 1.8vw, 26px); /* card titles on large layouts */
+  --unk-text-xl: clamp(28px, 3vw, 46px); /* product names (measured from the reference: ~3vw) */
+  --unk-text-2xl: clamp(40px, 6.4vw, 104px); /* section statements */
+  --unk-track-label: 0.14em;
+  --unk-track-tight: -0.015em;
+
+  /* space: 8-pt scale (4 is the only half step) */
+  --unk-s1: 4px;
+  --unk-s2: 8px;
+  --unk-s3: 16px;
+  --unk-s4: 24px;
+  --unk-s5: 32px;
+  --unk-s6: 48px;
+  --unk-s7: 64px;
+  --unk-s8: 96px;
+  --unk-s9: 128px;
+  --unk-gutter: clamp(16px, 4.17vw, 64px);
+  --unk-max: 1440px;
+
+  /* shape */
+  --unk-radius: 2px;
+  --unk-hairline: 1px solid var(--unk-line);
+  --unk-target: 44px; /* minimum touch target */
+
+  /* motion: one easing family, three durations */
+  --unk-ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --unk-ease-in: cubic-bezier(0.55, 0, 0.75, 0.2);
+  --unk-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --unk-dur-1: 160ms; /* hover, press */
+  --unk-dur-2: 320ms; /* reveals, fades */
+  --unk-dur-3: 640ms; /* larger moves */
+}
+
+.unk-page :where(a, button):focus-visible {
+  outline: 2px solid var(--unk-ink);
+  outline-offset: 3px;
+  border-radius: var(--unk-radius);
+}
+
+.unk-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

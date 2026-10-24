@@ -1,5 +1,6 @@
-/* UNKNOWN pants section. Everything is scoped under .unk-pants: Next keeps stylesheets loaded
-   between pages, and the theme will load this file as the section's own stylesheet. */
+/* UNKNOWN pants section. Everything is scoped under .unk-pants (Next keeps stylesheets loaded
+   between pages); the values come from components/unknown/tokens.css. In the theme this is the
+   section's own stylesheet. */
 
 /* globals.css locks page scrolling for the Snug Wrld rack. Unlock it only on a page that has
    this section, which needs the page to scroll. */
@@ -10,29 +11,27 @@ body:has(.unk-pants) {
 }
 
 .unk-pants {
-  --ink: #151515;
-  --paper: #fff;
-  --pad: 4.17vw; /* same side margin as the hero header */
   --peek-opacity: 0.2;
-  --peek-scale: 1.06;
-  --name-size: clamp(28px, 2.9vw, 48px);
-  /* the model image: 3:4, centred, between the top margin and the bottom row */
-  --fig-top: max(24px, 5svh);
+  /* the model: one fixed 3:4 frame, centred, between the top margin and the bottom row */
+  --fig-top: max(var(--unk-s4), 5svh);
   --fig-bottom: 112px;
   --fig-h: calc(100svh - var(--fig-top) - var(--fig-bottom));
   --fig-w: calc(var(--fig-h) * 0.75);
-  /* how much of the next pair's frame shows at the right edge */
-  --peek-show: calc(var(--fig-w) * var(--peek-scale) * 0.55);
-  --info-top: 26svh;
+  /* peek at rest: centred at ~0.83 of the screen width, as measured in the reference */
+  --peek-x: 33vw;
+  --info-top: 30svh;
   /* the name column ends just short of the pants (the model fills the middle of its frame) */
-  --info-w: calc(50vw - var(--fig-w) * 0.4 - var(--pad) - 24px);
+  --info-w: calc(50vw - var(--fig-w) * 0.36 - var(--unk-gutter) - var(--unk-s4));
   position: relative;
+  /* scrolls up over the hero (which drifts at 0.75x underneath) */
+  z-index: 1;
   /* one screen of scrolling per pair; the stage stays pinned throughout */
-  height: calc(var(--unk-pants-count, 5) * 100vh);
-  height: calc(var(--unk-pants-count, 5) * 100svh);
-  background: var(--paper);
-  color: var(--ink);
-  font-family: var(--font-sans);
+  height: calc(var(--unk-pants-count, 4) * 100vh);
+  height: calc(var(--unk-pants-count, 4) * 100svh);
+  background: var(--unk-paper);
+  box-shadow: 0 -24px 40px -24px rgba(21, 21, 21, 0.1);
+  color: var(--unk-ink);
+  font-family: var(--unk-font);
   -webkit-user-select: text;
   user-select: text;
 }
@@ -46,8 +45,7 @@ body:has(.unk-pants) {
   isolation: isolate;
 }
 
-/* Same tile and edge mask as the hero's .unknown-wall (app/unknown/unknown.css), so the two
-   sections read as one surface. */
+/* same tile as the hero wall, so the sections read as one surface */
 .unk-pants__wall {
   position: absolute;
   inset: 0;
@@ -58,7 +56,7 @@ body:has(.unk-pants) {
   mask-image: radial-gradient(ellipse at 50% 48%, rgba(0, 0, 0, 0.28) 0%, rgba(0, 0, 0, 0.65) 48%, #000 100%);
 }
 
-/* ---------- Pants: base model + one layer per pair, stacked ---------- */
+/* ---------- Pants: base + colour layer + grey copy per pair, all in one frame ---------- */
 .unk-pants__figure {
   position: absolute;
   top: var(--fig-top);
@@ -66,9 +64,6 @@ body:has(.unk-pants) {
   width: var(--fig-w);
   height: var(--fig-h);
   margin-left: calc(var(--fig-w) / -2);
-  /* the torso fades out at the top instead of ending in a hard line (as in the reference) */
-  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 9%);
-  mask-image: linear-gradient(to bottom, transparent, #000 9%);
 }
 .unk-pants__layer {
   position: absolute;
@@ -76,202 +71,192 @@ body:has(.unk-pants) {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  /* pants-section.js moves the incoming layer from the peek's box, measured from the top-left */
-  transform-origin: 0 0;
+  object-position: 50% 100%;
+  /* the torso fades out at the top instead of ending in a hard line (as in the reference) */
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 9%);
+  mask-image: linear-gradient(to bottom, transparent, #000 9%);
   -webkit-user-drag: none;
   user-select: none;
 }
-/* the next pair, faint and grey, cut off by the right edge; bottoms line up with the model */
-.unk-pants__peek {
+.unk-pants__grey { filter: grayscale(1); }
+.unk-pants__layer.is-live { will-change: transform, opacity; }
+/* where the peek rests: pants-section.js reads this box to know the peek offset */
+.unk-pants__peek-hit {
   position: absolute;
-  left: calc(100% - var(--peek-show));
-  bottom: var(--fig-bottom);
-  width: calc(var(--fig-w) * var(--peek-scale));
-  height: calc(var(--fig-h) * var(--peek-scale));
-  filter: grayscale(1);
-  /* fade the torso out, so the peek reads as just the pants (as in the reference) */
-  -webkit-mask-image: linear-gradient(to bottom, transparent 6%, #000 24%);
-  mask-image: linear-gradient(to bottom, transparent 6%, #000 24%);
+  top: var(--fig-top);
+  left: calc(50% - var(--fig-w) / 2 + var(--peek-x));
+  width: var(--fig-w);
+  height: var(--fig-h);
+  padding: 0;
+  border: 0;
+  background: none;
   cursor: pointer;
+  clip-path: inset(0 30%); /* only the pants themselves are clickable */
 }
 
 /* ---------- Text ---------- */
 .unk-pants__label {
   position: absolute;
-  left: var(--pad);
+  left: var(--unk-gutter);
   top: var(--info-top);
   margin: 0;
-  font-size: 12px;
+  font-size: var(--unk-text-xs);
   font-weight: 500;
   line-height: 16px;
-  letter-spacing: 0.14em;
+  letter-spacing: var(--unk-track-label);
+  text-transform: uppercase;
+  color: var(--unk-mute);
 }
-/* one article per pair, all stacked; only the active one (and the one leaving) is visible */
-.unk-pants__item { visibility: hidden; }
-.unk-pants__item.is-active,
-.unk-pants__item.is-leaving { visibility: visible; }
+/* one article per pair, all stacked; pants-section.js shows the current (and next) one */
 .unk-pants__info {
   position: absolute;
-  left: var(--pad);
-  top: calc(var(--info-top) + 32px);
+  left: var(--unk-gutter);
+  top: calc(var(--info-top) + var(--unk-s5));
   width: var(--info-w);
 }
 .unk-pants__name {
   margin: 0;
-  font-size: var(--name-size);
-  font-weight: 300;
-  line-height: 1.04;
-  letter-spacing: -0.02em;
+  font-size: var(--unk-text-xl);
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: var(--unk-track-tight);
   text-wrap: balance;
 }
-/* each word rolls inside its own window */
-.unk-pants__word {
-  display: inline-block;
+/* each line rolls inside its own window */
+.unk-pants__line {
+  display: block;
   overflow: hidden;
-  vertical-align: top;
-  padding-bottom: 0.08em;
-  margin-bottom: -0.08em;
+  padding-bottom: 0.1em;
+  margin-bottom: -0.1em;
 }
-.unk-pants__word > span { display: inline-block; }
+.unk-pants__line > span { display: inline-block; }
 .unk-pants__price {
-  margin: 24px 0 0;
-  font-size: 15px;
+  margin: var(--unk-s4) 0 0;
+  font-size: var(--unk-text-md);
   font-variant-numeric: tabular-nums;
 }
 .unk-pants__link {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-height: 44px;
-  margin-top: 8px;
-  font-size: 12px;
+  gap: var(--unk-s2);
+  min-height: var(--unk-target);
+  margin-top: var(--unk-s2);
+  font-size: var(--unk-text-xs);
   font-weight: 500;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--unk-track-label);
   text-transform: uppercase;
-  color: var(--ink);
+  color: var(--unk-ink);
   text-decoration: underline;
-  text-underline-offset: 5px;
+  text-underline-offset: 6px;
   text-decoration-thickness: 1px;
-  transition: opacity 0.2s;
+  transition: opacity var(--unk-dur-1) var(--unk-ease-out);
 }
-.unk-pants__link:hover { opacity: 0.55; }
+.unk-pants__link:hover { opacity: 0.6; }
+.unk-pants__link:active { opacity: 0.4; }
 
 /* ---------- Bottom row: progress + arrows (left), buy bar (centre) ---------- */
 .unk-pants__nav {
   position: absolute;
-  left: var(--pad);
-  bottom: 32px;
+  left: var(--unk-gutter);
+  bottom: var(--unk-s5);
   display: flex;
   align-items: center;
-  gap: 12px;
-  height: 44px;
+  gap: var(--unk-s3);
+  height: var(--unk-target);
 }
 .unk-pants__count {
-  margin: 0 4px 0 0;
-  overflow: hidden;
-  font-size: 12px;
+  margin: 0;
+  font-size: var(--unk-text-xs);
+  font-weight: 500;
   letter-spacing: 0.08em;
   font-variant-numeric: tabular-nums;
 }
-.unk-pants__count span { display: inline-block; }
 .unk-pants__progress {
   position: relative;
-  width: 56px;
+  width: var(--unk-s7);
   height: 1px;
-  margin-right: 4px;
-  background: rgba(21, 21, 21, 0.15);
+  background: var(--unk-line);
 }
 .unk-pants__progress span {
   position: absolute;
   inset: 0;
-  background: var(--ink);
+  background: var(--unk-ink);
   transform: scaleX(0);
   transform-origin: 0 50%;
 }
 .unk-pants__arrow {
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: var(--unk-target);
+  height: var(--unk-target);
   padding: 0;
   border: 0;
   border-radius: 50%;
   background: none;
-  color: var(--ink);
+  color: var(--unk-ink);
   cursor: pointer;
-  transition: background-color 0.2s, opacity 0.2s;
+  transition: background-color var(--unk-dur-1) var(--unk-ease-out), opacity var(--unk-dur-1) var(--unk-ease-out);
 }
 .unk-pants__arrow:hover { background: rgba(21, 21, 21, 0.06); }
+.unk-pants__arrow:active { background: rgba(21, 21, 21, 0.12); }
+.unk-pants__arrow:focus-visible { border-radius: 50%; }
 .unk-pants__arrow[aria-disabled="true"] { opacity: 0.3; cursor: default; background: none; }
 
 .unk-pants__buy {
   position: absolute;
   left: 50%;
-  bottom: 28px;
-  /* centring uses `translate`, so pants-section.js can animate `transform` freely */
+  bottom: var(--unk-s4);
+  /* centring uses `translate`, so pants-section.js can drive `transform` freely */
   translate: -50% 0;
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 6px;
-  border: 1px solid rgba(21, 21, 21, 0.1);
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.88);
+  gap: var(--unk-s3);
+  padding: var(--unk-s2);
+  border: var(--unk-hairline);
+  border-radius: var(--unk-radius);
+  background: rgba(255, 255, 255, 0.9);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   white-space: nowrap;
 }
 .unk-pants__thumb {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   object-fit: cover;
   object-position: 50% 45%;
-  border-radius: 2px;
-  background: #f3f3f3;
+  border-radius: var(--unk-radius);
+  background: var(--unk-tint);
 }
 .unk-pants__buy-name {
   max-width: clamp(120px, 16vw, 260px);
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 12px;
-  letter-spacing: 0.04em;
+  font-size: var(--unk-text-xs);
+  font-weight: 500;
+  letter-spacing: 0.06em;
 }
 .unk-pants__buy-price {
-  font-size: 13px;
+  font-size: var(--unk-text-sm);
   font-variant-numeric: tabular-nums;
 }
 .unk-pants__cart {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  height: 44px;
-  padding: 0 22px;
-  border-radius: 2px;
-  background: var(--ink);
+  gap: var(--unk-s2);
+  height: var(--unk-target);
+  padding: 0 var(--unk-s4);
+  border-radius: var(--unk-radius);
+  background: var(--unk-ink);
   color: #fff;
-  font-size: 12px;
+  font-size: var(--unk-text-xs);
   font-weight: 500;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--unk-track-label);
   text-transform: uppercase;
   text-decoration: none;
-  transition: background-color 0.2s;
+  transition: background-color var(--unk-dur-1) var(--unk-ease-out);
 }
 .unk-pants__cart:hover { background: #000; }
-
-.unk-pants a:focus-visible,
-.unk-pants button:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 3px;
-}
-
-.unk-pants__sr {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
+.unk-pants__cart:active { background: #333; }
 
 /* the buy bar drops the name where it would reach the arrows (the name is large on the left) */
 @media (max-width: 1180px) {
@@ -281,32 +266,30 @@ body:has(.unk-pants) {
 /* ---------- Phones and tall screens: name on top, pants in the middle, buy row at the bottom ---------- */
 @media (max-width: 760px), (max-aspect-ratio: 5/4) {
   .unk-pants {
-    --pad: 16px;
-    --name-size: clamp(24px, 7vw, 40px);
-    --info-top: 20px;
+    --info-top: var(--unk-s4);
     /* label + up to three lines of name + a gap, so the name never covers the pants */
-    --fig-top: calc(var(--info-top) + 28px + 3 * 1.04 * var(--name-size) + 12px);
-    --fig-bottom: 132px;
-    --fig-h: min(calc(100svh - var(--fig-top) - var(--fig-bottom)), calc((100vw - 32px) / 0.75));
-    --peek-show: calc(var(--fig-w) * var(--peek-scale) * 0.45);
-    --info-w: calc(100vw - 2 * var(--pad));
+    --fig-top: calc(var(--info-top) + var(--unk-s5) + 3 * 1.08 * var(--unk-text-xl) + var(--unk-s3));
+    --fig-bottom: 136px;
+    --fig-h: min(calc(100svh - var(--fig-top) - var(--fig-bottom)), calc((100vw - 2 * var(--unk-gutter)) / 0.75));
+    --peek-x: calc(var(--fig-w) * 0.62);
+    --info-w: calc(100vw - 2 * var(--unk-gutter));
   }
-  .unk-pants__info { top: calc(var(--info-top) + 28px); }
+  .unk-pants__info { top: calc(var(--info-top) + var(--unk-s4)); }
   /* price and link move into the buy row */
   .unk-pants__price,
   .unk-pants__link { display: none; }
   .unk-pants__nav {
-    right: var(--pad);
+    right: var(--unk-gutter);
     bottom: 80px;
   }
   .unk-pants__progress { flex: 1; }
   .unk-pants__buy {
-    left: var(--pad);
-    right: var(--pad);
-    bottom: 16px;
+    left: var(--unk-gutter);
+    right: var(--unk-gutter);
+    bottom: var(--unk-s3);
     translate: none;
     justify-content: space-between;
-    padding-left: 14px;
+    padding-left: var(--unk-s3);
   }
   .unk-pants__thumb,
   .unk-pants__buy-name { display: none; }

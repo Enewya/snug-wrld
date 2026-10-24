@@ -10,7 +10,10 @@
 export type PantsItem = {
   /** Shopify product handle; also the image file name. */
   handle: string;
+  /** Exact store name (uppercase on the live store). */
   name: string;
+  /** The same name in title case for the large display type, as in the reference. */
+  display: string;
   /** Display price, already formatted. */
   price: string;
   /** Product page (the "Add to cart" placeholder links here for now). */
@@ -29,9 +32,15 @@ export const PANTS_LABEL = "PANTS";
 /** The model in neutral pants, shown underneath while one pair swaps for the next. */
 export const PANTS_BASE_IMAGE = `${IMAGES}/model-base.webp`;
 
+/** Words that stay uppercase in the display name. */
+const ACRONYMS = new Set(["LGT"]);
+const titleCase = (name: string) =>
+  name.split(" ").map((w) => (ACRONYMS.has(w) ? w : w.charAt(0) + w.slice(1).toLowerCase())).join(" ");
+
 const item = (handle: string, name: string, price: string, hidden = false): PantsItem => ({
   handle,
   name,
+  display: titleCase(name),
   price,
   url: `${STORE}/products/${handle}`,
   image: `${IMAGES}/${handle}.webp`,

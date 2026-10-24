@@ -1,80 +1,55 @@
 // @ts-check
 /**
  * UNKNOWN pants section: behaviour. Framework-free on purpose: the Shopify theme loads this same
- * file from the section (see HANDOFF.md). No libraries; animations use the browser's built-in
- * Web Animations API (element.animate).
+ * file from the section (see HANDOFF.md). No libraries.
  *
- * How it works:
+ * How it works, in plain English:
  * - The section is N screens tall and its stage is `position: sticky`, so the stage stays pinned
- *   while the page scrolls through the section (pure CSS, no JS needed for the pinning).
- * - On scroll, the share of the section scrolled so far picks the active pair (equal steps).
- * - When the active pair changes, one timed swap plays (it is triggered by scroll, not scrubbed):
- *     1. the outgoing pants fade out and drop a little while the model in neutral pants fades in
- *        under them (the base is only shown during a swap, so its arms never show at rest);
- *     2. the faint grey "peek" at the right edge becomes the incoming pair: it glides onto the
- *        model while still ghosted (so old and new overlap briefly) and only turns solid as it
- *        lands; the next peek then fades in at the edge;
- *     3. the product name rolls up word by word (old out, new in), price and buy bar cross-fade.
- *   Going back plays the same in reverse. Every animation starts from wherever the element is
- *   right now, so fast scrolling never makes anything jump.
- * - prefers-reduced-motion: pants, text and bar simply cross-fade, nothing slides.
+ *   while the page scrolls through it (pure CSS). It scrolls up over the hero, and the hero drifts
+ *   up at 0.75x speed underneath (parallax measured from the reference).
+ * - One requestAnimationFrame loop drives everything. Scroll position is turned into a progress
+ *   value `u` (0 = first pair, 1 = second pair, ...) and smoothed with a lerp, so motion is soft
+ *   and a fast flick still lands exactly where the page stopped.
+ * - Each pair holds still for the first and last 20% of its screen of scroll; the middle 60% plays
+ *   the swap, scrubbed by scroll (so it follows the finger and plays backwards when scrolling up):
+ *     1. the outgoing pair fades and drops 12px while the model in neutral pants shows under it;
+ *     2. the faint grey peek of the next pair (right side) slides onto the model, staying ghosted
+ *        until it lands, then turns solid; the following pair's peek slides in from the right edge;
+ *     3. the name rolls up line by line (old out, new in), price, link and buy bar cross-fade.
+ *   Phase timings come from reference/unknown/MOTION.md.
+ * - If scrolling stops half-way through a swap, the picture eases to the nearest pair on its own
+ *   (the page itself is never moved), so the section never rests on a half-finished swap and the
+ *   base model never shows at rest.
+ * - Only transform and opacity are written in the loop, and only when they change. Layout is read
+ *   on resize only.
+ * - prefers-reduced-motion: pairs and text simply cross-fade in place; nothing moves.
  */
 
-const EASE_OUT = "cubic-bezier(.22,.61,.36,1)";
-const EASE_IN = "cubic-bezier(.6,0,.8,.3)";
-const EASE_LEAVE = "cubic-bezier(.4,0,1,1)";
+const SMOOTH = 0.1; // s: time constant of the scroll lerp
+const IDLE = 160; // ms without scrolling before a half-finished swap settles
+const DROP = 12; // px the outgoing pair drops
+const PAD = 0.03; // share of the section's scroll held at each end
+const SWAP = [0.2, 0.8]; // part of each step that plays the swap (the rest holds still)
+const PARALLAX = 0.25; // hero lags by 25% of the covered distance (moves at 0.75x)
 
-/** Timings (ms) and distances. Slow on purpose: smooth and unhurried. */
-const T = {
-  leave: 440, // outgoing pants: fade + drop
-  drop: 16, // px the outgoing pants drop
-  enter: 860, // incoming pants: glide in from the peek
-  enterDelay: 120,
-  peekIn: 640,
-  peekDelay: 620,
-  wordsOut: 380,
-  wordsIn: 680,
-  wordsInDelay: 260,
-  stagger: 45,
-  fade: 320,
-  baseOut: 300, // base model fades away under the new pair once it has landed
-  reduced: 450, // cross-fade length with reduced motion
+// phase windows within a swap (0 → 1)
+const P = {
+  out: [0, 0.3],
+  travel: [0.25, 0.85],
+  solid: [0.6, 1],
+  peek: [0.35, 1],
+  textOut: [0.15, 0.45],
+  textIn: [0.5, 0.8],
+  stagger: 0.06,
+  fadeOut: [0.15, 0.4],
+  fadeIn: [0.55, 0.85],
 };
 
-/** @typedef {Record<string, string>} Styles */
-
-/**
- * Animate `el` to the `to` styles, starting from its current on-screen state (or from `from`).
- * Leaves the final styles on the element, so it stays put when the animation ends.
- * @param {HTMLElement} el
- * @param {Styles} to
- * @param {KeyframeAnimationOptions} opts
- * @param {Styles} [from]
- */
-function run(el, to, opts, from) {
-  const cs = getComputedStyle(el);
-  /** @type {Styles} */
-  const start = {};
-  for (const k in to) start[k] = from?.[k] ?? cs.getPropertyValue(k);
-  stop(el, to);
-  Object.assign(el.style, to);
-  el.animate([start, to], { fill: "backwards", ...opts });
-}
-
-/** Jump straight to `to` (no animation). @param {HTMLElement} el @param {Styles} to */
-function set(el, to) {
-  stop(el, to);
-  Object.assign(el.style, to);
-}
-
-/** Cancel running animations on `el` that touch any of the given properties. @param {HTMLElement} el @param {Styles} props */
-function stop(el, props) {
-  for (const a of el.getAnimations()) {
-    const frames = a.effect instanceof KeyframeEffect ? a.effect.getKeyframes() : [];
-    if (frames.some((f) => Object.keys(props).some((k) => k in f))) a.cancel();
-  }
-}
-
+const clamp01 = (/** @type {number} */ v) => (v < 0 ? 0 : v > 1 ? 1 : v);
+const span = (/** @type {number} */ e, /** @type {number[]} */ w) => clamp01((e - w[0]) / (w[1] - w[0]));
+const easeOut = (/** @type {number} */ t) => 1 - (1 - t) ** 3;
+const easeIn = (/** @type {number} */ t) => t * t * t;
+const easeInOut = (/** @type {number} */ t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 const pad = (/** @type {number} */ n) => String(n).padStart(2, "0");
 
 /**
@@ -87,203 +62,259 @@ export function initPantsSection(root) {
   const qa = (/** @type {string} */ s, el = root) => /** @type {HTMLElement[]} */ ([...el.querySelectorAll(s)]);
 
   const stage = q("[data-pants-stage]");
-  const figure = q("[data-pants-figure]");
   const base = q("[data-pants-base]");
-  const peekBox = q("[data-pants-peek-box]");
   const layers = qa("[data-pants-layer]");
-  const peeks = qa("[data-pants-peek]");
+  const greys = qa("[data-pants-grey]");
   const items = qa("[data-pants-item]");
+  const peekHit = q("[data-pants-peek]");
   const counter = q("[data-pants-current]");
   const progress = q("[data-pants-progress]");
   const status = q("[data-pants-status]");
   const prev = q("[data-pants-prev]");
   const next = q("[data-pants-next]");
+  const under = root.dataset.under ? /** @type {HTMLElement | null} */ (document.querySelector(root.dataset.under)) : null;
   const n = items.length;
   if (!n || !stage) return () => {};
 
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const peekOpacity = () => parseFloat(getComputedStyle(root).getPropertyValue("--peek-opacity")) || 0.2;
-  let index = -1;
-  let raf = 0;
-  /** @type {number[]} */
-  const timers = [];
+  const fades = items.map((it) => qa("[data-pants-fade]", it).concat(qa("[data-pants-buy]", it)));
+  /** @type {HTMLElement[][]} */
+  let lines = items.map(() => []);
 
-  /** Scroll progress through the section (0–1) and the pair it selects. */
+  // geometry, measured on resize only
+  let top = 0;
+  let travel = 1;
+  let vh = 1;
+  let peekX = 0;
+  let edgeX = 0;
+  let peekO = 0.2;
+
+  // ---------- writing styles: only when a value changes ----------
+  let cache = new WeakMap();
+  /** @param {HTMLElement} el @param {number} o @param {string} [t] */
+  function put(el, o, t = "none") {
+    const v = Math.round(o * 1000) / 1000;
+    const last = cache.get(el);
+    if (last && last[0] === v && last[1] === t) return;
+    cache.set(el, [v, t]);
+    el.style.opacity = String(v);
+    el.style.transform = t;
+  }
+  const tx = (/** @type {number} */ x, y = 0) => `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0)`;
+
+  /** Split each name into its rendered lines (so lines can roll one by one). */
+  function layoutLines() {
+    lines = items.map((it) => {
+      const el = /** @type {HTMLElement} */ (it.querySelector("[data-pants-name]"));
+      const text = (el.dataset.text ??= el.textContent?.trim() ?? "");
+      el.textContent = "";
+      const words = text.split(" ").map((w, i) => {
+        const s = document.createElement("span");
+        s.textContent = (i ? " " : "") + w;
+        el.append(s);
+        return s;
+      });
+      /** @type {string[][]} */
+      const groups = [];
+      let lastTop = -1;
+      for (const w of words) {
+        if (w.offsetTop !== lastTop) groups.push([]);
+        lastTop = w.offsetTop;
+        groups[groups.length - 1].push(w.textContent ?? "");
+      }
+      el.textContent = "";
+      return groups.map((g) => {
+        const line = document.createElement("span");
+        line.className = "unk-pants__line";
+        const inner = document.createElement("span");
+        inner.textContent = g.join("").trim();
+        line.append(inner);
+        el.append(line);
+        return inner;
+      });
+    });
+    cache = new WeakMap();
+  }
+
   function measure() {
-    const travel = root.offsetHeight - stage.offsetHeight;
-    const p = travel > 0 ? Math.min(1, Math.max(0, -root.getBoundingClientRect().top / travel)) : 0;
-    return { p, i: Math.min(n - 1, Math.floor(p * n)) };
+    vh = window.innerHeight;
+    top = root.getBoundingClientRect().top + window.scrollY;
+    travel = Math.max(1, root.offsetHeight - stage.offsetHeight);
+    const f = layers[0].getBoundingClientRect();
+    const pk = peekHit.getBoundingClientRect();
+    peekX = pk.left - f.left;
+    edgeX = peekX + window.innerWidth * 0.3;
+    peekO = parseFloat(getComputedStyle(root).getPropertyValue("--peek-opacity")) || 0.2;
   }
 
-  /** Where the peek sits, as a transform for a figure layer (layers scale from their top-left). */
-  function ghostTransform(dir = 1) {
-    const f = figure.getBoundingClientRect();
-    const pk = peekBox.getBoundingClientRect();
-    const s = pk.height / f.height || 1;
-    const dx = dir > 0 ? pk.left - f.left : -(pk.left - f.left) * 0.5;
-    return `translate(${dx}px, ${pk.top - f.top}px) scale(${s})`;
+  /** Draw the state for progress u (0 … n-1). @param {number} u */
+  function render(u) {
+    const i = n > 1 ? Math.min(Math.floor(u), n - 2) : 0;
+    const e = n > 1 ? span(u - i, SWAP) : 0;
+    const cur = i;
+    const nxt = i + 1;
+    const rm = reduced.matches;
+
+    // pants
+    const out = span(e, P.out);
+    const t = easeOut(span(e, P.travel));
+    const solid = easeInOut(span(e, P.solid));
+    const pk = easeOut(span(e, P.peek));
+    layers.forEach((el, j) => {
+      if (j === cur) put(el, rm ? 1 - e : 1 - easeIn(out), rm ? "none" : tx(0, DROP * easeOut(out)));
+      else if (j === nxt) put(el, rm ? e : solid, rm ? "none" : tx(peekX * (1 - t)));
+      else put(el, 0);
+    });
+    greys.forEach((el, j) => {
+      if (j === nxt) put(el, peekO * (rm ? 1 - e : 1 - solid), tx(rm ? peekX : peekX * (1 - t)));
+      else if (j === nxt + 1) put(el, peekO * (rm ? e : pk), tx(rm ? peekX : edgeX + (peekX - edgeX) * pk));
+      else put(el, 0);
+    });
+    const b = e <= 0 || e >= 1 || rm ? 0 : e < 0.25 ? easeOut(e / 0.25) : e < 0.7 ? 1 : 1 - easeIn((e - 0.7) / 0.3);
+    put(base, b);
+
+    // text
+    items.forEach((it, j) => {
+      if (j === cur) {
+        put(it, rm ? 1 - e : e < 1 ? 1 : 0);
+        lines[j].forEach((l, k) => {
+          const r = easeInOut(span(e, [P.textOut[0] + k * P.stagger, P.textOut[1] + k * P.stagger]));
+          put(l, 1, rm ? "none" : `translate3d(0, ${(-105 * r).toFixed(2)}%, 0)`);
+        });
+        fades[j].forEach((f) => put(f, rm ? 1 : 1 - span(e, P.fadeOut)));
+      } else if (j === nxt) {
+        put(it, rm ? e : e > 0 ? 1 : 0);
+        lines[j].forEach((l, k) => {
+          const r = easeOut(span(e, [P.textIn[0] + k * P.stagger, P.textIn[1] + k * P.stagger]));
+          put(l, 1, rm ? "none" : `translate3d(0, ${(105 * (1 - r)).toFixed(2)}%, 0)`);
+        });
+        fades[j].forEach((f) => put(f, rm ? 1 : span(e, P.fadeIn)));
+      } else put(it, 0);
+    });
+
+    progress.style.transform = `scaleX(${n > 1 ? (u / (n - 1)).toFixed(4) : 1})`;
+    setActive(e < 0.5 ? cur : nxt, i);
   }
 
-  const rolls = (/** @type {number} */ i) => qa("[data-pants-roll]", items[i]);
-  const fades = (/** @type {number} */ i) => qa("[data-pants-fade]", items[i]);
-  const buy = (/** @type {number} */ i) => qa("[data-pants-buy]", items[i])[0];
-
-  /** Accessibility + arrow state for the active pair. @param {number} to */
-  function mark(to) {
-    items.forEach((el, i) => {
-      const on = i === to;
-      el.classList.toggle("is-active", on);
-      el.toggleAttribute("inert", !on);
-      el.setAttribute("aria-hidden", String(!on));
+  // ---------- active pair: accessibility, counter, arrows ----------
+  let active = -1;
+  let live = -1;
+  /** @param {number} a @param {number} i */
+  function setActive(a, i) {
+    if (i !== live) {
+      // will-change only on the layers that can move in the current step
+      live = i;
+      [...layers, ...greys].forEach((el, j) => el.classList.toggle("is-live", j % n >= i && j % n <= i + 2));
+    }
+    if (a === active) return;
+    const announce = active >= 0;
+    active = a;
+    items.forEach((it, j) => {
+      const on = j === a;
+      it.toggleAttribute("inert", !on);
+      it.setAttribute("aria-hidden", String(!on));
     });
-    prev.setAttribute("aria-disabled", String(to === 0));
-    next.setAttribute("aria-disabled", String(to === n - 1));
-  }
-
-  /** Show pair `to` with no animation (first paint, or after a resize). @param {number} to */
-  function settle(to) {
-    set(base, { opacity: "0" });
-    layers.forEach((el, i) => set(el, { opacity: i === to ? "1" : "0", transform: "none", filter: "none" }));
-    peeks.forEach((el, i) => set(el, { opacity: i === to + 1 ? String(peekOpacity()) : "0", transform: "none" }));
-    items.forEach((el, i) => {
-      el.classList.remove("is-leaving");
-      set(el, { opacity: "1" });
-      [...rolls(i), ...fades(i), buy(i)].forEach((c) => set(c, { opacity: "1", transform: "none" }));
-    });
-    counter.textContent = pad(to + 1);
-  }
-
-  /** @param {number} to @param {number} from @param {number} dir */
-  function swap(to, from, dir) {
-    // pants: any layer that is neither leaving nor arriving fades out quickly (fast scrolling)
-    layers.forEach((el, i) => {
-      if (i !== to && i !== from) run(el, { opacity: "0", transform: "none", filter: "none" }, { duration: 200 });
-    });
-    run(layers[from], { opacity: "0", transform: `translateY(${T.drop}px)`, filter: "none" }, { duration: T.leave, easing: EASE_LEAVE });
-    // the base fades in as the old pair leaves and out once the new one has landed
-    const total = T.enterDelay + T.enter + T.baseOut;
-    const baseFrom = getComputedStyle(base).opacity;
-    set(base, { opacity: "0" });
-    base.animate([
-      { opacity: baseFrom },
-      { opacity: 1, offset: T.leave / total },
-      { opacity: 1, offset: (T.enterDelay + T.enter) / total },
-      { opacity: 0 },
-    ], { duration: total });
-    const incoming = layers[to];
-    const offStage = parseFloat(getComputedStyle(incoming).opacity) < 0.05;
-    const ghost = offStage ? { transform: ghostTransform(dir), opacity: String(peekOpacity()), filter: "grayscale(1)" } : undefined;
-    // movement eases out (fast, then settles); solidity eases in (stays ghosted until it lands)
-    run(incoming, { transform: "none" }, { duration: T.enter, delay: T.enterDelay, easing: EASE_OUT }, ghost);
-    run(incoming, { opacity: "1", filter: "grayscale(0)" }, { duration: T.enter, delay: T.enterDelay, easing: EASE_IN }, ghost);
-
-    // peek: the incoming pair leaves the edge at once (its ghost took over); the next one fades in
-    peeks.forEach((el, i) => {
-      if (i === to) set(el, { opacity: "0", transform: "none" });
-      else if (i === to + 1) {
-        const hidden = parseFloat(getComputedStyle(el).opacity) < 0.05;
-        run(el, { opacity: String(peekOpacity()), transform: "none" }, { duration: T.peekIn, delay: T.peekDelay, easing: EASE_OUT },
-          hidden ? { opacity: "0", transform: "translateX(48px)" } : undefined);
-      } else run(el, { opacity: "0", transform: "none" }, { duration: 200 });
-    });
-
-    // text: words roll out (up when going forward) and the new ones roll in after them
-    const out = dir > 0 ? "-110%" : "110%";
-    const into = dir > 0 ? "110%" : "-110%";
-    items.forEach((el, i) => {
-      set(el, { opacity: "1" });
-      if (i !== to && i !== from) el.classList.remove("is-leaving");
-    });
-    const leaving = items[from];
-    leaving.classList.add("is-leaving");
-    rolls(from).forEach((w, i) =>
-      run(w, { transform: `translateY(${out})`, opacity: "0" }, { duration: T.wordsOut, delay: i * T.stagger * 0.5, easing: EASE_LEAVE }));
-    [...fades(from), buy(from)].forEach((el) => run(el, { opacity: "0", transform: "none" }, { duration: T.fade }));
-    timers.push(window.setTimeout(() => { if (index !== from) leaving.classList.remove("is-leaving"); }, T.wordsOut + 600));
-
-    const fresh = !items[to].classList.contains("is-leaving");
-    rolls(to).forEach((w, i) =>
-      run(w, { transform: "none", opacity: "1" }, { duration: T.wordsIn, delay: T.wordsInDelay + i * T.stagger, easing: EASE_OUT },
-        fresh ? { transform: `translateY(${into})`, opacity: "0" } : undefined));
-    items[to].classList.remove("is-leaving");
-    fades(to).forEach((el, i) =>
-      run(el, { opacity: "1", transform: "none" }, { duration: T.wordsIn, delay: T.wordsInDelay + 200 + i * 60, easing: EASE_OUT },
-        fresh ? { opacity: "0", transform: "translateY(8px)" } : undefined));
-    run(buy(to), { opacity: "1", transform: "none" }, { duration: T.wordsIn, delay: T.wordsInDelay + 80, easing: EASE_OUT },
-      fresh ? { opacity: "0", transform: "translateY(6px)" } : undefined);
-
-    counter.textContent = pad(to + 1);
-    run(counter, { opacity: "1", transform: "none" }, { duration: 500, easing: EASE_OUT },
-      { opacity: "0", transform: `translateY(${dir > 0 ? 40 : -40}%)` });
-  }
-
-  /** Reduced motion: everything cross-fades in place. @param {number} to @param {number} from */
-  function fadeSwap(to, from) {
-    const opts = { duration: T.reduced, easing: "ease" };
-    set(base, { opacity: "0" });
-    layers.forEach((el, i) => run(el, { opacity: i === to ? "1" : "0", transform: "none", filter: "none" }, opts));
-    peeks.forEach((el, i) => run(el, { opacity: i === to + 1 ? String(peekOpacity()) : "0", transform: "none" }, opts));
-    items.forEach((el, i) => {
-      [...rolls(i), ...fades(i), buy(i)].forEach((c) => set(c, { opacity: "1", transform: "none" }));
-      el.classList.toggle("is-leaving", i === from);
-      // text fades out, then in (never two names on top of each other)
-      const half = { duration: T.reduced / 2, easing: "ease" };
-      if (i === to) run(el, { opacity: "1" }, { ...half, delay: T.reduced / 2 }, { opacity: "0" });
-      else run(el, { opacity: "0" }, half);
-    });
-    timers.push(window.setTimeout(() => { if (index !== from) items[from].classList.remove("is-leaving"); }, T.reduced + 50));
-    counter.textContent = pad(to + 1);
-  }
-
-  /** @param {number} to @param {boolean} animate */
-  function show(to, animate) {
-    if (to === index) return;
-    const from = index;
-    index = to;
-    mark(to);
-    if (!animate || from < 0) settle(to);
-    else if (reduced.matches) fadeSwap(to, from);
-    else swap(to, from, Math.sign(to - from));
-    if (from >= 0) {
-      const name = items[to].querySelector(".unk-pants__buy-name")?.textContent;
-      const price = items[to].querySelector(".unk-pants__buy-price")?.textContent;
-      status.textContent = `${to + 1} of ${n}: ${name}, ${price}`;
+    counter.textContent = pad(a + 1);
+    prev.setAttribute("aria-disabled", String(a === 0));
+    next.setAttribute("aria-disabled", String(a === n - 1));
+    if (announce) {
+      const name = items[a].querySelector(".unk-pants__buy-name")?.textContent;
+      const price = items[a].querySelector(".unk-pants__buy-price")?.textContent;
+      status.textContent = `${a + 1} of ${n}: ${name}, ${price}`;
     }
   }
 
-  function update() {
-    raf = 0;
-    const { p, i } = measure();
-    progress.style.transform = `scaleX(${p})`;
-    show(i, true);
-  }
-  const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
+  // ---------- the loop ----------
+  let target = 0;
+  let shown = 0;
+  let idle = true;
+  let raf = 0;
+  let lastT = 0;
+  let idleTimer = 0;
 
-  /** Scroll the page so pair `i` is in the middle of its step (used by the arrows and the peek). @param {number} i */
+  const fromScroll = () => {
+    const p = clamp01(((window.scrollY - top) / travel - PAD) / (1 - 2 * PAD));
+    return p * (n - 1);
+  };
+  /** Nearest rest for a progress value that is mid-swap. @param {number} u */
+  const rest = (u) => {
+    const i = Math.min(Math.floor(u), Math.max(0, n - 2));
+    const e = span(u - i, SWAP);
+    return e <= 0 || e >= 1 ? u : e < 0.5 ? i + SWAP[0] : i + SWAP[1];
+  };
+
+  function parallax() {
+    if (!under) return;
+    const covered = Math.min(vh, Math.max(0, window.scrollY - (top - vh)));
+    under.style.transform = covered > 0 ? tx(0, covered * PARALLAX) : "";
+  }
+
+  /** @param {number} now */
+  function tick(now) {
+    const dt = lastT ? Math.min(0.05, (now - lastT) / 1000) : 1 / 60;
+    lastT = now;
+    const goal = idle ? rest(target) : target;
+    shown += (goal - shown) * (reduced.matches ? 1 : 1 - Math.exp(-dt / SMOOTH));
+    if (Math.abs(goal - shown) < 0.0005) shown = goal;
+    render(shown);
+    raf = shown === goal ? 0 : requestAnimationFrame(tick);
+    if (!raf) lastT = 0;
+  }
+  const kick = () => {
+    if (!raf) raf = requestAnimationFrame(tick);
+  };
+
+  function onScroll() {
+    target = fromScroll();
+    parallax();
+    idle = false;
+    clearTimeout(idleTimer);
+    idleTimer = window.setTimeout(() => {
+      idle = true;
+      kick();
+    }, IDLE);
+    kick();
+  }
+  function onResize() {
+    layoutLines();
+    measure();
+    target = fromScroll();
+    parallax();
+    kick();
+  }
+
+  /** Scroll the page to the resting point of pair i (arrows, peek). @param {number} i */
   function go(i) {
     if (i < 0 || i >= n) return;
-    const travel = root.offsetHeight - stage.offsetHeight;
-    const top = window.scrollY + root.getBoundingClientRect().top + travel * ((i + 0.5) / n);
-    window.scrollTo({ top, behavior: reduced.matches ? "auto" : "smooth" });
+    const p = n > 1 ? i / (n - 1) : 0;
+    window.scrollTo({ top: top + travel * (PAD + p * (1 - 2 * PAD)), behavior: reduced.matches ? "auto" : "smooth" });
   }
-  const onPrev = () => go(index - 1);
-  const onNext = () => go(index + 1);
+  const onPrev = () => go(active - 1);
+  const onNext = () => go(active + 1);
 
-  show(measure().i, false);
-  update();
+  layoutLines();
+  measure();
+  shown = target = rest(fromScroll());
+  render(shown);
+  parallax();
   window.addEventListener("scroll", onScroll, { passive: true });
-  window.addEventListener("resize", onScroll);
+  window.addEventListener("resize", onResize);
   prev.addEventListener("click", onPrev);
   next.addEventListener("click", onNext);
-  peekBox.addEventListener("click", onNext);
+  peekHit.addEventListener("click", onNext);
+  // web fonts change line breaks: re-measure once they are ready
+  let alive = true;
+  document.fonts?.ready.then(() => alive && onResize());
 
   return () => {
+    alive = false;
     cancelAnimationFrame(raf);
-    timers.forEach(clearTimeout);
+    clearTimeout(idleTimer);
     window.removeEventListener("scroll", onScroll);
-    window.removeEventListener("resize", onScroll);
+    window.removeEventListener("resize", onResize);
     prev.removeEventListener("click", onPrev);
     next.removeEventListener("click", onNext);
-    peekBox.removeEventListener("click", onNext);
+    peekHit.removeEventListener("click", onNext);
+    if (under) under.style.transform = "";
   };
 }
