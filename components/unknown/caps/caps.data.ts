@@ -1,28 +1,28 @@
 /**
- * CAPS / HEADWEAR DATA. In Shopify this is fed by the store's caps/headwear collection (its handle
- * is not confirmed yet: see HANDOFF.md) with product blocks for the featured pieces.
- *
- * PLACEHOLDER DATA: no cap photography or product data could be fetched from the build
- * environment, so the three tiles are labelled placeholders. Replace name, price, url and image.
+ * CAPS / HEADWEAR DATA: exactly the 4 products of the real collection (/collections/headwear),
+ * with live names, ₦ prices, links and photos. In Shopify this comes from the collection.
  */
 export type CapItem = {
-  name: string | null;
-  price: string | null;
-  url: string | null;
-  /** null = draw the labelled placeholder tile */
-  image: string | null;
+  name: string;
+  price: string;
+  url: string;
+  image: string;
+  /** Second photo, shown on hover; null when the product has only one usable photo. */
+  hover: string | null;
 };
+
+const STORE = "https://www.unk-nown.com";
+const IMG = "/products/unknown/caps";
 
 export const CAPS = {
   label: "Headwear",
   title: "Caps",
-  intro: null as string | null, // add the client's own line here; nothing invented
-  collectionUrl: null as string | null, // e.g. /collections/caps once confirmed
-  placeholder: true,
+  collectionUrl: `${STORE}/collections/headwear`,
 };
 
 export const caps: CapItem[] = [
-  { name: null, price: null, url: null, image: null },
-  { name: null, price: null, url: null, image: null },
-  { name: null, price: null, url: null, image: null },
+  { name: "UNKNOWN SV SNAPBACK RED", price: "₦70,000", url: `${STORE}/products/unknown-sv-snapback-red`, image: `${IMG}/unknown-sv-snapback-red-1.webp`, hover: `${IMG}/unknown-sv-snapback-red-3.webp` },
+  { name: "UNKNOWN VRS", price: "₦100,000", url: `${STORE}/products/unknown-vrs-snapback`, image: `${IMG}/unknown-vrs-snapback-1.webp`, hover: `${IMG}/unknown-vrs-snapback-2.webp` },
+  { name: "UNKNOWN SV SNAPBACK BLACK", price: "₦70,000", url: `${STORE}/products/unknown-sv-snapback-black-1`, image: `${IMG}/unknown-sv-snapback-black-1-1.webp`, hover: null },
+  { name: "UNKNOWN FUR CLOUD BEANIE", price: "₦80,000", url: `${STORE}/products/unknown-fur-cloud-beanie`, image: `${IMG}/unknown-fur-cloud-beanie-1.webp`, hover: null },
 ];

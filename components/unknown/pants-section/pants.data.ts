@@ -56,7 +56,7 @@ const all: PantsItem[] = [
   item("unknown-logo-sweatpant-brown", "UNKNOWN LOGO SWEATPANT BROWN", "₦100,000"),
   // OFF until unknown-logo-sweatpant-red.webp exists: delete `, true` to show it
   item("unknown-logo-sweatpant-red", "UNKNOWN LOGO SWEATPANT RED", "₦100,000", true),
-  item("unknown-lgt-strikes-joggers", "UNKNOWN LGT STRIKES JOGGERS", "₦100,000"),
+  item("unknown-lgt-strikes-joggers", "UNKNOWN LGT STRIKES", "₦100,000"),
 ];
 
 /** What the section shows, in order. */
