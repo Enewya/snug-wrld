@@ -1,8 +1,8 @@
-/* Plain <img> on purpose: mirrors the Liquid section, where images come from Shopify's CDN. */
-/* eslint-disable @next/next/no-img-element */
-
+import Image from "next/image";
 import { NEW_ARRIVALS, arrivals } from "./new-arrivals.data";
 import "./new-arrivals.css";
+
+const SIZES = "(max-width: 1023px) 50vw, min(25vw, 340px)";
 
 /** New Arrivals: a 4-up grid (2-up on phones) fed by /collections/new-arrival in Shopify. */
 export default function NewArrivals() {
@@ -24,8 +24,9 @@ export default function NewArrivals() {
             <li key={a.image} data-reveal style={{ "--reveal-step": i % 4 } as React.CSSProperties}>
               <a className="unk-card" href={a.url}>
                 <span className="unk-card__well">
-                  <img className="unk-card__img" src={a.image} alt={a.name} width={1086} height={1448} loading="lazy" decoding="async" />
-                  <img className="unk-card__img unk-card__img--alt" src={a.hover} alt="" width={1086} height={1448} loading="lazy" decoding="async" />
+                  {/* sized to the card (in Liquid: image_url + widths + sizes); never the full-size photo */}
+                  <Image className="unk-card__img" src={a.image} alt={a.name} fill sizes={SIZES} />
+                  <Image className="unk-card__img unk-card__img--alt" src={a.hover} alt="" fill sizes={SIZES} />
                 </span>
                 <span className="unk-card__name">{a.name}</span>
                 <span className="unk-card__price">{a.price ?? "Price on store"}</span>

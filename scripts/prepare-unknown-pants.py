@@ -17,6 +17,10 @@ name and rerun; nothing else changes.
 3. Common crop -> the photos that are framed tighter than the base no longer reach the top edge
    once aligned, so all of them are cropped to the area every photo covers (keeping 3:4, centred on
    the body) and written back at the source size (1086 x 1448) to aligned/<name>.png.
+4. Baked effects (so the browser never filters or masks while animating; measured to remove the
+   dropped frames during swaps): the top 9% fades to transparent (the torso fades out instead of
+   ending in a hard line), and every pair except the base also gets a greyscale copy,
+   aligned/<name>-grey.png, used for the peek and the ghost.
 """
 import subprocess
 import sys
@@ -28,6 +32,7 @@ from PIL import Image
 DIR = Path("assets/products-src/unknown/pants")
 BASE = "model-base"
 OUT_W, OUT_H = 1086, 1448
+FADE = 0.09  # share of the height that fades in from the top edge
 
 
 def cut_one(name):
@@ -63,6 +68,8 @@ def main():
     (DIR / "cut").mkdir(exist_ok=True)
     (DIR / "aligned").mkdir(exist_ok=True)
     names = sorted(p.stem for p in DIR.glob("*.webp"))
+    for old in (DIR / "aligned").glob("*-grey.png"):
+        old.unlink()
     assert BASE in names, f"{BASE}.webp is required"
 
     for name in names:
@@ -96,7 +103,13 @@ def main():
         out = im.convert("RGBa").transform(
             (w, h), Image.AFFINE, (k / s, 0, (left - dx) / s, 0, k / s, (top - dy) / s), resample=Image.BICUBIC
         ).convert("RGBA")
+        a = np.asarray(out.getchannel("A")).astype(np.float32)
+        ramp = np.clip(np.arange(h) / (h * FADE), 0, 1)[:, None]
+        out.putalpha(Image.fromarray((a * ramp).round().astype(np.uint8)))
         out.save(DIR / "aligned" / f"{n}.png")
+        if n != BASE:
+            grey = out.convert("LA").convert("RGBA")
+            grey.save(DIR / "aligned" / f"{n}-grey.png")
 
 
 if __name__ == "__main__":

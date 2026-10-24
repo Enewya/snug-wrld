@@ -5,8 +5,10 @@
  *
  * How it works, in plain English:
  * - The section is N screens tall and its stage is `position: sticky`, so the stage stays pinned
- *   while the page scrolls through it (pure CSS). It scrolls up over the hero, and the hero drifts
- *   up at 0.75x speed underneath (parallax measured from the reference).
+ *   while the page scrolls through it (pure CSS). It scrolls up over the hero with a soft shadow
+ *   on its top edge. Optional: `data-under="<selector>"` makes the element above drift up at 0.75x
+ *   underneath (the parallax measured in the reference). It is off by default: in testing it cost
+ *   20-30% dropped frames during the entry on a machine without GPU compositing.
  * - One requestAnimationFrame loop drives everything. Scroll position is turned into a progress
  *   value `u` (0 = first pair, 1 = second pair, ...) and smoothed with a lerp, so motion is soft
  *   and a fast flick still lands exactly where the page stopped.
@@ -161,7 +163,7 @@ export function initPantsSection(root) {
     const solid = easeInOut(span(e, P.solid));
     const pk = easeOut(span(e, P.peek));
     layers.forEach((el, j) => {
-      if (j === cur) put(el, rm ? 1 - e : 1 - easeIn(out), rm ? "none" : tx(0, DROP * easeOut(out)));
+      if (j === cur) put(el, rm ? 1 - e : 1 - easeInOut(out), rm ? "none" : tx(0, DROP * easeOut(out)));
       else if (j === nxt) put(el, rm ? e : solid, rm ? "none" : tx(peekX * (1 - t)));
       else put(el, 0);
     });
@@ -193,19 +195,13 @@ export function initPantsSection(root) {
     });
 
     progress.style.transform = `scaleX(${n > 1 ? (u / (n - 1)).toFixed(4) : 1})`;
-    setActive(e < 0.5 ? cur : nxt, i);
+    setActive(e < 0.5 ? cur : nxt);
   }
 
   // ---------- active pair: accessibility, counter, arrows ----------
   let active = -1;
-  let live = -1;
-  /** @param {number} a @param {number} i */
-  function setActive(a, i) {
-    if (i !== live) {
-      // will-change only on the layers that can move in the current step
-      live = i;
-      [...layers, ...greys].forEach((el, j) => el.classList.toggle("is-live", j % n >= i && j % n <= i + 2));
-    }
+  /** @param {number} a */
+  function setActive(a) {
     if (a === active) return;
     const announce = active >= 0;
     active = a;

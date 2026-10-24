@@ -71,14 +71,11 @@ body:has(.unk-pants) {
   height: 100%;
   object-fit: contain;
   object-position: 50% 100%;
-  /* the torso fades out at the top instead of ending in a hard line (as in the reference) */
-  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 9%);
-  mask-image: linear-gradient(to bottom, transparent, #000 9%);
+  /* the soft top fade and the grey peek copies are baked into the image files (no CSS mask or
+     filter while animating: measured to remove the dropped frames during swaps) */
   -webkit-user-drag: none;
   user-select: none;
 }
-.unk-pants__grey { filter: grayscale(1); }
-.unk-pants__layer.is-live { will-change: transform, opacity; }
 /* where the peek rests: pants-section.js reads this box to know the peek offset */
 .unk-pants__peek-hit {
   position: absolute;

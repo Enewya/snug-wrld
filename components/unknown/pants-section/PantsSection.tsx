@@ -25,7 +25,6 @@ export default function PantsSection() {
       ref={ref}
       className="unk-pants"
       aria-labelledby="unk-pants-title"
-      data-under=".unknown-showroom"
       style={{ "--unk-pants-count": pants.length } as React.CSSProperties}
     >
       <div className="unk-pants__stage" data-pants-stage>
@@ -41,7 +40,7 @@ export default function PantsSection() {
           ))}
           {/* grey copies: the peek at the right at rest, the ghost while a pair slides in */}
           {pants.map((p, i) => (
-            <img key={p.handle} className="unk-pants__layer unk-pants__grey" data-pants-grey src={p.image} alt="" {...IMG}
+            <img key={p.handle} className="unk-pants__layer" data-pants-grey src={p.grey} alt="" {...IMG}
               loading={i < 2 ? "eager" : "lazy"} style={{ opacity: i === 1 ? "var(--peek-opacity)" : 0 }} />
           ))}
         </div>

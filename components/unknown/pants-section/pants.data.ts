@@ -19,6 +19,8 @@ export type PantsItem = {
   /** Product page (the "Add to cart" placeholder links here for now). */
   url: string;
   image: string;
+  /** Greyscale copy (baked by the image script) for the peek and the ghost. */
+  grey: string;
   /** Left out of the section until its model image exists. */
   hidden?: boolean;
 };
@@ -44,6 +46,7 @@ const item = (handle: string, name: string, price: string, hidden = false): Pant
   price,
   url: `${STORE}/products/${handle}`,
   image: `${IMAGES}/${handle}.webp`,
+  grey: `${IMAGES}/${handle}-grey.webp`,
   hidden,
 });
 
