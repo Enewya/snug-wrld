@@ -7,7 +7,6 @@
   color: var(--unk-ink);
   font-family: var(--unk-font);
 }
-.unk-arrivals__actions { display: flex; align-items: center; gap: var(--unk-s3); }
 .unk-arrivals__grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -25,25 +24,23 @@
 .unk-card__well {
   position: relative;
   display: block;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 1;
   margin-bottom: var(--unk-s2);
   overflow: hidden;
   border-radius: var(--unk-radius);
   background: var(--unk-tint);
 }
 .unk-card__img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+  object-fit: cover;
+  /* store photos are shot on white: multiply turns that white into the well tone, so every card
+     reads as the same 12px tile (static, no runtime cost) */
+  mix-blend-mode: multiply;
   transition: opacity var(--unk-dur-2) var(--unk-ease-out), transform var(--unk-dur-3) var(--unk-ease-out);
 }
 .unk-card__img--alt { opacity: 0; }
 @media (hover: hover) {
   .unk-card:hover .unk-card__img { transform: scale(1.03); }
   .unk-card:hover .unk-card__img--alt { opacity: 1; }
-  .unk-card:hover .unk-card__img:not(.unk-card__img--alt) { opacity: 0; }
 }
 .unk-card:active .unk-card__well { opacity: 0.85; }
 .unk-card:focus-visible { outline-offset: 4px; }

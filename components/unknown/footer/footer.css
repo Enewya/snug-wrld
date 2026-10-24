@@ -30,8 +30,11 @@
   text-decoration: none;
   transition: opacity var(--unk-dur-1) var(--unk-ease-out);
 }
+/* same underline behaviour as .unk-link (text only, draws in on hover); nav lists carry no arrow */
+.unk-footer__col a,
+.unk-footer__base a { background: linear-gradient(currentColor, currentColor) no-repeat 0 calc(50% + 0.75em) / 0 1px; }
 .unk-footer__col a:hover,
-.unk-footer__base a:hover { opacity: 0.6; text-decoration: underline; text-underline-offset: 5px; }
+.unk-footer__base a:hover { background-size: 100% 1px; transition: background-size var(--unk-dur-2) var(--unk-ease-out); }
 .unk-footer__col a:active,
 .unk-footer__base a:active { opacity: 0.4; }
 .unk-footer__base {

@@ -53,7 +53,7 @@
 /* Keep a keyboard-accessible product chooser without adding a second visual focal point. */
 .unknown-intro { position: absolute; left: 50%; bottom: 6dvh; transform: translateX(-50%); z-index: 25; }
 .unknown-intro select { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-.unknown-intro select:focus { position: static; width: auto; height: 44px; clip-path: none; background: #fff; padding: 0 20px; border: 1px solid #101010; border-radius: 24px; outline-offset: 4px; }
+.unknown-intro select:focus { position: static; width: auto; height: 44px; clip-path: none; background: #fff; padding: 0 20px; border: 1px solid #101010; border-radius: 12px; outline-offset: 4px; }
 .unknown-showroom .rack-caption { color: #626262; }
 .unknown-showroom .focus { --fy: max(110px, 15dvh); --fiw: min(45dvh, 68vw, var(--fit-h) / var(--stage)); --g-cta: 0px; --cta-h: 0px; --g-hem: 32px; --fit-h: calc(100dvh - 75px - var(--fy) - var(--g-hem) - var(--stack)); }
 @media (max-width: 640px) {
@@ -67,3 +67,10 @@
   .unknown-header { padding-inline: 12px; }
   .unknown-wordmark img { width: 100px; }
 }
+/* one button radius (12px, as --radius-button) for the focus view's controls on /unknown */
+.unknown-showroom .focus-arrow,
+.unknown-showroom .focus-arrow::before,
+.unknown-showroom .focus-arrow:focus-visible { border-radius: 12px; }
+.unknown-showroom .seg,
+.unknown-showroom .seg-knob { border-radius: 12px; }
+.unknown-showroom .seg-knob { border-radius: 9px; } /* concentric inside the 12px pill (3px inset) */

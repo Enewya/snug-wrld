@@ -34,8 +34,9 @@
   --unk-gutter: clamp(16px, 4.17vw, 64px);
   --unk-max: 1440px;
 
-  /* shape */
-  --unk-radius: 2px;
+  /* shape: one radius for every button, input and button-like control, and for cards / media */
+  --radius-button: 12px;
+  --unk-radius: var(--radius-button);
   --unk-hairline: 1px solid var(--unk-line);
   --unk-target: 44px; /* minimum touch target */
 

@@ -1,0 +1,103 @@
+/* UNKNOWN lookbook (values from components/unknown/tokens.css). */
+.unk-lookbook {
+  position: relative;
+  z-index: 1;
+  padding-block: var(--unk-s8);
+  background: var(--unk-paper);
+  color: var(--unk-ink);
+  font-family: var(--unk-font);
+  --look-h: clamp(360px, 58vh, 600px);
+}
+.unk-lookbook__actions { display: flex; align-items: center; gap: var(--unk-s2); }
+.unk-lookbook__actions .unk-link { margin-left: var(--unk-s3); }
+
+/* the row starts on the content edge and runs to the screen edge */
+.unk-lookbook__row {
+  --edge: max(var(--unk-gutter), calc((100vw - var(--unk-max)) / 2 + var(--unk-gutter)));
+  display: flex;
+  align-items: flex-start;
+  gap: var(--unk-s3);
+  margin: 0;
+  padding: 0 var(--edge) var(--unk-s6);
+  list-style: none;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: var(--edge);
+  scrollbar-width: none;
+}
+.unk-lookbook__row::-webkit-scrollbar { display: none; }
+.unk-lookbook__row:focus-visible { outline: 2px solid var(--unk-ink); outline-offset: 4px; border-radius: var(--unk-radius); }
+.unk-look { flex: none; scroll-snap-align: start; }
+/* editorial stagger: every other look sits lower */
+.unk-look:nth-child(even) { margin-top: var(--unk-s6); }
+.unk-look__figure { margin: 0; }
+.unk-look__well {
+  display: block;
+  height: var(--look-h);
+  aspect-ratio: var(--ar);
+  overflow: hidden;
+  border-radius: var(--unk-radius);
+  background: var(--unk-tint);
+}
+.unk-look__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--unk-dur-3) var(--unk-ease-out);
+}
+.unk-look__cap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--unk-s3);
+  min-height: var(--unk-target);
+  padding-top: var(--unk-s1);
+}
+.unk-look__num {
+  font-size: var(--unk-text-xs);
+  font-weight: 500;
+  letter-spacing: var(--unk-track-label);
+  text-transform: uppercase;
+  color: var(--unk-mute);
+}
+.unk-look__product .unk-link { max-width: 100%; }
+.unk-look__product .unk-link__text { overflow: hidden; text-overflow: ellipsis; }
+/* product link: revealed on hover / focus with a pointer, always visible on touch */
+@media (hover: hover) {
+  .unk-look__product {
+    opacity: 0;
+    transform: translate3d(0, 4px, 0);
+    transition: opacity var(--unk-dur-2) var(--unk-ease-out), transform var(--unk-dur-2) var(--unk-ease-out);
+  }
+  .unk-look:hover .unk-look__product,
+  .unk-look:focus-within .unk-look__product { opacity: 1; transform: none; }
+  .unk-look:hover .unk-look__img { transform: scale(1.02); }
+}
+
+.unk-icon-btn {
+  display: grid;
+  place-items: center;
+  width: var(--unk-target);
+  height: var(--unk-target);
+  padding: 0;
+  border: var(--unk-hairline);
+  border-radius: var(--radius-button);
+  background: none;
+  color: var(--unk-ink);
+  cursor: pointer;
+  transition: background-color var(--unk-dur-1) var(--unk-ease-out), opacity var(--unk-dur-1) var(--unk-ease-out);
+}
+.unk-icon-btn:hover { background: rgba(21, 21, 21, 0.05); }
+.unk-icon-btn:active { background: rgba(21, 21, 21, 0.1); }
+.unk-icon-btn[aria-disabled="true"] { opacity: 0.3; cursor: default; background: none; }
+
+@media (max-width: 767px) {
+  .unk-lookbook { padding-block: var(--unk-s7); }
+  /* phones: looks sized by width (72vw) so the next one always peeks in, hinting the swipe */
+  .unk-look__well { height: auto; width: min(72vw, 320px); }
+  .unk-lookbook__actions .unk-icon-btn { display: none; } /* swipe on phones */
+  .unk-lookbook__actions .unk-link { margin-left: 0; }
+  .unk-look:nth-child(even) { margin-top: var(--unk-s4); }
+}

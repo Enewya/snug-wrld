@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { UNKNOWN_STORE } from "@/lib/unknown-brand";
+import UnkLink from "../link/UnkLink";
 import { initSignup } from "./visit";
 import "./visit.css";
 
@@ -20,9 +21,7 @@ export default function Visit() {
             {UNKNOWN_STORE.address.map((l) => <span key={l}>{l}</span>)}
           </address>
           <p className="unk-visit__meta">{UNKNOWN_STORE.hours}</p>
-          <a className="unk-link" href={MAPS} target="_blank" rel="noopener">
-            Get directions <span aria-hidden="true">↗</span><span className="unk-sr"> (opens Google Maps in a new tab)</span>
-          </a>
+          <UnkLink href={MAPS} external>Get directions</UnkLink>
         </div>
         <div className="unk-visit__col" data-reveal style={{ "--reveal-step": 1 } as React.CSSProperties}>
           <h2 className="unk-head__label">Email list</h2>

@@ -3,8 +3,8 @@ import { Hanken_Grotesk } from "next/font/google";
 import UnknownShowroom from "@/components/unknown/UnknownShowroom";
 import PantsSection from "@/components/unknown/pants-section/PantsSection";
 import NewArrivals from "@/components/unknown/new-arrivals/NewArrivals";
-import DropBand from "@/components/unknown/drop-band/DropBand";
 import Caps from "@/components/unknown/caps/Caps";
+import Lookbook from "@/components/unknown/lookbook/Lookbook";
 import Visit from "@/components/unknown/visit/Visit";
 import Footer from "@/components/unknown/footer/Footer";
 import RevealInit from "@/components/unknown/reveal/RevealInit";
@@ -28,8 +28,8 @@ export default function UnknownPage() {
       <UnknownShowroom />
       <PantsSection />
       <NewArrivals />
-      <DropBand />
       <Caps />
+      <Lookbook />
       <Visit />
       <Footer />
       <RevealInit />

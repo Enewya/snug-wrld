@@ -37,13 +37,14 @@
   max-width: 480px;
   margin-top: var(--unk-s5);
 }
+/* input + button read as one control: its outer corners take the button radius */
 .unk-signup__input {
   min-width: 0;
   height: var(--unk-target);
   padding: 0 var(--unk-s3);
   border: 1px solid var(--unk-ink);
   border-right: 0;
-  border-radius: var(--unk-radius) 0 0 var(--unk-radius);
+  border-radius: var(--radius-button) 0 0 var(--radius-button);
   background: var(--unk-paper);
   color: var(--unk-ink);
   font: inherit;
@@ -57,7 +58,7 @@
   height: var(--unk-target);
   padding: 0 var(--unk-s4);
   border: 1px solid var(--unk-ink);
-  border-radius: 0 var(--unk-radius) var(--unk-radius) 0;
+  border-radius: 0 var(--radius-button) var(--radius-button) 0;
   background: var(--unk-ink);
   color: var(--unk-paper);
   font: inherit;
