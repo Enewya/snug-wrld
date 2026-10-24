@@ -25,8 +25,13 @@ export const metadata: Metadata = {
 export default function UnknownPage() {
   return (
     <div className={`unk-page ${hanken.variable}`}>
-      <UnknownShowroom />
-      <PantsSection />
+      {/* the hero is held in place while the pants section rises over it (see pants-section.css) */}
+      <div className="unk-hold">
+        <div className="unk-hold__hero">
+          <UnknownShowroom />
+        </div>
+        <PantsSection />
+      </div>
       <NewArrivals />
       <Caps />
       <Lookbook />

@@ -10,7 +10,18 @@ body:has(.unk-pants) {
   overflow-x: clip;
 }
 
+/* The hero is held in place (sticky) while the pants section rises over it, so it lingers
+   underneath at zero per-frame cost. The wrapper ends with the pants section. */
+.unk-hold__hero {
+  position: sticky;
+  top: 0;
+  z-index: 0;
+}
+
 .unk-pants {
+  /* atmosphere: neutral cool white sky (no saturated blue), from the reference's tone */
+  --sky-top: #e8ecf0; /* ink 15.1:1, mute 5.6:1 (AA) */
+  --sky-bottom: #f7f9fa;
   --peek-opacity: 0.2;
   /* the model: one fixed 3:4 frame, centred, between the top margin and the bottom row */
   --fig-top: max(var(--unk-s4), 5svh);
@@ -23,13 +34,12 @@ body:has(.unk-pants) {
   /* the name column ends just short of the pants (the model fills the middle of its frame) */
   --info-w: calc(50vw - var(--fig-w) * 0.36 - var(--unk-gutter) - var(--unk-s4));
   position: relative;
-  /* scrolls up over the hero (which drifts at 0.75x underneath) */
+  /* rises over the held hero */
   z-index: 1;
   /* one screen of scrolling per pair; the stage stays pinned throughout */
   height: calc(var(--unk-pants-count, 4) * 100vh);
   height: calc(var(--unk-pants-count, 4) * 100svh);
-  background: var(--unk-paper);
-  box-shadow: 0 -24px 40px -24px rgba(21, 21, 21, 0.1);
+  background: var(--sky-top);
   color: var(--unk-ink);
   font-family: var(--unk-font);
   -webkit-user-select: text;
@@ -43,17 +53,72 @@ body:has(.unk-pants) {
   height: 100svh;
   overflow: hidden;
   isolation: isolate;
+  background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 100%);
 }
 
-/* same hook tile as the hero wall, so the sections read as one surface */
-.unk-pants__wall {
+/* feathered top edge: 30vh above the section fading from clear to sky, with a mist band riding
+   the edge, so the section arrives without a hard line (measured: ~20-25% of the screen) */
+.unk-pants__feather {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: 30vh;
+  /* above the stage, so the mist band can overlap the stage's top instead of being cut by it */
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(232, 236, 240, 0) 0%, rgba(232, 236, 240, 0.55) 55%, var(--sky-top) 100%);
+}
+.unk-pants__edge-mist {
+  position: absolute;
+  left: -10%;
+  bottom: -8vh;
+  width: 120%;
+  height: 26vh;
+  object-fit: fill;
+  opacity: 0.95;
+}
+
+/* pre-rendered clouds (transparent WebP), moved with transform only */
+.unk-pants__sky {
   position: absolute;
   inset: 0;
   z-index: -1;
+  overflow: hidden;
   pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='46' height='37' viewBox='0 0 46 37'%3E%3Cg fill='none' stroke='%23151513' stroke-opacity='.05' stroke-width='1' stroke-linecap='round'%3E%3Ccircle cx='23' cy='21' r='4.5'/%3E%3Cpath d='M23 16.5 V14.5 c0-1.6 2.2-1.8 2.2-3.2'/%3E%3C/g%3E%3C/svg%3E");
-  background-position: center top;
 }
+.unk-pants__cloud {
+  position: absolute;
+  left: -8%;
+  width: 116%;
+  height: auto;
+  max-width: none;
+}
+.unk-pants__cloud--back { top: -2%; }
+.unk-pants__cloud--front { bottom: 6%; opacity: 0.9; }
+/* mist over the waist, where the crop fades out (in front of the figure) */
+.unk-pants__mist {
+  position: absolute;
+  z-index: 1;
+  top: calc(var(--fig-top) - var(--fig-h) * 0.09);
+  left: 50%;
+  width: calc(var(--fig-w) * 2.2);
+  height: calc(var(--fig-h) * 0.26);
+  margin-left: calc(var(--fig-w) * -1.1);
+  object-fit: fill;
+  pointer-events: none;
+}
+
+/* the atmosphere fades out into the plain white sections below */
+.unk-pants-tail {
+  position: relative;
+  z-index: 1;
+  height: 28vh;
+  background: linear-gradient(180deg, #f7f9fa 0%, #fff 100%);
+  margin-top: -1px;
+}
+
+
 
 /* ---------- Pants: base + colour layer + grey copy per pair, all in one frame ---------- */
 .unk-pants__figure {
@@ -126,29 +191,17 @@ body:has(.unk-pants) {
   margin-bottom: -0.1em;
 }
 .unk-pants__line > span { display: inline-block; }
+.unk-pants__meta {
+  margin: var(--unk-s4) 0 0;
+  font-size: var(--unk-text-md);
+  color: var(--unk-mute);
+}
 .unk-pants__price {
   margin: var(--unk-s4) 0 0;
   font-size: var(--unk-text-md);
   font-variant-numeric: tabular-nums;
 }
-.unk-pants__link {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--unk-s2);
-  min-height: var(--unk-target);
-  margin-top: var(--unk-s2);
-  font-size: var(--unk-text-xs);
-  font-weight: 500;
-  letter-spacing: var(--unk-track-label);
-  text-transform: uppercase;
-  color: var(--unk-ink);
-  text-decoration: underline;
-  text-underline-offset: 6px;
-  text-decoration-thickness: 1px;
-  transition: opacity var(--unk-dur-1) var(--unk-ease-out);
-}
-.unk-pants__link:hover { opacity: 0.6; }
-.unk-pants__link:active { opacity: 0.4; }
+.unk-pants__link { display: inline-block; margin-top: var(--unk-s2); } /* wraps the shared .unk-link */
 
 /* ---------- Bottom row: progress + arrows (left), buy bar (centre) ---------- */
 .unk-pants__nav {
@@ -180,23 +233,7 @@ body:has(.unk-pants) {
   transform: scaleX(0);
   transform-origin: 0 50%;
 }
-.unk-pants__arrow {
-  display: grid;
-  place-items: center;
-  width: var(--unk-target);
-  height: var(--unk-target);
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: none;
-  color: var(--unk-ink);
-  cursor: pointer;
-  transition: background-color var(--unk-dur-1) var(--unk-ease-out), opacity var(--unk-dur-1) var(--unk-ease-out);
-}
-.unk-pants__arrow:hover { background: rgba(21, 21, 21, 0.06); }
-.unk-pants__arrow:active { background: rgba(21, 21, 21, 0.12); }
-.unk-pants__arrow:focus-visible { border-radius: 50%; }
-.unk-pants__arrow[aria-disabled="true"] { opacity: 0.3; cursor: default; background: none; }
+
 
 .unk-pants__buy {
   position: absolute;
@@ -209,7 +246,8 @@ body:has(.unk-pants) {
   gap: var(--unk-s3);
   padding: var(--unk-s2);
   border: var(--unk-hairline);
-  border-radius: var(--unk-radius);
+  /* concentric with the 12px button inside its 8px padding */
+  border-radius: calc(var(--radius-button) + var(--unk-s2));
   background: rgba(255, 255, 255, 0.9);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
@@ -231,17 +269,14 @@ body:has(.unk-pants) {
   font-weight: 500;
   letter-spacing: 0.06em;
 }
-.unk-pants__buy-price {
-  font-size: var(--unk-text-sm);
-  font-variant-numeric: tabular-nums;
-}
+
 .unk-pants__cart {
   display: inline-flex;
   align-items: center;
   gap: var(--unk-s2);
   height: var(--unk-target);
   padding: 0 var(--unk-s4);
-  border-radius: var(--unk-radius);
+  border-radius: var(--radius-button);
   background: var(--unk-ink);
   color: #fff;
   font-size: var(--unk-text-xs);
@@ -263,16 +298,17 @@ body:has(.unk-pants) {
 @media (max-width: 760px), (max-aspect-ratio: 5/4) {
   .unk-pants {
     --info-top: var(--unk-s4);
-    /* label + up to three lines of name + a gap, so the name never covers the pants */
-    --fig-top: calc(var(--info-top) + var(--unk-s5) + 3 * 1.08 * var(--unk-text-xl) + var(--unk-s3));
+    /* label + up to three lines of name + the price line + a gap: the text never covers the pants */
+    --fig-top: calc(var(--info-top) + var(--unk-s5) + 3 * 1.08 * var(--unk-text-xl) + 32px + var(--unk-s3));
     --fig-bottom: 136px;
     --fig-h: min(calc(100svh - var(--fig-top) - var(--fig-bottom)), calc((100vw - 2 * var(--unk-gutter)) / 0.75));
     --peek-x: calc(var(--fig-w) * 0.62);
     --info-w: calc(100vw - 2 * var(--unk-gutter));
   }
   .unk-pants__info { top: calc(var(--info-top) + var(--unk-s4)); }
-  /* price and link move into the buy row */
-  .unk-pants__price,
+  /* the price stays with the name; the product link lives in the buy row's name */
+  .unk-pants__price { margin-top: var(--unk-s2); }
+  .unk-pants__meta { margin-top: var(--unk-s2); }
   .unk-pants__link { display: none; }
   .unk-pants__nav {
     right: var(--unk-gutter);
@@ -287,6 +323,6 @@ body:has(.unk-pants) {
     justify-content: space-between;
     padding-left: var(--unk-s3);
   }
-  .unk-pants__thumb,
-  .unk-pants__buy-name { display: none; }
+  .unk-pants__thumb { display: none; }
+  .unk-pants__buy-name { display: block; min-width: 0; max-width: none; flex: 1; }
 }

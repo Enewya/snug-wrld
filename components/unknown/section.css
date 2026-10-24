@@ -67,3 +67,20 @@
   .unk-head { flex-wrap: wrap; align-items: flex-start; }
 }
 
+/* square icon button (prev / next): 44px target, button radius */
+.unk-icon-btn {
+  display: grid;
+  place-items: center;
+  width: var(--unk-target);
+  height: var(--unk-target);
+  padding: 0;
+  border: var(--unk-hairline);
+  border-radius: var(--radius-button);
+  background: none;
+  color: var(--unk-ink);
+  cursor: pointer;
+  transition: background-color var(--unk-dur-1) var(--unk-ease-out), opacity var(--unk-dur-1) var(--unk-ease-out);
+}
+.unk-icon-btn:hover { background: rgba(21, 21, 21, 0.05); }
+.unk-icon-btn:active { background: rgba(21, 21, 21, 0.1); }
+.unk-icon-btn[aria-disabled="true"] { opacity: 0.3; cursor: default; background: none; }

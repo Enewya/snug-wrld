@@ -31,8 +31,21 @@ const IMAGES = "/products/unknown/pants";
 /** Small label above the product name. */
 export const PANTS_LABEL = "PANTS";
 
-/** The model in neutral pants, shown underneath while one pair swaps for the next. */
+/** The model in neutral pants: the rest state before the first pair arrives. */
 export const PANTS_BASE_IMAGE = `${IMAGES}/model-base.webp`;
+
+/** Text shown with the base pants, before the first pair (factual, no marketing copy). */
+export const PANTS_INTRO = {
+  title: "", // set below from the number of pairs shown, e.g. "4 pairs"
+  meta: "Scroll to try each one on",
+};
+
+/** Pre-rendered atmosphere layers (scripts/generate-unknown-clouds.py). */
+export const PANTS_ATMOSPHERE = {
+  back: "/products/unknown/atmosphere/clouds-back.webp",
+  front: "/products/unknown/atmosphere/clouds-front.webp",
+  mist: "/products/unknown/atmosphere/mist.webp",
+};
 
 /** Words that stay uppercase in the display name. */
 const ACRONYMS = new Set(["LGT"]);
@@ -61,3 +74,5 @@ const all: PantsItem[] = [
 
 /** What the section shows, in order. */
 export const pants = all.filter((p) => !p.hidden);
+
+PANTS_INTRO.title = `${pants.length} pairs`;

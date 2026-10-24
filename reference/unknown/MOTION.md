@@ -22,3 +22,19 @@ times are ±17 ms. Distances are given as a share of the screen width (W) or hei
 | Peek at rest | Fully on screen at ≈ 0.83 W, same scale as the model, grey ≈ 25–30% | `--peek-x: 33vw` from centre, opacity 0.28, greyscale copy |
 
 Name type: see `name-type-crop.png` and the font notes in `components/unknown/pants-section/HANDOFF.md`.
+
+## v2: choreography and atmosphere (measured before coding the October 24 rebuild)
+
+Re-measured at 60 fps (Video B entry 0.40–0.90 s, tops swap 1.20–1.88 s; Video A pants swaps).
+
+| What | Measured | v2 build |
+|---|---|---|
+| Section top edge | Not a hard line: across the top ~20–25% of the screen the rising section is partly see-through (hero visible through the incoming product), then solid | 30vh feather above the section (transparent → sky), plus a cloud band riding the edge |
+| Sky tone | ≈ rgb(232,246,249) top, (238,252,253) lower, on camera (phone white balance adds blue) | Neutral cool white `#F3F5F7` → `#FAFBFC` (no saturated blue), static gradient |
+| Hero during entry | Drifts up at ≈ 0.75× (parallax) | Hero held in place (sticky) underneath: it lingers, at zero per-frame cost (moving it cost 20–30% frames before) |
+| Rest state | Model already wearing a product | Per brief: model in the neutral base pants, first pair waiting as a grey ghost at the right |
+| Ghost → body | Slides ≈ 0.31 W over 0.33 s (≈ 30–80% of the swap), ease-out; stays faint, turns solid in the last ≈ 0.1 s | Travel 5–80% ease-out; grey → colour 50–85% |
+| Outgoing pair | Fades in 0.17 s; no measurable drift | Per brief: fades 70–95% (after the new pair is mostly solid: short overlap, never see-through) while drifting 2% of the frame width to the LEFT, 40–100% |
+| Next ghost | Slides in from beyond the right edge, 35–100%, ease-out | Same |
+| Name roll | Up, line by line, 35–50 ms stagger | Same (6% per line) |
+| Easing family | ease-out for travel, ease-in-out for opacity | Same, cubic |

@@ -4,41 +4,44 @@
  * file from the section (see HANDOFF.md). No libraries.
  *
  * How it works, in plain English:
- * - The section is N screens tall and its stage is `position: sticky`, so the stage stays pinned
- *   while the page scrolls through it (pure CSS). It scrolls up over the hero with a soft shadow
- *   on its top edge. Optional: `data-under="<selector>"` makes the element above drift up at 0.75x
- *   underneath (the parallax measured in the reference). It is off by default: in testing it cost
- *   20-30% dropped frames during the entry on a machine without GPU compositing.
- * - One requestAnimationFrame loop drives everything. Scroll position is turned into a progress
- *   value `u` (0 = first pair, 1 = second pair, ...) and smoothed with a lerp, so motion is soft
- *   and a fast flick still lands exactly where the page stopped.
- * - Each pair holds still for the first and last 20% of its screen of scroll; the middle 60% plays
- *   the swap, scrubbed by scroll (so it follows the finger and plays backwards when scrolling up):
- *     1. the outgoing pair fades and drops 12px while the model in neutral pants shows under it;
- *     2. the faint grey peek of the next pair (right side) slides onto the model, staying ghosted
- *        until it lands, then turns solid; the following pair's peek slides in from the right edge;
- *     3. the name rolls up line by line (old out, new in), price, link and buy bar cross-fade.
- *   Phase timings come from reference/unknown/MOTION.md.
- * - If scrolling stops half-way through a swap, the picture eases to the nearest pair on its own
- *   (the page itself is never moved), so the section never rests on a half-finished swap and the
- *   base model never shows at rest.
+ * - The hero above is held in place (CSS sticky) while this section rises over it with a
+ *   feathered, misty top edge; once its top reaches the top of the screen the stage pins (CSS
+ *   sticky) for N+1 screens of scrolling.
+ * - States: 0 = the model in the neutral base pants, 1..N = each pair. At rest on a state, only
+ *   that state's image shows, with the next pair waiting as a faint grey ghost at the right.
+ * - One requestAnimationFrame loop drives everything. Scroll position becomes a progress value
+ *   `u` (0 = base, 1 = first pair, ...) smoothed with a lerp, so motion is soft and a fast flick
+ *   still lands exactly where the page stopped. Each state holds still for the first and last 20%
+ *   of its screen; the middle 60% scrubs the swap (it follows the scroll and plays backwards):
+ *     1. the ghost slides left onto the body (ease-out), still faint;
+ *     2. it turns solid (grey copy fades out, colour copy fades in);
+ *     3. only then does the outgoing image fade, drifting 2% of the frame to the LEFT (a short
+ *        overlap, so the body is never see-through);
+ *     4. the following pair's ghost slides in from beyond the right edge;
+ *     the name rolls up line by line; price, link and buy bar cross-fade.
+ *   Timings: reference/unknown/MOTION.md (v2 table).
+ * - The cloud layers (pre-rendered WebP) drift sideways with progress at two speeds for depth,
+ *   and rise a little slower than the section during the entry.
+ * - If scrolling stops half-way through a swap, the picture eases to the nearest state on its own
+ *   (the page itself is never moved).
  * - Only transform and opacity are written in the loop, and only when they change. Layout is read
- *   on resize only.
- * - prefers-reduced-motion: pairs and text simply cross-fade in place; nothing moves.
+ *   on resize only. All pair images are decoded up front (img.decode()) so the first swap of a
+ *   fresh visit never waits for a decode.
+ * - prefers-reduced-motion: images, ghost and text cross-fade in place; nothing moves.
  */
 
 const SMOOTH = 0.1; // s: time constant of the scroll lerp
 const IDLE = 160; // ms without scrolling before a half-finished swap settles
-const DROP = 12; // px the outgoing pair drops
+const DRIFT = 0.02; // outgoing drift to the left, as a share of the frame width
 const PAD = 0.03; // share of the section's scroll held at each end
 const SWAP = [0.2, 0.8]; // part of each step that plays the swap (the rest holds still)
-const PARALLAX = 0.25; // hero lags by 25% of the covered distance (moves at 0.75x)
 
-// phase windows within a swap (0 → 1)
+// phase windows within a swap (0 → 1), from reference/unknown/MOTION.md (v2)
 const P = {
-  out: [0, 0.3],
-  travel: [0.25, 0.85],
-  solid: [0.6, 1],
+  travel: [0.05, 0.8],
+  solid: [0.5, 0.85],
+  out: [0.7, 0.95],
+  drift: [0.4, 1],
   peek: [0.35, 1],
   textOut: [0.15, 0.45],
   textIn: [0.5, 0.8],
@@ -50,7 +53,6 @@ const P = {
 const clamp01 = (/** @type {number} */ v) => (v < 0 ? 0 : v > 1 ? 1 : v);
 const span = (/** @type {number} */ e, /** @type {number[]} */ w) => clamp01((e - w[0]) / (w[1] - w[0]));
 const easeOut = (/** @type {number} */ t) => 1 - (1 - t) ** 3;
-const easeIn = (/** @type {number} */ t) => t * t * t;
 const easeInOut = (/** @type {number} */ t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 const pad = (/** @type {number} */ n) => String(n).padStart(2, "0");
 
@@ -64,19 +66,22 @@ export function initPantsSection(root) {
   const qa = (/** @type {string} */ s, el = root) => /** @type {HTMLElement[]} */ ([...el.querySelectorAll(s)]);
 
   const stage = q("[data-pants-stage]");
-  const base = q("[data-pants-base]");
-  const layers = qa("[data-pants-layer]");
-  const greys = qa("[data-pants-grey]");
-  const items = qa("[data-pants-item]");
+  const colour = qa("[data-pants-layer]"); // [base, pair 1, ... pair N]
+  const greys = qa("[data-pants-grey]"); // [pair 1, ... pair N]
+  const items = qa("[data-pants-item]"); // [intro, pair 1, ... pair N]
   const peekHit = q("[data-pants-peek]");
+  const cloudBack = q('[data-cloud="back"]');
+  const cloudFront = q('[data-cloud="front"]');
+  const mist = q('[data-cloud="mist"]');
   const counter = q("[data-pants-current]");
   const progress = q("[data-pants-progress]");
   const status = q("[data-pants-status]");
   const prev = q("[data-pants-prev]");
   const next = q("[data-pants-next]");
-  const under = root.dataset.under ? /** @type {HTMLElement | null} */ (document.querySelector(root.dataset.under)) : null;
-  const n = items.length;
-  if (!n || !stage) return () => {};
+  const n = items.length; // states
+  if (n < 2 || !stage) return () => {};
+  /** grey copy of state s (s >= 1) @param {number} s */
+  const grey = (s) => greys[s - 1];
 
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
   const fades = items.map((it) => qa("[data-pants-fade]", it).concat(qa("[data-pants-buy]", it)));
@@ -87,19 +92,28 @@ export function initPantsSection(root) {
   let top = 0;
   let travel = 1;
   let vh = 1;
+  let vw = 1;
+  let frameW = 1;
   let peekX = 0;
   let edgeX = 0;
   let peekO = 0.2;
 
   // ---------- writing styles: only when a value changes ----------
   let cache = new WeakMap();
-  /** @param {HTMLElement} el @param {number} o @param {string} [t] */
+  /** @param {HTMLElement | undefined} el @param {number} o @param {string} [t] */
   function put(el, o, t = "none") {
+    if (!el) return;
     const v = Math.round(o * 1000) / 1000;
     const last = cache.get(el);
     if (last && last[0] === v && last[1] === t) return;
     cache.set(el, [v, t]);
     el.style.opacity = String(v);
+    el.style.transform = t;
+  }
+  /** @param {HTMLElement} el @param {string} t */
+  function move(el, t) {
+    if (!el || cache.get(el) === t) return;
+    cache.set(el, t);
     el.style.transform = t;
   }
   const tx = (/** @type {number} */ x, y = 0) => `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0)`;
@@ -140,10 +154,12 @@ export function initPantsSection(root) {
 
   function measure() {
     vh = window.innerHeight;
+    vw = window.innerWidth / 100;
     top = root.getBoundingClientRect().top + window.scrollY;
     travel = Math.max(1, root.offsetHeight - stage.offsetHeight);
-    const f = layers[0].getBoundingClientRect();
+    const f = colour[0].getBoundingClientRect();
     const pk = peekHit.getBoundingClientRect();
+    frameW = f.width;
     peekX = pk.left - f.left;
     edgeX = peekX + window.innerWidth * 0.3;
     peekO = parseFloat(getComputedStyle(root).getPropertyValue("--peek-opacity")) || 0.2;
@@ -151,29 +167,29 @@ export function initPantsSection(root) {
 
   /** Draw the state for progress u (0 … n-1). @param {number} u */
   function render(u) {
-    const i = n > 1 ? Math.min(Math.floor(u), n - 2) : 0;
-    const e = n > 1 ? span(u - i, SWAP) : 0;
+    const i = Math.min(Math.floor(u), n - 2);
+    const e = span(u - i, SWAP);
     const cur = i;
     const nxt = i + 1;
     const rm = reduced.matches;
 
     // pants
-    const out = span(e, P.out);
     const t = easeOut(span(e, P.travel));
     const solid = easeInOut(span(e, P.solid));
+    const out = easeInOut(span(e, P.out));
+    const drift = -DRIFT * frameW * easeInOut(span(e, P.drift));
     const pk = easeOut(span(e, P.peek));
-    layers.forEach((el, j) => {
-      if (j === cur) put(el, rm ? 1 - e : 1 - easeInOut(out), rm ? "none" : tx(0, DROP * easeOut(out)));
-      else if (j === nxt) put(el, rm ? e : solid, rm ? "none" : tx(peekX * (1 - t)));
+    colour.forEach((el, s) => {
+      if (s === cur) put(el, rm ? 1 - e : 1 - out, rm ? "none" : tx(drift));
+      else if (s === nxt) put(el, rm ? e : solid, rm ? "none" : tx(peekX * (1 - t)));
       else put(el, 0);
     });
-    greys.forEach((el, j) => {
-      if (j === nxt) put(el, peekO * (rm ? 1 - e : 1 - solid), tx(rm ? peekX : peekX * (1 - t)));
-      else if (j === nxt + 1) put(el, peekO * (rm ? e : pk), tx(rm ? peekX : edgeX + (peekX - edgeX) * pk));
+    for (let s = 1; s < n; s++) {
+      const el = grey(s);
+      if (s === nxt) put(el, peekO * (rm ? 1 - e : 1 - solid), tx(rm ? peekX : peekX * (1 - t)));
+      else if (s === nxt + 1) put(el, peekO * (rm ? e : pk), tx(rm ? peekX : edgeX + (peekX - edgeX) * pk));
       else put(el, 0);
-    });
-    const b = e <= 0 || e >= 1 || rm ? 0 : e < 0.25 ? easeOut(e / 0.25) : e < 0.7 ? 1 : 1 - easeIn((e - 0.7) / 0.3);
-    put(base, b);
+    }
 
     // text
     items.forEach((it, j) => {
@@ -194,11 +210,25 @@ export function initPantsSection(root) {
       } else put(it, 0);
     });
 
-    progress.style.transform = `scaleX(${n > 1 ? (u / (n - 1)).toFixed(4) : 1})`;
+    // atmosphere: clouds drift with progress at two speeds (depth)
+    if (!rm) {
+      move(cloudBack, tx(-u * 0.8 * vw, cloudLift * 0.5));
+      move(cloudFront, tx(-u * 1.8 * vw, cloudLift * 0.25));
+      move(mist, tx(u * 0.6 * vw));
+    }
+
+    progress.style.transform = `scaleX(${(u / (n - 1)).toFixed(4)})`;
     setActive(e < 0.5 ? cur : nxt);
   }
 
-  // ---------- active pair: accessibility, counter, arrows ----------
+  // entry: while the section is still rising, the clouds rise a little slower than it
+  let cloudLift = 0;
+  function entry() {
+    const below = Math.min(1, Math.max(0, (top - window.scrollY) / vh)); // 1 = section top at the bottom edge
+    cloudLift = -below * vh * 0.2;
+  }
+
+  // ---------- active state: accessibility, counter, arrows ----------
   let active = -1;
   /** @param {number} a */
   function setActive(a) {
@@ -210,13 +240,13 @@ export function initPantsSection(root) {
       it.toggleAttribute("inert", !on);
       it.setAttribute("aria-hidden", String(!on));
     });
-    counter.textContent = pad(a + 1);
+    counter.textContent = a === 0 ? "—" : pad(a);
     prev.setAttribute("aria-disabled", String(a === 0));
     next.setAttribute("aria-disabled", String(a === n - 1));
-    if (announce) {
+    if (announce && a > 0) {
       const name = items[a].querySelector(".unk-pants__buy-name")?.textContent;
-      const price = items[a].querySelector(".unk-pants__buy-price")?.textContent;
-      status.textContent = `${a + 1} of ${n}: ${name}, ${price}`;
+      const price = items[a].querySelector(".unk-pants__price")?.textContent;
+      status.textContent = `${a} of ${n - 1}: ${name}, ${price}`;
     }
   }
 
@@ -234,16 +264,10 @@ export function initPantsSection(root) {
   };
   /** Nearest rest for a progress value that is mid-swap. @param {number} u */
   const rest = (u) => {
-    const i = Math.min(Math.floor(u), Math.max(0, n - 2));
+    const i = Math.min(Math.floor(u), n - 2);
     const e = span(u - i, SWAP);
     return e <= 0 || e >= 1 ? u : e < 0.5 ? i + SWAP[0] : i + SWAP[1];
   };
-
-  function parallax() {
-    if (!under) return;
-    const covered = Math.min(vh, Math.max(0, window.scrollY - (top - vh)));
-    under.style.transform = covered > 0 ? tx(0, covered * PARALLAX) : "";
-  }
 
   /** @param {number} now */
   function tick(now) {
@@ -262,7 +286,7 @@ export function initPantsSection(root) {
 
   function onScroll() {
     target = fromScroll();
-    parallax();
+    entry();
     idle = false;
     clearTimeout(idleTimer);
     idleTimer = window.setTimeout(() => {
@@ -275,31 +299,44 @@ export function initPantsSection(root) {
     layoutLines();
     measure();
     target = fromScroll();
-    parallax();
+    entry();
     kick();
   }
 
-  /** Scroll the page to the resting point of pair i (arrows, peek). @param {number} i */
+  /** Scroll the page to the resting point of state i (arrows, peek). @param {number} i */
   function go(i) {
     if (i < 0 || i >= n) return;
-    const p = n > 1 ? i / (n - 1) : 0;
+    const p = i / (n - 1);
     window.scrollTo({ top: top + travel * (PAD + p * (1 - 2 * PAD)), behavior: reduced.matches ? "auto" : "smooth" });
   }
   const onPrev = () => go(active - 1);
   const onNext = () => go(active + 1);
 
+  // decode every pair image up front, off the critical path, so no swap waits for a decode
+  let alive = true;
+  const predecode = () => {
+    if (!alive) return;
+    [...colour, ...greys, cloudBack, cloudFront, mist].forEach((img) => {
+      const el = /** @type {HTMLImageElement} */ (img);
+      if (!el) return;
+      el.loading = "eager";
+      el.decode?.().catch(() => {});
+    });
+  };
+  if ("requestIdleCallback" in window) window.requestIdleCallback(predecode, { timeout: 1500 });
+  else setTimeout(predecode, 300);
+
   layoutLines();
   measure();
+  entry();
   shown = target = rest(fromScroll());
   render(shown);
-  parallax();
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", onResize);
   prev.addEventListener("click", onPrev);
   next.addEventListener("click", onNext);
   peekHit.addEventListener("click", onNext);
   // web fonts change line breaks: re-measure once they are ready
-  let alive = true;
   document.fonts?.ready.then(() => alive && onResize());
 
   return () => {
@@ -311,6 +348,5 @@ export function initPantsSection(root) {
     prev.removeEventListener("click", onPrev);
     next.removeEventListener("click", onNext);
     peekHit.removeEventListener("click", onNext);
-    if (under) under.style.transform = "";
   };
 }
