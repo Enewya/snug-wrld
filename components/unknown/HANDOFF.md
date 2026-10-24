@@ -180,8 +180,9 @@ npx netlify-cli deploy --build --alias unknown-preview
 
 - **60 fps recordings** (fresh load, production build): headed Chromium on a virtual display,
   ffmpeg x11grab at 60 fps, continuous trackpad-like scroll through the whole page, plus an
-  in-page frame-time log. Desktop 1440×900: 2 of 1017 frames over 20 ms (33 ms each), none over
-  50 ms. Phone 390×844: 0 of 1197. Entry only (6 passes): 1 of ~870 over 20 ms. This machine has
+  in-page frame-time log. Desktop 1440×900: 1 of 1017 frames over 20 ms (33 ms), none over
+  50 ms. Phone-sized window 390×844: 0 of 1196. Entry only (8 passes): 1 of ~1160 over 20 ms.
+  Recordings: `reference/unknown/qa/scroll-*-60fps.mp4`. This machine has
   no GPU (software compositing), which is harsher than real devices.
 - **What keeps it smooth:** greys, top fade and clouds baked into images (no CSS filter / mask /
   blur); hero held with sticky instead of moved; one rAF loop writing only transform/opacity;
@@ -189,7 +190,12 @@ npx netlify-cli deploy --build --alias unknown-preview
 - **Hero vs draft** at 1440 wide (draft content area vs our 1440×800 viewport): wall colour exact;
   logo, ABOUT, CONTACT within 1–4 px; rail ends within 1 px, top 3 px lower. Garments: same
   order, hanger spacing and scale; the vest and striped tee read narrower than in the draft
-  because the draft used more-turned side photos. Sheets in `reference/unknown/qa/`.
+  because the draft used more-turned side photos. Sheets in `reference/unknown/qa/round5/`.
+- **Lighthouse (production build):** desktop performance 99, accessibility 100, best practices
+  100 (LCP 0.9 s, TBT 10 ms, CLS 0). Mobile 82–83 / 100 / 100 (LCP ~4.5 s, the rack hero's first
+  garment photo; the previous round measured the same 81–82). SEO 63 only because the prototype
+  route is `noindex` on purpose (`app/unknown/page.tsx`); the theme won't have that.
+- **No sideways scroll** at 360, 390, 412, 768 and 1440 with real mobile emulation.
 - **Console:** no errors or warnings at 1440 and 390 (the dev overlay's "1 Issue" was Next's LCP
   warning for lazy-loaded pants images; they now load eagerly).
 

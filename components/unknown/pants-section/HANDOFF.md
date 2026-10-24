@@ -122,8 +122,10 @@ Measured first; numbers in `reference/unknown/MOTION.md` (v2 table).
 - **Reduced motion:** pairs, ghost and text cross-fade in place; clouds stay still; arrows jump.
 - **Performance:** no CSS filters, masks or live blur on anything that moves; greys, the top fade
   and the clouds are baked into image files. Measured with 60 fps screen recordings on a machine
-  without a GPU (harsher than real phones): fresh-load desktop pass 2 of 1017 frames over 20 ms
-  (33 ms each), phone 0 of 1197; entry-only passes 1 of ~870 frames over 20 ms.
+  without a GPU (harsher than real phones): fresh-load desktop pass 1 of 1017 frames over 20 ms
+  (33 ms), phone-sized window 0 of 1196; entry-only passes 1 of ~1160 frames over 20 ms.
+- **Overflow:** the mist bands are wider than the screen; `overflow-x: clip` on the section keeps
+  the page from scrolling sideways on phones (use `clip`, not `hidden`, or sticky breaks).
 
 ## Fonts
 
