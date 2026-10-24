@@ -1,4 +1,4 @@
-/* UNKNOWN reveal (see reveal.js). Delay steps let a row of cards arrive one after another. */
+/* UNKNOWN reveal (see reveal-behaviour.js). Delay steps let a row of cards arrive one after another. */
 .unk-reveal-on [data-reveal] {
   opacity: 0;
   transform: translate3d(0, 16px, 0);

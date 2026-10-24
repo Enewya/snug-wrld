@@ -15,13 +15,13 @@ Page order: **Rack hero → Pants → New Arrivals → Caps → Lookbook → Vis
 | Shared header/link/button styles | `section.css` | – | part of `assets/base.css` |
 | "View product ↗" link | `link/UnkLink.tsx` + `.unk-link` in `section.css` | CSS only | `snippets/unk-link.liquid` |
 | Rack hero | `UnknownShowroom.tsx`, `app/unknown/unknown.css`, `lib/unknown-products.ts`, `lib/unknown-brand.ts` | existing rack/focus code (your build) | `sections/unknown-hero.liquid` |
-| Pants | `pants-section/` | `pants-section.js` | `sections/unknown-pants.liquid` (see `pants-section/HANDOFF.md`) |
+| Pants | `pants-section/` | `pants-section-behaviour.js` | `sections/unknown-pants.liquid` (see `pants-section/HANDOFF.md`) |
 | New Arrivals | `new-arrivals/` | CSS only (hover) | `sections/unknown-new-arrivals.liquid` |
 | Caps | `caps/` | CSS only (hover) | `sections/unknown-caps.liquid` |
-| Lookbook | `lookbook/` | `lookbook.js` (arrow buttons) | `sections/unknown-lookbook.liquid` |
-| Visit + email | `visit/` | `visit.js` (prototype submit) | `sections/unknown-visit.liquid` |
+| Lookbook | `lookbook/` | `lookbook-behaviour.js` (arrow buttons) | `sections/unknown-lookbook.liquid` |
+| Visit + email | `visit/` | `visit-behaviour.js` (prototype submit) | `sections/unknown-visit.liquid` |
 | Footer | `footer/` | – | `sections/footer.liquid` (theme footer group) |
-| Reveal on scroll | `reveal/` | `reveal.js` | `assets/unknown-reveal.js`, loaded once in `theme.liquid` |
+| Reveal on scroll | `reveal/` | `reveal-behaviour.js` | `assets/unknown-reveal.js`, loaded once in `theme.liquid` |
 
 ## Design system (tokens.css)
 
@@ -107,7 +107,7 @@ The hero header keeps the existing build's font (Archivo), uppercase, tracked 0.
   early access to new products").
 - Form: wrap the same markup in `{% form 'customer', class: 'unk-signup' %}` with
   `<input type="hidden" name="contact[tags]" value="newsletter">`; show `form.posted_successfully?`
-  and `form.errors` in the `[data-signup-msg]` line. Then `visit.js` is no longer needed.
+  and `form.errors` in the `[data-signup-msg]` line. Then `visit-behaviour.js` is no longer needed.
 - `id="visit"` is the target of the header's CONTACT link.
 
 **Footer** (`footer/`): menus from `linklists` (Shop: New arrivals, Pants, All products;

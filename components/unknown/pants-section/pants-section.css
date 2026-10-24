@@ -70,7 +70,7 @@ body:has(.unk-pants) {
   /* above the stage, so the mist band can overlap the stage's top instead of being cut by it */
   z-index: 2;
   pointer-events: none;
-  /* hidden at rest on the hero; pants-section.js fades it in as the section starts to rise */
+  /* hidden at rest on the hero; pants-section-behaviour.js fades it in as the section starts to rise */
   opacity: 0;
   background: linear-gradient(180deg, rgba(232, 236, 240, 0) 0%, rgba(232, 236, 240, 0.55) 55%, var(--sky-top) 100%);
 }
@@ -146,7 +146,7 @@ body:has(.unk-pants) {
   -webkit-user-drag: none;
   user-select: none;
 }
-/* where the peek rests: pants-section.js reads this box to know the peek offset */
+/* where the peek rests: pants-section-behaviour.js reads this box to know the peek offset */
 .unk-pants__peek-hit {
   position: absolute;
   top: var(--fig-top);
@@ -173,7 +173,7 @@ body:has(.unk-pants) {
   text-transform: uppercase;
   color: var(--unk-mute);
 }
-/* one article per pair, all stacked; pants-section.js shows the current (and next) one */
+/* one article per pair, all stacked; pants-section-behaviour.js shows the current (and next) one */
 .unk-pants__info {
   position: absolute;
   left: var(--unk-gutter);
@@ -244,7 +244,7 @@ body:has(.unk-pants) {
   position: absolute;
   left: 50%;
   bottom: var(--unk-s4);
-  /* centring uses `translate`, so pants-section.js can drive `transform` freely */
+  /* centring uses `translate`, so pants-section-behaviour.js can drive `transform` freely */
   translate: -50% 0;
   display: flex;
   align-items: center;

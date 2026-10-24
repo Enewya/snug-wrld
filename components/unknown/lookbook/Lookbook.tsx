@@ -4,8 +4,8 @@ import Image from "next/image";
 import { useEffect, useRef } from "react";
 import UnkLink from "../link/UnkLink";
 import { LOOKBOOK, looks } from "./lookbook.data";
-import { initLookbook } from "./lookbook";
-import "./lookbook.css";
+import { initLookbook } from "./lookbook-behaviour";
+import "./lookbook-styles.css";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 

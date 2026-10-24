@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { initReveal } from "./reveal";
+import { initReveal } from "./reveal-behaviour";
 import "./reveal.css";
 
 /** Starts the shared reveal for everything inside .unk-page. Renders nothing. */

@@ -9,7 +9,7 @@ import Image from "next/image";
 import { useEffect, useRef } from "react";
 import UnkLink from "../link/UnkLink";
 import { PANTS_ATMOSPHERE, PANTS_BASE_IMAGE, PANTS_INTRO, PANTS_LABEL, pants } from "./pants.data";
-import { initPantsSection } from "./pants-section";
+import { initPantsSection } from "./pants-section-behaviour";
 import "./pants-section.css";
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -17,7 +17,7 @@ const MODEL = { width: 1086, height: 1448, sizes: "(max-width: 760px) 90vw, (max
 
 /**
  * Pinned, scroll-scrubbed pants showcase (see HANDOFF.md). React only renders the markup; all
- * behaviour lives in pants-section.js so the theme can load the same file.
+ * behaviour lives in pants-section-behaviour.js so the theme can load the same file.
  *
  * States: 0 = the model in the neutral base pants (intro), 1…N = each pair.
  */
@@ -47,7 +47,7 @@ export default function PantsSection() {
           <h2 id="unk-pants-title" className="unk-pants__label">{PANTS_LABEL}</h2>
 
           {/* one fixed 3:4 frame; every layer fills it identically (no per-product sizing). All
-              eager: each is decoded right after load anyway (pants-section.js), and any of them can
+              eager: each is decoded right after load anyway (pants-section-behaviour.js), and any of them can
               become the largest image on screen as the visitor scrolls. Low fetch priority for the
               pairs the entry doesn't show, so they never hold up the hero's photos on a slow phone. */}
           <div className="unk-pants__figure" aria-hidden="true">

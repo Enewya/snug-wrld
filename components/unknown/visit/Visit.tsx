@@ -3,8 +3,8 @@
 import { useEffect, useRef } from "react";
 import { UNKNOWN_STORE } from "@/lib/unknown-brand";
 import UnkLink from "../link/UnkLink";
-import { initSignup } from "./visit";
-import "./visit.css";
+import { initSignup } from "./visit-behaviour";
+import "./visit-styles.css";
 
 const MAPS = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(UNKNOWN_STORE.address.join(", ") + ", Nigeria")}`;
 

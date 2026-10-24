@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element -- SVG wordmark, swapped by file */
 import { UNKNOWN_LOGO, UNKNOWN_STORE } from "@/lib/unknown-brand";
 import { FOOTER_COLUMNS } from "./footer.data";
-import "./footer.css";
+import "./footer-styles.css";
 
 /** Footer on the warm-grey wall, bookending the hero. */
 export default function Footer() {

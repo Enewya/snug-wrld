@@ -1,7 +1,7 @@
 import Image from "next/image";
 import UnkLink from "../link/UnkLink";
 import { CAPS, caps } from "./caps.data";
-import "./caps.css";
+import "./caps-styles.css";
 
 const SIZES = "(max-width: 767px) 50vw, min(25vw, 340px)";
 

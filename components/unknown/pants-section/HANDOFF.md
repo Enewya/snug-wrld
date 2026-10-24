@@ -11,7 +11,7 @@ notes (tokens, fonts, other sections, deploy) are in `components/unknown/HANDOFF
 |---|---|---|
 | `pants.data.ts` | Pants list (order, store name, display name, price, link, colour + grey image), label, base image, intro copy, cloud images | Product blocks + section settings |
 | `PantsSection.tsx` | Markup only; calls `initPantsSection()` | `sections/unknown-pants.liquid` |
-| `pants-section.js` | All behaviour, plain JS, no libraries | `assets/unknown-pants.js`, copy as is |
+| `pants-section-behaviour.js` | All behaviour, plain JS, no libraries | `assets/unknown-pants.js`, copy as is |
 | `pants-section.css` | All styles, scoped under `.unk-pants`, values from `../tokens.css` | `assets/unknown-pants.css` (drop the first `body:has()` rule) |
 
 Motion reference and measured timings: `reference/unknown/MOTION.md` (videos in the same folder).
