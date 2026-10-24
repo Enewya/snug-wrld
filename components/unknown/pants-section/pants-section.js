@@ -324,8 +324,10 @@ export function initPantsSection(root) {
   let alive = true;
   const predecode = () => {
     if (!alive) return;
-    const decode = (/** @type {HTMLElement[]} */ list) => Promise.all(list.filter(Boolean).map((img) => {
-      const el = /** @type {HTMLImageElement} */ (img);
+    const decode = (/** @type {HTMLElement[]} */ list) => Promise.all(list.filter(Boolean).map((node) => {
+      // the mist is a stretched CSS background: decode its file through a detached image
+      const url = node instanceof HTMLImageElement ? "" : /url\(["']?(.*?)["']?\)/.exec(node.style.backgroundImage)?.[1];
+      const el = url ? Object.assign(new Image(), { src: url }) : /** @type {HTMLImageElement} */ (node);
       el.loading = "eager";
       return el.decode ? el.decode().catch(() => {}) : Promise.resolve();
     }));

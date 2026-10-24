@@ -35,7 +35,8 @@ export default function PantsSection() {
       >
         {/* feathered top edge: the hero shows through as the section rises over it */}
         <div className="unk-pants__feather" aria-hidden="true">
-          <img className="unk-pants__edge-mist" src={PANTS_ATMOSPHERE.mist} alt="" width={1600} height={360} />
+          {/* a background, not an <img>: the soft mist is meant to stretch to the band */}
+          <div className="unk-pants__edge-mist" style={{ backgroundImage: `url(${PANTS_ATMOSPHERE.mist})` }} />
         </div>
 
         <div className="unk-pants__stage" data-pants-stage>
@@ -47,21 +48,22 @@ export default function PantsSection() {
 
           {/* one fixed 3:4 frame; every layer fills it identically (no per-product sizing). All
               eager: each is decoded right after load anyway (pants-section.js), and any of them can
-              become the largest image on screen as the visitor scrolls. */}
+              become the largest image on screen as the visitor scrolls. Low fetch priority for the
+              pairs the entry doesn't show, so they never hold up the hero's photos on a slow phone. */}
           <div className="unk-pants__figure" aria-hidden="true">
-            <Image className="unk-pants__layer" data-pants-layer src={PANTS_BASE_IMAGE} alt="" {...MODEL} loading="eager" fetchPriority="high" style={{ opacity: 1 }} />
-            {pants.map((p) => (
+            <Image className="unk-pants__layer" data-pants-layer src={PANTS_BASE_IMAGE} alt="" {...MODEL} loading="eager" style={{ opacity: 1 }} />
+            {pants.map((p, i) => (
               <Image key={p.handle} className="unk-pants__layer" data-pants-layer src={p.image} alt="" {...MODEL}
-                loading="eager" style={{ opacity: 0 }} />
+                loading="eager" fetchPriority={i === 0 ? "auto" : "low"} style={{ opacity: 0 }} />
             ))}
             {/* grey copies: the ghost waiting at the right, sliding onto the body */}
             {pants.map((p, i) => (
               <Image key={p.handle} className="unk-pants__layer" data-pants-grey src={p.grey} alt="" {...MODEL}
-                loading="eager" style={{ opacity: i === 0 ? "var(--peek-opacity)" : 0 }} />
+                loading="eager" fetchPriority={i === 0 ? "auto" : "low"} style={{ opacity: i === 0 ? "var(--peek-opacity)" : 0 }} />
             ))}
           </div>
           {/* soft mist over the waist, where the crop fades out */}
-          <img className="unk-pants__mist" data-cloud="mist" src={PANTS_ATMOSPHERE.mist} alt="" width={1600} height={360} aria-hidden="true" />
+          <div className="unk-pants__mist" data-cloud="mist" style={{ backgroundImage: `url(${PANTS_ATMOSPHERE.mist})` }} aria-hidden="true" />
           <button type="button" className="unk-pants__peek-hit" data-pants-peek tabIndex={-1} aria-hidden="true" />
 
           <article className="unk-pants__item" data-pants-item style={{ opacity: 1 }}>
