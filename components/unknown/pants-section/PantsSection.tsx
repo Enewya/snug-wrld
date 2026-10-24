@@ -50,7 +50,7 @@ export default function PantsSection() {
               become the largest image on screen as the visitor scrolls. */}
           <div className="unk-pants__figure" aria-hidden="true">
             <Image className="unk-pants__layer" data-pants-layer src={PANTS_BASE_IMAGE} alt="" {...MODEL} loading="eager" fetchPriority="high" style={{ opacity: 1 }} />
-            {pants.map((p, i) => (
+            {pants.map((p) => (
               <Image key={p.handle} className="unk-pants__layer" data-pants-layer src={p.image} alt="" {...MODEL}
                 loading="eager" style={{ opacity: 0 }} />
             ))}

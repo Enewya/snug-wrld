@@ -67,6 +67,8 @@ body:has(.unk-pants) {
   /* above the stage, so the mist band can overlap the stage's top instead of being cut by it */
   z-index: 2;
   pointer-events: none;
+  /* hidden at rest on the hero; pants-section.js fades it in as the section starts to rise */
+  opacity: 0;
   background: linear-gradient(180deg, rgba(232, 236, 240, 0) 0%, rgba(232, 236, 240, 0.55) 55%, var(--sky-top) 100%);
 }
 .unk-pants__edge-mist {

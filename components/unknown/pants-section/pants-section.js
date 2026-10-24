@@ -73,6 +73,7 @@ export function initPantsSection(root) {
   const cloudBack = q('[data-cloud="back"]');
   const cloudFront = q('[data-cloud="front"]');
   const mist = q('[data-cloud="mist"]');
+  const feather = q(".unk-pants__feather");
   const counter = q("[data-pants-current]");
   const progress = q("[data-pants-progress]");
   const status = q("[data-pants-status]");
@@ -226,6 +227,9 @@ export function initPantsSection(root) {
   function entry() {
     const below = Math.min(1, Math.max(0, (top - window.scrollY) / vh)); // 1 = section top at the bottom edge
     cloudLift = -below * vh * 0.2;
+    // the feather sits over the hero's lower third: keep it hidden while the page is at rest on the
+    // hero (so the hero matches the draft) and fade it in over the first 8% of the rise
+    put(feather, Math.min(1, Math.max(0, (1 - below) / 0.08)));
   }
 
   // ---------- active state: accessibility, counter, arrows ----------
