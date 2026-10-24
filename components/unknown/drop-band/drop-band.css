@@ -1,0 +1,33 @@
+/* UNKNOWN drop band (values from components/unknown/tokens.css). */
+.unk-drop {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  padding-block: var(--unk-s8);
+  background: var(--unk-ink);
+  color: var(--unk-paper);
+  font-family: var(--unk-font);
+}
+.unk-drop .unk-drop__label { color: rgba(255, 255, 255, 0.72); } /* 11.4:1 on ink */
+.unk-drop__title {
+  display: grid;
+  margin: var(--unk-s5) 0;
+  font-size: clamp(64px, 15vw, 232px);
+  font-weight: 500;
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+}
+.unk-drop__title span { display: block; }
+.unk-drop__title span:first-child { padding-left: 8vw; }
+.unk-drop__title span:last-child { padding-left: 22vw; }
+.unk-drop__bottom { display: flex; justify-content: flex-end; }
+.unk-drop .unk-link:focus-visible { outline-color: var(--unk-paper); }
+
+@media (max-width: 640px) {
+  .unk-drop { padding-block: var(--unk-s7); }
+  /* gutter + the 6vw the line can drift left, so it never crosses the gutter */
+  .unk-drop__title span:first-child { padding-left: calc(var(--unk-gutter) + 6vw); }
+  .unk-drop__title span:last-child { padding-left: 12vw; }
+  .unk-drop__bottom { justify-content: flex-start; }
+}

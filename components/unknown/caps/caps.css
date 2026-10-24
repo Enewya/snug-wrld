@@ -1,0 +1,77 @@
+/* UNKNOWN caps / headwear (values from components/unknown/tokens.css). */
+.unk-caps {
+  position: relative;
+  z-index: 1;
+  padding-block: var(--unk-s9) var(--unk-s8);
+  background: var(--unk-paper);
+  color: var(--unk-ink);
+  font-family: var(--unk-font);
+}
+.unk-caps__actions { display: flex; align-items: center; gap: var(--unk-s3); }
+.unk-caps__intro {
+  max-width: 44ch;
+  margin: var(--unk-s3) 0 0;
+  font-size: var(--unk-text-md);
+  line-height: 1.5;
+  color: var(--unk-mute);
+}
+.unk-caps__shelf {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: var(--unk-s3);
+  align-items: start;
+}
+.unk-caps__side {
+  display: grid;
+  gap: var(--unk-s5);
+}
+.unk-caps__tile {
+  display: grid;
+  gap: var(--unk-s1);
+  color: inherit;
+  text-decoration: none;
+}
+.unk-caps__well {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  margin-bottom: var(--unk-s2);
+  overflow: hidden;
+  border-radius: var(--unk-radius);
+  background: var(--unk-tint);
+}
+/* the large tile fills the full height of the two stacked tiles beside it */
+.unk-caps__shelf { align-items: stretch; }
+.unk-caps__tile--big { grid-template-rows: 1fr auto auto; }
+.unk-caps__tile--big .unk-caps__well { aspect-ratio: auto; min-height: 320px; }
+.unk-caps__well img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--unk-dur-3) var(--unk-ease-out);
+}
+@media (hover: hover) {
+  a.unk-caps__tile:hover .unk-caps__well img { transform: scale(1.03); }
+}
+a.unk-caps__tile:active .unk-caps__well { opacity: 0.85; }
+.unk-caps__ph {
+  display: grid;
+  justify-items: center;
+  gap: var(--unk-s3);
+  padding: var(--unk-s3);
+  color: var(--unk-mute);
+}
+.unk-caps__ph svg { max-width: 60%; height: auto; }
+.unk-caps__name { font-size: var(--unk-text-sm); font-weight: 500; line-height: 1.35; }
+.unk-caps__price { font-size: var(--unk-text-sm); color: var(--unk-mute); font-variant-numeric: tabular-nums; }
+
+@media (max-width: 767px) {
+  .unk-caps { padding-block: var(--unk-s8) var(--unk-s7); }
+  .unk-caps__shelf { grid-template-columns: 1fr; gap: var(--unk-s5); }
+  .unk-caps__side { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--unk-s2); }
+  .unk-caps__tile--big { grid-template-rows: auto; }
+  .unk-caps__tile--big .unk-caps__well { aspect-ratio: 1; min-height: 0; }
+}

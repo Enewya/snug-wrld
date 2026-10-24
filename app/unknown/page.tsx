@@ -2,7 +2,14 @@ import type { Metadata } from "next";
 import { Hanken_Grotesk } from "next/font/google";
 import UnknownShowroom from "@/components/unknown/UnknownShowroom";
 import PantsSection from "@/components/unknown/pants-section/PantsSection";
+import NewArrivals from "@/components/unknown/new-arrivals/NewArrivals";
+import DropBand from "@/components/unknown/drop-band/DropBand";
+import Caps from "@/components/unknown/caps/Caps";
+import Visit from "@/components/unknown/visit/Visit";
+import Footer from "@/components/unknown/footer/Footer";
+import RevealInit from "@/components/unknown/reveal/RevealInit";
 import "@/components/unknown/tokens.css";
+import "@/components/unknown/section.css";
 import "./unknown.css";
 
 /* UNKNOWN type: Hanken Grotesk (Google Fonts, free), closest free match to the reference's
@@ -10,8 +17,8 @@ import "./unknown.css";
 const hanken = Hanken_Grotesk({ variable: "--font-unk", subsets: ["latin"], weight: ["400", "500"], display: "swap" });
 
 export const metadata: Metadata = {
-  title: "UNKNOWN — Rack Preview",
-  description: "An interactive preview of eleven UNKNOWN tops.",
+  title: "UNKNOWN — Homepage Preview",
+  description: "UNKNOWN, Lagos premium streetwear: homepage preview.",
   robots: { index: false, follow: false },
 };
 
@@ -20,6 +27,12 @@ export default function UnknownPage() {
     <div className={`unk-page ${hanken.variable}`}>
       <UnknownShowroom />
       <PantsSection />
+      <NewArrivals />
+      <DropBand />
+      <Caps />
+      <Visit />
+      <Footer />
+      <RevealInit />
     </div>
   );
 }

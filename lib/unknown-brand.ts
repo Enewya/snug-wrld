@@ -6,7 +6,7 @@
 export const UNKNOWN_LOGO = {
   src: "/products/unknown/brand/unknown-wordmark.svg",
   width: 320,
-  height: 64,
+  height: 42,
   alt: "UNKNOWN",
   placeholder: true,
 };

@@ -1,0 +1,84 @@
+/* UNKNOWN visit + email sign-up (values from components/unknown/tokens.css). */
+.unk-visit {
+  position: relative;
+  z-index: 1;
+  padding-block: var(--unk-s8);
+  border-top: var(--unk-hairline);
+  background: var(--unk-paper);
+  color: var(--unk-ink);
+  font-family: var(--unk-font);
+}
+.unk-visit__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--unk-s7) var(--unk-s3);
+}
+.unk-visit__col { display: grid; align-content: start; justify-items: start; }
+.unk-visit__address,
+.unk-visit__lead {
+  display: grid;
+  margin: 0;
+  max-width: 22ch;
+  font-size: var(--unk-text-lg);
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: var(--unk-track-tight);
+}
+.unk-visit__meta {
+  margin: var(--unk-s3) 0 var(--unk-s2);
+  font-size: var(--unk-text-md);
+  color: var(--unk-mute);
+}
+.unk-signup {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  width: 100%;
+  max-width: 480px;
+  margin-top: var(--unk-s5);
+}
+.unk-signup__input {
+  min-width: 0;
+  height: var(--unk-target);
+  padding: 0 var(--unk-s3);
+  border: 1px solid var(--unk-ink);
+  border-right: 0;
+  border-radius: var(--unk-radius) 0 0 var(--unk-radius);
+  background: var(--unk-paper);
+  color: var(--unk-ink);
+  font: inherit;
+  font-size: var(--unk-text-md);
+  appearance: none;
+}
+.unk-signup__input::placeholder { color: var(--unk-mute); }
+.unk-signup__input:focus-visible { outline: 2px solid var(--unk-ink); outline-offset: 2px; }
+.unk-signup__input[aria-invalid="true"] { border-color: #b3261e; }
+.unk-signup__btn {
+  height: var(--unk-target);
+  padding: 0 var(--unk-s4);
+  border: 1px solid var(--unk-ink);
+  border-radius: 0 var(--unk-radius) var(--unk-radius) 0;
+  background: var(--unk-ink);
+  color: var(--unk-paper);
+  font: inherit;
+  font-size: var(--unk-text-xs);
+  font-weight: 500;
+  letter-spacing: var(--unk-track-label);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color var(--unk-dur-1) var(--unk-ease-out);
+}
+.unk-signup__btn:hover { background: #000; }
+.unk-signup__btn:active { background: #333; }
+.unk-signup__msg {
+  grid-column: 1 / -1;
+  min-height: 20px;
+  margin: var(--unk-s2) 0 0;
+  font-size: var(--unk-text-sm);
+  color: var(--unk-mute);
+}
+
+@media (max-width: 767px) {
+  .unk-visit { padding-block: var(--unk-s7); }
+  .unk-visit__grid { grid-template-columns: 1fr; }
+}
