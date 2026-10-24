@@ -28,8 +28,9 @@ type Props = {
   part?: "hanger" | "crest";
 };
 
-/** Rendered width of a photo, in CSS. --iw is set by the parent; photoScale evens out garment size. */
-const widthOf = (src: string) => `(var(--iw) * ${photoScale[src] ?? 1})`;
+/** Rendered width of a photo, in CSS. --iw is set by the parent; photoScale evens out garment size;
+ *  --garment-scale (default 1) lets a page size the garments without changing the rack's pitch. */
+const widthOf = (src: string) => `(var(--iw) * var(--garment-scale, 1) * ${photoScale[src] ?? 1})`;
 /** A y position in the photo (image px) → CSS length in the rendered photo. */
 const yOf = (src: string, m: Photo, y: number) => `${widthOf(src)} * ${y / m.width}`;
 

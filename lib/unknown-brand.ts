@@ -1,14 +1,13 @@
 /**
  * UNKNOWN brand assets and facts for the /unknown prototype.
- * The wordmark file is a PLACEHOLDER (the real logo could not be fetched from the build
- * environment): drop the real artwork in at the same path and update width/height.
+ * The wordmark is traced to SVG from the logo the client supplied
+ * (reference/draft-hero/unknown-logo-supplied.webp); swap in the original vector when available.
  */
 export const UNKNOWN_LOGO = {
   src: "/products/unknown/brand/unknown-wordmark.svg",
-  width: 320,
-  height: 42,
+  width: 227,
+  height: 36,
   alt: "UNKNOWN",
-  placeholder: true,
 };
 
 /** Real store facts (from the client); used by the visit section and the footer. */

@@ -50,7 +50,8 @@ export function rackOrigin(i: number, hovered = false): RackOrigin | null {
   const r = item.getBoundingClientRect();
   const cs = getComputedStyle(rack);
   const rod = parseFloat(getComputedStyle(rack.querySelector<HTMLElement>(".rack-rail")!).height) || 0;
-  return { x: r.left, y: r.top, iw: parseFloat(cs.getPropertyValue("--iw-px")) || 0, rod, hovered };
+  const scale = parseFloat(cs.getPropertyValue("--garment-scale")) || 1;
+  return { x: r.left, y: r.top, iw: (parseFloat(cs.getPropertyValue("--iw-px")) || 0) * scale, rod, hovered };
 }
 
 type Props = {
