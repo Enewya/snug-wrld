@@ -1,13 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Rail from "./Rail";
 import RackItem from "./RackItem";
-import { captionOf, photos, photoScale, products } from "@/lib/products";
+import { captionOf, photos, photoScale, products, type Product } from "@/lib/products";
 
 /** Must match .rack in globals.css. All widths below are in rendered photo widths (--iw). */
 const RAIL_Y = 0.272;
 const PITCH = 0.33;
+/** A page can hang the rack tighter: --pitch-k on .rack (default PITCH), matched by its --pitch. */
+const pitchOf = (el: HTMLElement) => parseFloat(getComputedStyle(el).getPropertyValue("--pitch-k")) || PITCH;
 /** Push given to the nearest neighbours of the hovered piece, and how it fades further out (measured from bm-04/bm-07). */
 const PUSH = 0.25;
 const FALLOFF = 0.55;
@@ -20,17 +22,19 @@ const HOLD = 0.45;
  * sits at one fixed height under it, so it never jumps between garments.
  */
 const HOVER_SCALE = 1.12; // must match RackItem
-const DEEPEST_HEM = Math.max(
-  ...products.flatMap((p) =>
-    [p.side, p.front].map((src) => {
-      const m = photos[src];
-      const k = (photoScale[src] ?? 1) / m.width;
-      const gapMid = (m.loopInnerTopY + m.loopInnerBottomY) / 2;
-      const body = src === p.front ? HOVER_SCALE : 1;
-      return ((m.neckY - gapMid) + (m.garmentBottomY - m.neckY) * body) * k;
-    }),
-  ),
-);
+function deepestHem() {
+  return Math.max(
+    ...products.flatMap((p) =>
+      (p.colourways ?? [p]).flatMap((w) => [w.side, w.front]).map((src) => {
+        const m = photos[src];
+        const k = (photoScale[src] ?? 1) / m.width;
+        const gapMid = (m.loopInnerTopY + m.loopInnerBottomY) / 2;
+        const body = (p.colourways ?? [p]).some((w) => w.front === src) ? HOVER_SCALE : 1;
+        return ((m.neckY - gapMid) + (m.garmentBottomY - m.neckY) * body) * k;
+      }),
+    ),
+  );
+}
 
 function shiftFor(i: number, hovered: number | null) {
   if (hovered === null || i === hovered) return 0;
@@ -59,9 +63,18 @@ type Props = {
   hiddenIndex?: number | null;
   /** Focus view open: no hover. */
   paused?: boolean;
+  /** Colourway hanging on the rack, by product index (default: the first). */
+  colours?: Record<number, number>;
 };
 
-export default function Rack({ onSelect, hiddenIndex = null, paused = false }: Props) {
+/** The product as it hangs: its picked colourway's photos and caption. */
+function hanging(product: Product, colour = 0): { product: Product; caption: string } {
+  const way = product.colourways?.[colour];
+  if (!way || colour === 0) return { product, caption: captionOf(product) };
+  return { product: { ...product, side: way.side, front: way.front, back: way.back }, caption: `${product.name} — ${way.label}` };
+}
+
+export default function Rack({ onSelect, hiddenIndex = null, paused = false, colours }: Props) {
   const n = products.length;
   const c = (n - 1) / 2;
   const ref = useRef<HTMLDivElement>(null);
@@ -69,6 +82,7 @@ export default function Rack({ onSelect, hiddenIndex = null, paused = false }: P
   const [last, setLast] = useState<number | null>(null);
   const hoveredRef = useRef<number | null>(null);
   const pushDir = useRef(1);
+  const hem = useMemo(() => deepestHem(), []);
 
   const pick = useCallback(
     (x: number, y: number) => {
@@ -77,7 +91,7 @@ export default function Rack({ onSelect, hiddenIndex = null, paused = false }: P
       const r = el.getBoundingClientRect();
       const iw = parseFloat(getComputedStyle(el).getPropertyValue("--iw-px")) || 0;
       if (!iw) return null;
-      const pitch = iw * PITCH;
+      const pitch = iw * pitchOf(el);
       const railY = r.top + r.height * RAIL_Y;
       if (y < railY - 24 || y > railY + iw * 1.3) return null;
       const mid = r.left + r.width / 2;
@@ -126,7 +140,7 @@ export default function Rack({ onSelect, hiddenIndex = null, paused = false }: P
       {products.map((product, i) => (
         <RackItem
           key={product.slug}
-          product={product}
+          product={hanging(product, colours?.[i]).product}
           index={i}
           count={n}
           hovered={hovered === i}
@@ -141,10 +155,10 @@ export default function Rack({ onSelect, hiddenIndex = null, paused = false }: P
         <p
           key={product.slug}
           className="rack-caption"
-          style={{ "--i": i - c, "--hem": DEEPEST_HEM, opacity: hovered === i ? 1 : 0 } as React.CSSProperties}
+          style={{ "--i": i - c, "--hem": hem, opacity: hovered === i ? 1 : 0 } as React.CSSProperties}
           aria-hidden={hovered !== i}
         >
-          {captionOf(product)}
+          {hanging(product, colours?.[i]).caption}
         </p>
       ))}
     </div>

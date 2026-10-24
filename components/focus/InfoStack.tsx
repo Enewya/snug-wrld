@@ -1,6 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useRef } from "react";
+import type { Product } from "@/lib/products";
 
 type Props = {
   name: string;
@@ -12,6 +13,9 @@ type Props = {
   /** No back photo: the pill's space is kept (so nothing below moves) but it isn't shown. */
   hasBack: boolean;
   onFace: (back: boolean) => void;
+  /** The product and its selected colourway (used by the Shopify bundle's shopify/ShopInfo.tsx). */
+  product?: Product;
+  colour?: number;
 };
 
 const NAME_PX = 24;

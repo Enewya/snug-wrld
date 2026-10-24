@@ -1,0 +1,185 @@
+{%- comment -%}
+  Header in the Snug Wrld style: ABOUT on the left, the logo in the middle, search, account and
+  cart on the right,
+  on the same wall (and faint hanger-hook grid) as the Rack hero. On the home page it lies over the
+  hero, like the Snug Wrld site; elsewhere it's a strip of wall above the page. While the Rack
+  hero's detail view is open it fades out (rack-hero.css adds CLOSE ✕ in the icons' place).
+  Built from the snug-wrld repo (shopify/theme/sections): edit it there.
+{%- endcomment -%}
+
+{{ 'rack-hero.css' | asset_url | stylesheet_tag }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500&display=swap" rel="stylesheet">
+
+{%- liquid
+  assign logo = section.settings.logo | default: settings.logo
+  assign logo_h = section.settings.logo_height
+  if logo != blank
+    # trimmed: a band 5.25× as wide as it is tall, cut from the middle of the image (the store
+    # logo is a wide word on a lot of white above and below it)
+    assign ratio = logo.aspect_ratio
+    if section.settings.logo_trim and ratio < 5.25
+      assign ratio = 5.25
+      assign logo_src = logo | image_url: width: 1260, height: 240, crop: 'center'
+    else
+      assign logo_src = logo | image_url: height: 240
+    endif
+    assign logo_w = ratio | times: logo_h | round
+  endif
+  assign on_home = false
+  if template.name == 'index'
+    assign on_home = true
+  endif
+-%}
+
+<header
+  class="snug-header wall{% if on_home %} snug-header--over{% endif %}{% if section.settings.logo_blend %} snug-header--blend{% endif %}"
+  style="--paper: {{ section.settings.background }}; --logo-h: {{ section.settings.logo_height }}px;"
+>
+  <a class="snug-header-link" href="{{ section.settings.about_link | default: '/pages/about-unknown' }}">
+    {{- section.settings.about_label | default: 'About' -}}
+  </a>
+  <a class="snug-header-logo" href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">
+    {%- if logo != blank -%}
+      {{
+        logo_src
+        | image_tag:
+          height: logo_h,
+          width: logo_w,
+          alt: shop.name,
+          loading: 'eager',
+          fetchpriority: 'high'
+      }}
+    {%- else -%}
+      <span class="snug-header-wordmark">{{ shop.name }}</span>
+    {%- endif -%}
+  </a>
+  <div class="snug-header-actions">
+    {%- comment -%} opens the theme's own search (snippets/search-modal.liquid, on every page): the
+      dialog in the middle of the screen with product suggestions as you type {%- endcomment -%}
+    <button
+      type="button"
+      class="snug-header-icon"
+      aria-label="Search"
+      aria-haspopup="dialog"
+      onclick="document.getElementById('search-modal')?.showDialog?.()"
+    >
+      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+        <circle cx="8.75" cy="8.75" r="5.75" fill="none" stroke="currentColor" stroke-width="1.25"/>
+        <path d="m13 13 4.25 4.25" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
+      </svg>
+    </button>
+    {%- if shop.customer_accounts_enabled -%}
+      <a
+        class="snug-header-icon"
+        href="{% if customer %}{{ routes.account_url }}{% else %}{{ routes.account_login_url }}{% endif %}"
+        aria-label="{% if customer %}Account{% else %}Log in{% endif %}"
+      >
+        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+          <circle cx="10" cy="6.75" r="3.5" fill="none" stroke="currentColor" stroke-width="1.25"/>
+          <path d="M3.5 17.5c.6-3.4 3.2-5.5 6.5-5.5s5.9 2.1 6.5 5.5" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
+        </svg>
+      </a>
+    {%- endif -%}
+    <a class="snug-header-icon snug-cart" href="{{ routes.cart_url }}" aria-label="Cart">
+      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+        <path d="M4 6.5h12l-1 11H5z" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/>
+        <path d="M7.25 8.5V5.75a2.75 2.75 0 0 1 5.5 0V8.5" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
+      </svg>
+      <span class="snug-cart-count" data-snug-cart-count{% if cart.item_count == 0 %} hidden{% endif %}>{{ cart.item_count }}</span>
+    </a>
+  </div>
+</header>
+
+<script>
+  (() => {
+    // cart count: the Rack hero (and the theme's own forms) announce cart changes as cart:update
+    const count = document.querySelector('[data-snug-cart-count]');
+    document.addEventListener('cart:update', async (e) => {
+      if (!count) return;
+      let n = e.detail?.data?.itemCount;
+      if (typeof n !== 'number') {
+        n = await fetch('{{ routes.cart_url }}.js', { headers: { Accept: 'application/json' } })
+          .then((r) => r.json())
+          .then((c) => c.item_count)
+          .catch(() => undefined);
+      }
+      if (typeof n !== 'number') return;
+      count.textContent = n;
+      count.hidden = n === 0;
+      count.classList.remove('is-bumped');
+      void count.offsetWidth;
+      count.classList.add('is-bumped');
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Snug header",
+  "tag": "div",
+  "class": "snug-header-section",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo",
+      "info": "Leave empty to use the store logo (Theme settings → Logo). A transparent PNG looks best on the wall."
+    },
+    {
+      "type": "range",
+      "id": "logo_height",
+      "label": "Logo height",
+      "min": 20,
+      "max": 72,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "checkbox",
+      "id": "logo_trim",
+      "label": "Trim the space above and below the logo",
+      "info": "For a wide logo saved with a lot of empty space around it.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "logo_blend",
+      "label": "Blend a white logo background into the wall",
+      "info": "For a logo saved as JPG on white.",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Wall colour",
+      "default": "#e9e8e4"
+    },
+    {
+      "type": "header",
+      "content": "Links"
+    },
+    {
+      "type": "text",
+      "id": "about_label",
+      "label": "Left link",
+      "default": "About"
+    },
+    {
+      "type": "url",
+      "id": "about_link",
+      "label": "Left link to"
+    }
+  ],
+  "enabled_on": {
+    "groups": ["header"]
+  },
+  "presets": [
+    {
+      "name": "Snug header"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,234 @@
+{%- comment -%}
+  Rack hero: garments hanging on a chrome rail. Hover turns a garment to face you; a click opens
+  the detail view (name, price, FRONT / BACK, colour swing tags, sizes, ADD TO CART into the
+  theme's own cart, SEE AVAILABILITY, arrows). Built from
+  the snug-wrld repo (shopify/, scripts/build-shopify.mjs): edit it there.
+
+  Each garment block needs a product plus transparent PNGs on the same walnut hanger: a side view
+  (shown on the rail), a front view (hover / detail view) and optionally a back view. A garment
+  that comes in more colours gets up to three more sets of photos; it then shows swing tags. The
+  script finds the hook in each photo, so new photos hang correctly without any code change.
+{%- endcomment -%}
+
+{{ 'rack-hero.css' | asset_url | stylesheet_tag }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,500;0,600;1,400&family=Archivo+Black&display=swap" rel="stylesheet">
+<script src="{{ 'rack-hero.js' | asset_url }}" defer></script>
+
+<div
+  class="rack-hero"
+  data-rack-hero
+  data-cart-add="{{ routes.cart_add_url }}.js"
+  data-cart="{{ routes.cart_url }}.js"
+  style="--rack-bg: {{ section.settings.background }}; --rack-h: {{ section.settings.height }}svh;"
+>
+  <div class="rack-hero-stage wall"></div>
+
+  <ul class="rack-hero-links">
+    {%- for block in section.blocks -%}
+      {%- if block.settings.product != blank -%}
+        <li {{ block.shopify_attributes }}>
+          <a href="{{ block.settings.product.url }}">{{ block.settings.product.title }}</a>
+        </li>
+      {%- endif -%}
+    {%- endfor -%}
+  </ul>
+
+  <script type="application/json" data-rack-hero-data>
+    [
+      {%- for block in section.blocks -%}
+        {%- assign product = block.settings.product -%}
+        {
+          "handle": {{ product.handle | json }},
+          "title": {{ product.title | json }},
+          "url": {{ product.url | json }},
+          "shop": {%- if product != blank -%}
+            {
+              "available": {{ product.available | json }},
+              "options": [
+                {%- for option in product.options_with_values -%}
+                  {
+                    "name": {{ option.name | json }},
+                    "values": [
+                      {%- for value in option.values -%}
+                        {{ value | append: '' | json }}{%- unless forloop.last -%},{%- endunless -%}
+                      {%- endfor -%}
+                    ]
+                  }
+                  {%- unless forloop.last -%},{%- endunless -%}
+                {%- endfor -%}
+              ],
+              "variants": [
+                {%- for variant in product.variants -%}
+                  {
+                    "id": {{ variant.id }},
+                    "options": {{ variant.options | json }},
+                    "available": {{ variant.available | json }},
+                    "price": {{ variant.price | money | strip_html | json }},
+                    "compare": {% if variant.compare_at_price > variant.price %}{{ variant.compare_at_price | money | strip_html | json }}{% else %}null{% endif %}
+                  }
+                  {%- unless forloop.last -%},{%- endunless -%}
+                {%- endfor -%}
+              ]
+            }
+          {%- else -%}null{%- endif -%},
+          "colours": [
+            {%- liquid
+              assign count = 1
+              if block.settings.more_colours
+                assign count = 4
+              endif
+            -%}
+            {%- for n in (1..count) -%}
+              {%- liquid
+                if n == 1
+                  assign label = block.settings.colour
+                  assign hex = block.settings.colour_hex
+                  assign side_img = block.settings.side_image
+                  assign front_img = block.settings.front_image
+                  assign back_img = block.settings.back_image
+                else
+                  assign key = 'colour_' | append: n
+                  assign label = block.settings[key]
+                  assign key = 'colour_' | append: n | append: '_hex'
+                  assign hex = block.settings[key]
+                  assign key = 'colour_' | append: n | append: '_side'
+                  assign side_img = block.settings[key]
+                  assign key = 'colour_' | append: n | append: '_front'
+                  assign front_img = block.settings[key]
+                  assign key = 'colour_' | append: n | append: '_back'
+                  assign back_img = block.settings[key]
+                endif
+                assign side = null
+                assign front = null
+                assign back = null
+                if side_img != blank
+                  assign side = side_img | image_url: width: 1086
+                endif
+                if front_img != blank
+                  assign front = front_img | image_url: width: 1086
+                endif
+                if back_img != blank
+                  assign back = back_img | image_url: width: 1086
+                endif
+              -%}
+              {
+                "label": {{ label | json }},
+                "hex": {{ hex | append: '' | json }},
+                "side": {{ side | json }},
+                "front": {{ front | json }},
+                "back": {{ back | json }}
+              }
+              {%- unless forloop.last -%},{%- endunless -%}
+            {%- endfor -%}
+          ]
+        }
+        {%- unless forloop.last -%},{%- endunless -%}
+      {%- endfor -%}
+    ]
+  </script>
+</div>
+
+{% schema %}
+{
+  "name": "Rack hero",
+  "tag": "section",
+  "class": "rack-hero-section",
+  "settings": [
+    {
+      "type": "range",
+      "id": "height",
+      "label": "Height",
+      "info": "Percent of the screen height",
+      "min": 50,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 90
+    },
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Wall colour",
+      "default": "#e9e8e4"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "garment",
+      "name": "Garment",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        },
+        {
+          "type": "header",
+          "content": "Photos",
+          "info": "Transparent PNGs on the walnut hanger. The side photo hangs on the rail; the front shows on hover and in the detail view; the back is optional (FRONT / BACK in the detail view)."
+        },
+        {
+          "type": "image_picker",
+          "id": "side_image",
+          "label": "Side photo"
+        },
+        {
+          "type": "image_picker",
+          "id": "front_image",
+          "label": "Front photo"
+        },
+        {
+          "type": "image_picker",
+          "id": "back_image",
+          "label": "Back photo"
+        },
+        {
+          "type": "text",
+          "id": "colour",
+          "label": "Colour name",
+          "info": "Shown after the product name on hover, and on its swing tag. Use the product's own colour name (e.g. Red) so the right colour goes in the cart."
+        },
+        {
+          "type": "color",
+          "id": "colour_hex",
+          "label": "Colour swatch",
+          "info": "The swing tag's colour (only used with more colours)."
+        },
+        {
+          "type": "checkbox",
+          "id": "more_colours",
+          "label": "Comes in more colours",
+          "info": "Adds colour swing tags to the detail view, one per colour.",
+          "default": false
+        },
+        { "type": "header", "content": "Colour 2", "visible_if": "{{ block.settings.more_colours }}" },
+        { "type": "text", "id": "colour_2", "label": "Colour name", "visible_if": "{{ block.settings.more_colours }}" },
+        { "type": "color", "id": "colour_2_hex", "label": "Colour swatch", "visible_if": "{{ block.settings.more_colours }}" },
+        { "type": "image_picker", "id": "colour_2_side", "label": "Side photo", "visible_if": "{{ block.settings.more_colours }}" },
+        { "type": "image_picker", "id": "colour_2_front", "label": "Front photo", "visible_if": "{{ block.settings.more_colours }}" },
+        { "type": "image_picker", "id": "colour_2_back", "label": "Back photo", "visible_if": "{{ block.settings.more_colours }}" },
+        { "type": "header", "content": "Colour 3", "visible_if": "{{ block.settings.more_colours }}" },
+        { "type": "text", "id": "colour_3", "label": "Colour name", "visible_if": "{{ block.settings.more_colours }}" },
+        { "type": "color", "id": "colour_3_hex", "label": "Colour swatch", "visible_if": "{{ block.settings.more_colours }}" },
+        { "type": "image_picker", "id": "colour_3_side", "label": "Side photo", "visible_if": "{{ block.settings.more_colours }}" },
+        { "type": "image_picker", "id": "colour_3_front", "label": "Front photo", "visible_if": "{{ block.settings.more_colours }}" },
+        { "type": "image_picker", "id": "colour_3_back", "label": "Back photo", "visible_if": "{{ block.settings.more_colours }}" },
+        { "type": "header", "content": "Colour 4", "visible_if": "{{ block.settings.more_colours }}" },
+        { "type": "text", "id": "colour_4", "label": "Colour name", "visible_if": "{{ block.settings.more_colours }}" },
+        { "type": "color", "id": "colour_4_hex", "label": "Colour swatch", "visible_if": "{{ block.settings.more_colours }}" },
+        { "type": "image_picker", "id": "colour_4_side", "label": "Side photo", "visible_if": "{{ block.settings.more_colours }}" },
+        { "type": "image_picker", "id": "colour_4_front", "label": "Front photo", "visible_if": "{{ block.settings.more_colours }}" },
+        { "type": "image_picker", "id": "colour_4_back", "label": "Back photo", "visible_if": "{{ block.settings.more_colours }}" }
+      ]
+    }
+  ],
+  "max_blocks": 12,
+  "presets": [
+    {
+      "name": "Rack hero"
+    }
+  ]
+}
+{% endschema %}

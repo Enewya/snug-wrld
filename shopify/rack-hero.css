@@ -1,0 +1,317 @@
+/* Rack hero section (Shopify). The rail, garment and rack rules are copied in from
+   app/globals.css by scripts/build-shopify.mjs, so both sites share one rack design. */
+.rack-hero {
+  --paper: var(--rack-bg, #e9e8e4);
+  --ink: #151513;
+  position: relative;
+  height: var(--rack-h, 90svh);
+  min-height: 420px;
+  overflow: hidden;
+  background: var(--paper);
+  -webkit-user-select: none;
+  user-select: none;
+}
+.rack-hero-stage {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 400ms ease;
+}
+.rack-hero.is-ready .rack-hero-stage { opacity: 1; }
+/* the products as plain links, for screen readers and search engines */
+.rack-hero-links {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.rack-hero .rack-caption { font-family: inherit; }
+.rack-hero-rack {
+  position: absolute;
+  inset: 0;
+}
+/* the detail view: over the whole page, on the wall colour (tinted toward the colourway) */
+.rack-hero-focus {
+  --ink: #151513;
+  --font-sans: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Archivo Black", "Helvetica Neue", Arial, sans-serif;
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-user-select: none;
+  user-select: none;
+}
+/* like the Snug Wrld page: the rest of the rack stays in view, blurred and faded, behind the
+   open garment. The rack blurs and fades to 0.5 (RackHero.tsx) and the wall colour washes over
+   the page at half strength, so about a quarter of it shows through, as on Snug. */
+.rack-hero-focus::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--wall);
+  opacity: 0;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  transition: opacity 0.5s ease-out, background-color 0.9s ease;
+}
+.rack-hero-focus[data-active]::before { opacity: 0.5; }
+
+.rack-hero-focus .focus {
+  z-index: 1;
+  /* the Snug info stack plus the shop rows: price, options, ADD TO CART, error line */
+  --g-price: 4px;
+  --price-h: 20px;
+  --g-opt: 16px;
+  --opt-h: 76px;
+  --g-add: 12px;
+  --add-h: 44px;
+  --g-cta: 16px;
+  --stack: calc(var(--name-h) + var(--g-price) + var(--price-h) + var(--g-pill) + var(--pill-h) + var(--g-opt) + var(--opt-h) + var(--g-add) + var(--add-h) + var(--g-cta) + var(--cta-h));
+  --fy: 10vh;
+}
+.rack-hero-focus button { font-family: inherit; }
+
+/* ---------- shop rows under the Snug info stack ---------- */
+.shop-price {
+  margin: var(--g-price) 0 0;
+  height: var(--price-h);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+.shop-price s { opacity: 0.45; }
+.shop-info .seg { margin-top: var(--g-pill); }
+.shop-options {
+  margin-top: var(--g-opt);
+  height: var(--opt-h);
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 8px;
+}
+.shop-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  max-width: min(360px, calc(100vw - 32px));
+}
+.shop-colour {
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.shop-chip {
+  min-width: 40px;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid rgba(21, 21, 19, 0.35);
+  border-radius: 999px;
+  background: none;
+  color: var(--ink);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+.shop-chip:hover { border-color: var(--ink); }
+.shop-chip.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.shop-chip.out { opacity: 0.35; text-decoration: line-through; cursor: not-allowed; }
+.shop-add {
+  margin-top: var(--g-add);
+  width: 240px;
+  height: var(--add-h);
+  border: 0;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  cursor: pointer;
+  transition: opacity 150ms ease;
+}
+.shop-add:hover:not(:disabled) { opacity: 0.85; }
+.shop-add:disabled { background: rgba(21, 21, 19, 0.25); cursor: not-allowed; }
+.shop-error {
+  margin: 4px 0 0;
+  min-height: 0;
+  max-width: 280px;
+  font-size: 11px;
+  color: #a1261b;
+}
+.shop-error:empty { display: none; }
+.shop-info .info-cta { margin-top: var(--g-cta); }
+.rack-hero-focus .shop-chip:focus-visible,
+.rack-hero-focus .shop-add:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+/* CLOSE ✕ at the right of the header row (sections/snug-header.liquid), as on Snug Wrld */
+.rack-hero-close {
+  position: absolute;
+  top: calc(max(10.4vh, 64px) / 2);
+  transform: translateY(-50%);
+  right: 2.2vw;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  min-width: 48px;
+  min-height: 48px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.rack-hero-focus[data-active] .rack-hero-close { opacity: 1; }
+.rack-hero-close span { font-size: 13px; font-weight: 600; }
+.rack-hero-close:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 4px; }
+/* --n (garment count, set by the script) keeps a long rack inside the rail */
+.rack-hero .rack { --iw: min(36vh, 22.5vw, 74vw / (var(--n, 7) * 0.33 + 0.7)); }
+@media (max-width: 640px) {
+  /* the hero fills the phone's screen like the Snug Wrld showroom, so an open garment's backdrop
+     is all wall; the wash is stronger, so anything scrolled into view below fades away too */
+  .rack-hero { height: var(--rack-h, 100svh); }
+  .rack-hero-focus[data-active]::before { opacity: 0.7; }
+  /* phones: the garments hang closer (like a full rack) and so can be larger; the row still
+     fits the rail: (n − 1) × pitch + one side photo's width ≈ 88vw */
+  .rack-hero .rack {
+    --pitch-k: 0.28;
+    --pitch: calc(var(--iw) * var(--pitch-k));
+    --iw: min(36vh, 50vw, 88vw / ((var(--n, 7) - 1) * var(--pitch-k) + 0.4));
+    --rail-w: 94%;
+  }
+}
+
+/* ---------- Snug header (sections/snug-header.liquid) ---------- */
+.snug-header {
+  --ink: #151513;
+  position: relative;
+  z-index: 10;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  height: 10.4vh;
+  min-height: 64px;
+  padding: 0 2.2vw;
+  font-family: "Archivo", "Helvetica Neue", Arial, sans-serif;
+}
+/* home page: over the top of the Rack hero, like the Snug Wrld header over its showroom. It keeps
+   its own wall: both start at the top of the page, so the hook grid runs on without a seam, and
+   the logo's white (JPG) background can blend into it (mix-blend-mode needs that wall behind it). */
+.snug-header.snug-header--over {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+.snug-header-link {
+  justify-self: start;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-decoration: none;
+  transition: opacity 0.3s;
+}
+.snug-header-link:hover { opacity: 0.65; }
+.snug-header-logo {
+  display: block;
+  line-height: 0;
+  transition: opacity 0.3s;
+}
+.snug-header-logo img {
+  display: block;
+  width: auto;
+  height: var(--logo-h, 36px);
+}
+.snug-header--blend .snug-header-logo img { mix-blend-mode: multiply; }
+/* phones: a little smaller, so ABOUT and the icons keep their room */
+@media (max-width: 640px) {
+  .snug-header-logo img { height: min(var(--logo-h, 36px), 22px); }
+  .snug-header-actions { gap: 2px; }
+}
+.snug-header-wordmark {
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+/* right: search, account, cart */
+.snug-header-actions {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: opacity 0.3s;
+}
+.snug-header-icon {
+  position: relative;
+  padding: 0;
+  border: 0;
+  background: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin: 0 -6px;
+  color: var(--ink);
+  cursor: pointer;
+  list-style: none;
+  transition: opacity 0.3s;
+}
+.snug-header-icon:hover { opacity: 0.65; }
+.snug-cart-count {
+  position: absolute;
+  top: 3px;
+  right: 1px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+}
+.snug-cart-count[hidden] { display: none; }
+.snug-cart-count.is-bumped { animation: snug-bump 0.45s ease; }
+@keyframes snug-bump {
+  40% { transform: scale(1.35); }
+}
+.snug-header a:focus-visible,
+.snug-header button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 4px; }
+/* the detail view is open: ABOUT, the logo and CONTACT fade (its CLOSE ✕ sits where CONTACT was) */
+html.rack-hero-open .snug-header > * {
+  opacity: 0;
+  pointer-events: none;
+}
+/* …and the store's chat bubble steps aside, clear of the arrows (it comes back on close) */
+html.rack-hero-open [class*="wchatGoodApps"],
+html.rack-hero-open #wchatGoodApps-live-chat {
+  visibility: hidden;
+}
