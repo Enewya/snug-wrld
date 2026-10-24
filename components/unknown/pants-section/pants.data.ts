@@ -1,0 +1,51 @@
+/**
+ * PANTS SECTION DATA: the only file to edit to change what the section shows.
+ *
+ * Order here = scroll order. Names, prices and links are copied from the live store and will come
+ * from Shopify product blocks in the theme version (see HANDOFF.md). Every image is a 3:4
+ * portrait (1086 × 1448) of the same model in the same pose, cut out and aligned to the base by
+ * scripts/prepare-unknown-pants.py (see assets/products-src/unknown/pants/PROCESSING.md).
+ */
+
+export type PantsItem = {
+  /** Shopify product handle; also the image file name. */
+  handle: string;
+  name: string;
+  /** Display price, already formatted. */
+  price: string;
+  /** Product page (the "Add to cart" placeholder links here for now). */
+  url: string;
+  image: string;
+  /** Left out of the section until its model image exists. */
+  hidden?: boolean;
+};
+
+const STORE = "https://www.unk-nown.com";
+const IMAGES = "/products/unknown/pants";
+
+/** Small label above the product name. */
+export const PANTS_LABEL = "PANTS";
+
+/** The model in neutral pants, shown underneath while one pair swaps for the next. */
+export const PANTS_BASE_IMAGE = `${IMAGES}/model-base.webp`;
+
+const item = (handle: string, name: string, price: string, hidden = false): PantsItem => ({
+  handle,
+  name,
+  price,
+  url: `${STORE}/products/${handle}`,
+  image: `${IMAGES}/${handle}.webp`,
+  hidden,
+});
+
+const all: PantsItem[] = [
+  item("unknown-denim-jean", "UNKNOWN HARDCORE BAGGY DENIM JEAN", "₦145,000"),
+  item("unknown-side-eye-baggy-pant", "UNKNOWN SIDE EYE BAGGY PANT", "₦100,000"),
+  item("unknown-logo-sweatpant-brown", "UNKNOWN LOGO SWEATPANT BROWN", "₦100,000"),
+  // OFF until unknown-logo-sweatpant-red.webp exists: delete `, true` to show it
+  item("unknown-logo-sweatpant-red", "UNKNOWN LOGO SWEATPANT RED", "₦100,000", true),
+  item("unknown-lgt-strikes-joggers", "UNKNOWN LGT STRIKES JOGGERS", "₦100,000"),
+];
+
+/** What the section shows, in order. */
+export const pants = all.filter((p) => !p.hidden);

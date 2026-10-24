@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import UnknownShowroom from "@/components/unknown/UnknownShowroom";
+import PantsSection from "@/components/unknown/pants-section/PantsSection";
 import "./unknown.css";
 
 export const metadata: Metadata = {
@@ -9,5 +10,10 @@ export const metadata: Metadata = {
 };
 
 export default function UnknownPage() {
-  return <UnknownShowroom />;
+  return (
+    <>
+      <UnknownShowroom />
+      <PantsSection />
+    </>
+  );
 }
