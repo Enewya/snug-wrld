@@ -1,22 +1,39 @@
-/* UNKNOWN footer (values from components/unknown/tokens.css). */
+/* UNKNOWN footer (values from components/unknown/tokens.css). Spacing above: .unk-section
+   (section gap). Layout: brand block left, link columns as one group on the right.
+   Type is deliberately unchanged from the approved footer (brief: "keep it exactly as is"), so the
+   footer keeps its own three sizes below instead of M3 roles; see HANDOFF.md. */
 .unk-footer {
-  position: relative;
-  z-index: 1;
-  padding-block: var(--unk-s8) var(--unk-s5);
+  --footer-text: 15px;
+  --footer-small: 13px;
+  --footer-label: 11px;
+  padding-bottom: var(--space-32);
   background: var(--unk-warm);
-  color: var(--unk-ink);
-  font-family: var(--unk-font);
 }
 .unk-footer__grid {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr));
-  gap: var(--unk-s6) var(--unk-s3);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--space-48) var(--space-64);
 }
 .unk-footer__brand img { display: block; width: auto; height: 28px; }
 .unk-footer__brand p {
-  margin: var(--unk-s4) 0 0;
-  font-size: var(--unk-text-sm);
+  margin: var(--space-24) 0 0;
+  font-size: var(--footer-small);
   line-height: 1.6;
+  color: var(--unk-mute);
+}
+.unk-footer__links {
+  display: flex;
+  justify-self: end;
+  gap: var(--space-64);
+}
+.unk-footer__title {
+  display: block;
+  margin: 0 0 var(--space-8);
+  font-size: var(--footer-label);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--unk-mute);
 }
 .unk-footer__col ul { display: grid; margin: 0; padding: 0; list-style: none; }
@@ -24,37 +41,38 @@
 .unk-footer__base a {
   display: inline-flex;
   align-items: center;
-  min-height: var(--unk-target);
-  font-size: var(--unk-text-md);
+  min-height: var(--target);
+  font-size: var(--footer-text);
   color: inherit;
   text-decoration: none;
-  transition: opacity var(--unk-dur-1) var(--unk-ease-out);
+  transition: opacity var(--dur-short-3) var(--ease-standard);
 }
-/* same underline behaviour as .unk-link (text only, draws in on hover); nav lists carry no arrow */
+/* same underline behaviour as .unk-link (text only, draws in on hover) */
 .unk-footer__col a,
 .unk-footer__base a { background: linear-gradient(currentColor, currentColor) no-repeat 0 calc(50% + 0.75em) / 0 1px; }
 .unk-footer__col a:hover,
-.unk-footer__base a:hover { background-size: 100% 1px; transition: background-size var(--unk-dur-2) var(--unk-ease-out); }
+.unk-footer__base a:hover { background-size: 100% 1px; transition: background-size var(--dur-medium-2) var(--ease-standard); }
 .unk-footer__col a:active,
 .unk-footer__base a:active { opacity: 0.4; }
 .unk-footer__base {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--unk-s3);
-  margin-top: var(--unk-s7);
-  padding-top: var(--unk-s3);
-  /* hairline across the content width only (inside the gutters) */
-  background: linear-gradient(var(--unk-line), var(--unk-line)) no-repeat var(--unk-gutter) 0 / calc(100% - 2 * var(--unk-gutter)) 1px;
-  font-size: var(--unk-text-sm);
+  gap: var(--space-16);
+  margin-top: var(--space-64);
+  padding-top: var(--space-16);
+  /* hairline across the content width only (inside the margins) */
+  background: linear-gradient(var(--unk-line), var(--unk-line)) no-repeat var(--margin) 0 / calc(100% - 2 * var(--margin)) 1px;
+  font-size: var(--footer-small);
   color: var(--unk-mute);
 }
-.unk-footer__base a { font-size: var(--unk-text-sm); color: var(--unk-mute); }
+.unk-footer__base a { font-size: var(--footer-small); color: var(--unk-mute); }
 
-@media (max-width: 767px) {
-  .unk-footer { padding-block: var(--unk-s7) var(--unk-s4); }
-  .unk-footer__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .unk-footer__brand { grid-column: 1 / -1; }
+/* compact: the link group stacks under the brand block, columns still side by side */
+@media (max-width: 599px) {
+  .unk-footer { padding-bottom: var(--space-24); }
+  .unk-footer__grid { grid-template-columns: minmax(0, 1fr); }
+  .unk-footer__links { justify-self: start; gap: var(--space-48); }
   .unk-footer__brand img { height: 22px; }
   .unk-footer__base { flex-wrap: wrap; }
 }

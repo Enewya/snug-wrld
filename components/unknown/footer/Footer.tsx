@@ -6,20 +6,23 @@ import "./footer-styles.css";
 /** Footer on the warm-grey wall, bookending the hero. */
 export default function Footer() {
   return (
-    <footer className="unk-footer">
+    <footer className="unk-section unk-footer">
       <div className="unk-wrap unk-footer__grid">
         <div className="unk-footer__brand">
           <img src={UNKNOWN_LOGO.src} width={UNKNOWN_LOGO.width} height={UNKNOWN_LOGO.height} alt={UNKNOWN_LOGO.alt} loading="lazy" />
           <p>{UNKNOWN_STORE.address.join(", ")}<br />{UNKNOWN_STORE.hours}</p>
         </div>
-        {FOOTER_COLUMNS.map((c) => (
-          <nav key={c.title} className="unk-footer__col" aria-label={c.title}>
-            <h2 className="unk-head__label">{c.title}</h2>
-            <ul role="list">
-              {c.links.map((l) => <li key={l.text}><a href={l.url}>{l.text}</a></li>)}
-            </ul>
-          </nav>
-        ))}
+        {/* the link columns sit side by side, as one group on the right edge of the content */}
+        <div className="unk-footer__links">
+          {FOOTER_COLUMNS.map((c) => (
+            <nav key={c.title} className="unk-footer__col" aria-label={c.title}>
+              <h2 className="unk-footer__title">{c.title}</h2>
+              <ul role="list">
+                {c.links.map((l) => <li key={l.text}><a href={l.url}>{l.text}</a></li>)}
+              </ul>
+            </nav>
+          ))}
+        </div>
       </div>
       <div className="unk-wrap unk-footer__base">
         <span>© 2026 {UNKNOWN_STORE.name}, {UNKNOWN_STORE.city}</span>
