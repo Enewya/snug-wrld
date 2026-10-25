@@ -63,7 +63,7 @@ export function initMobileRack(root, { onSelect }) {
   let gesture = null;
   let glide = { from: 0, to: 0, t0: 0 };
   let centre = 0;
-  let suppressClick = false;
+  let dragEndedAt = -1e9; // a click right after a drag is the drag's own, not a tap
   const angle = new Float32Array(n); // 0 = side facing us, 180 = front facing us
   const vel = new Float32Array(n);
   let raf = 0;
@@ -123,7 +123,7 @@ export function initMobileRack(root, { onSelect }) {
     if (mode === "glide") {
       const k = Math.exp(-(now - glide.t0) / CONFIG.TAU);
       pos = glide.to + (glide.from - glide.to) * k;
-      if (Math.abs(pos - glide.to) < 0.002) {
+      if (Math.abs(pos - glide.to) * pitch < 0.5) { // within half a pixel
         pos = glide.to;
         mode = "rest";
       } else moving = true;
@@ -215,7 +215,7 @@ export function initMobileRack(root, { onSelect }) {
       kick();
       return; // a tap: handled by the button's click
     }
-    suppressClick = true;
+    dragEndedAt = e.timeStamp;
     const a = s[0];
     const b = s[s.length - 1];
     const v = b.t > a.t ? (b.pos - a.pos) / (b.t - a.t) : 0; // garments per ms
@@ -230,8 +230,7 @@ export function initMobileRack(root, { onSelect }) {
 
   /** @param {MouseEvent} e */
   function onClick(e) {
-    if (suppressClick) {
-      suppressClick = false;
+    if (e.timeStamp - dragEndedAt < 400) {
       e.preventDefault();
       return;
     }
@@ -282,6 +281,14 @@ export function initMobileRack(root, { onSelect }) {
   angle[0] = 180;
   render();
 
+  // decode every photo once the page is idle, so a fast fling never waits for a decode
+  const decodeAll = () => root.querySelectorAll("img").forEach((img) => {
+    img.loading = "eager";
+    img.decode().catch(() => {});
+  });
+  const hasIdle = typeof window.requestIdleCallback === "function";
+  const idle = hasIdle ? window.requestIdleCallback(decodeAll, { timeout: 1500 }) : window.setTimeout(decodeAll, 600);
+
   root.addEventListener("pointerdown", onDown);
   root.addEventListener("pointermove", onMove);
   root.addEventListener("pointerup", onUp);
@@ -295,6 +302,8 @@ export function initMobileRack(root, { onSelect }) {
     jumpTo,
     destroy() {
       cancelAnimationFrame(raf);
+      if (hasIdle) window.cancelIdleCallback(idle);
+      else window.clearTimeout(idle);
       root.removeEventListener("pointerdown", onDown);
       root.removeEventListener("pointermove", onMove);
       root.removeEventListener("pointerup", onUp);
