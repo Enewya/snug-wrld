@@ -1,85 +1,77 @@
-/* UNKNOWN visit + email sign-up (values from components/unknown/tokens.css). */
-.unk-visit {
-  position: relative;
-  z-index: 1;
-  padding-block: var(--unk-s8);
-  border-top: var(--unk-hairline);
-  background: var(--unk-paper);
-  color: var(--unk-ink);
-  font-family: var(--unk-font);
-}
+/* UNKNOWN visit + email sign-up (values from components/unknown/tokens.css). Spacing above the
+   section: .unk-section (section gap). */
 .unk-visit__grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--unk-s7) var(--unk-s3);
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-48) var(--gutter);
+}
+@media (min-width: 600px) {
+  .unk-visit__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 .unk-visit__col { display: grid; align-content: start; justify-items: start; }
+/* M3 Title Large */
 .unk-visit__address,
 .unk-visit__lead {
   display: grid;
   margin: 0;
   max-width: 22ch;
-  font-size: var(--unk-text-lg);
+  font: var(--type-title-l);
   font-style: normal;
-  font-weight: 500;
-  line-height: 1.25;
-  letter-spacing: var(--unk-track-tight);
+  letter-spacing: var(--track-title-l);
 }
+/* M3 Body Large */
 .unk-visit__meta {
-  margin: var(--unk-s3) 0 var(--unk-s2);
-  font-size: var(--unk-text-md);
+  margin: var(--space-16) 0 var(--space-8);
+  font: var(--type-body-l);
+  letter-spacing: var(--track-body-l);
   color: var(--unk-mute);
 }
 .unk-signup {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   width: 100%;
   max-width: 480px;
-  margin-top: var(--unk-s5);
+  margin-top: var(--space-32);
 }
-/* input + button read as one control: its outer corners take the button radius */
+/* input + button read as one control: its outer corners take the 12px radius */
 .unk-signup__input {
   min-width: 0;
-  height: var(--unk-target);
-  padding: 0 var(--unk-s3);
+  height: var(--target);
+  padding: 0 var(--space-16);
   border: 1px solid var(--unk-ink);
   border-right: 0;
   border-radius: var(--radius-button) 0 0 var(--radius-button);
   background: var(--unk-paper);
   color: var(--unk-ink);
-  font: inherit;
-  font-size: var(--unk-text-md);
+  font: var(--type-body-l);
+  letter-spacing: var(--track-body-l);
   appearance: none;
 }
 .unk-signup__input::placeholder { color: var(--unk-mute); }
-.unk-signup__input:focus-visible { outline: 2px solid var(--unk-ink); outline-offset: 2px; }
 .unk-signup__input[aria-invalid="true"] { border-color: #b3261e; }
+/* M3 Label Large; state layer from .unk-state (in the label colour: white on ink) */
 .unk-signup__btn {
-  height: var(--unk-target);
-  padding: 0 var(--unk-s4);
+  height: var(--target);
+  padding: 0 var(--space-24);
   border: 1px solid var(--unk-ink);
   border-radius: 0 var(--radius-button) var(--radius-button) 0;
   background: var(--unk-ink);
   color: var(--unk-paper);
-  font: inherit;
-  font-size: var(--unk-text-xs);
-  font-weight: 500;
-  letter-spacing: var(--unk-track-label);
+  font: var(--type-label-l);
+  letter-spacing: var(--track-label-l);
   text-transform: uppercase;
   cursor: pointer;
-  transition: background-color var(--unk-dur-1) var(--unk-ease-out);
 }
-.unk-signup__btn:hover { background: #000; }
-.unk-signup__btn:active { background: #333; }
+/* M3 Body Medium. Placed under the form without reserving space (it is empty until a submit), so
+   the section ends at the form and the gap to the footer is exactly the section gap. */
 .unk-signup__msg {
-  grid-column: 1 / -1;
-  min-height: 20px;
-  margin: var(--unk-s2) 0 0;
-  font-size: var(--unk-text-sm);
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin: var(--space-8) 0 0;
+  font: var(--type-body-m);
+  letter-spacing: var(--track-body-m);
   color: var(--unk-mute);
-}
-
-@media (max-width: 767px) {
-  .unk-visit { padding-block: var(--unk-s7); }
-  .unk-visit__grid { grid-template-columns: 1fr; }
 }

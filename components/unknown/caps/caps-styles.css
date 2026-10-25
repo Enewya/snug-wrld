@@ -1,23 +1,21 @@
-/* UNKNOWN caps / headwear (values from components/unknown/tokens.css). */
-.unk-caps {
-  position: relative;
-  z-index: 1;
-  padding-block: var(--unk-s9) var(--unk-s8);
-  background: var(--unk-paper);
-  color: var(--unk-ink);
-  font-family: var(--unk-font);
-}
+/* UNKNOWN caps / headwear (values from components/unknown/tokens.css). Spacing above the section:
+   .unk-section (section gap). Grid: M3 columns, 2 up on compact/medium, 4 up on expanded. */
 .unk-caps__grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--unk-s6) var(--unk-s3);
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+  gap: var(--space-32) var(--gutter);
   margin: 0;
   padding: 0;
   list-style: none;
 }
+.unk-caps__grid > li { grid-column: span calc(var(--columns) / 2); }
+@media (min-width: 840px) {
+  .unk-caps__grid { row-gap: var(--space-48); }
+  .unk-caps__grid > li { grid-column: span 3; }
+}
 .unk-cap {
   display: grid;
-  gap: var(--unk-s1);
+  gap: var(--space-4);
   color: inherit;
   text-decoration: none;
 }
@@ -25,29 +23,39 @@
   position: relative;
   display: block;
   aspect-ratio: 1;
-  margin-bottom: var(--unk-s2);
+  margin-bottom: var(--space-8);
   overflow: hidden;
   border-radius: var(--unk-radius);
   background: var(--unk-tint);
 }
+/* M3 state layer on the card's image container: 8% hover, 10% focus / pressed */
+.unk-cap__well::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--unk-ink);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-short-3) var(--ease-standard);
+}
+@media (hover: hover) {
+  .unk-cap:hover .unk-cap__well::after { opacity: var(--state-hover); }
+}
+.unk-cap:focus-visible .unk-cap__well::after,
+.unk-cap:active .unk-cap__well::after { opacity: var(--state-pressed); }
 .unk-cap__img {
   object-fit: cover;
   /* store photos are shot on white: multiply turns that white into the well tone, so every card
      reads as the same 12px tile (static, no runtime cost) */
   mix-blend-mode: multiply;
-  transition: opacity var(--unk-dur-2) var(--unk-ease-out), transform var(--unk-dur-3) var(--unk-ease-out);
+  transition: opacity var(--dur-medium-2) var(--ease-standard), transform var(--dur-long-2) var(--ease-standard);
 }
 .unk-cap__img--alt { opacity: 0; }
 @media (hover: hover) {
   .unk-cap:hover .unk-cap__img { transform: scale(1.03); }
   .unk-cap:hover .unk-cap__img--alt { opacity: 1; }
 }
-.unk-cap:active .unk-cap__well { opacity: 0.85; }
-.unk-cap:focus-visible { outline-offset: 4px; }
-.unk-cap__name { font-size: var(--unk-text-sm); font-weight: 500; line-height: 1.35; }
-.unk-cap__price { font-size: var(--unk-text-sm); color: var(--unk-mute); font-variant-numeric: tabular-nums; }
-
-@media (max-width: 767px) {
-  .unk-caps { padding-block: var(--unk-s8) var(--unk-s7); }
-  .unk-caps__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--unk-s5) var(--unk-s2); }
-}
+.unk-cap:focus-visible { outline-offset: var(--space-4); }
+/* M3 roles: name = Label Large (14/20, 500), price = Body Medium */
+.unk-cap__name { font: var(--type-label-l); letter-spacing: var(--track-label-l); }
+.unk-cap__price { font: var(--type-body-m); letter-spacing: var(--track-body-m); color: var(--unk-mute); font-variant-numeric: tabular-nums; }

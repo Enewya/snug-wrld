@@ -13,7 +13,7 @@ export default function Visit() {
   const form = useRef<HTMLFormElement>(null);
   useEffect(() => (form.current ? initSignup(form.current) : undefined), []);
   return (
-    <section id="visit" className="unk-visit" aria-label="Visit the store and sign up">
+    <section id="visit" className="unk-section unk-visit" aria-label="Visit the store and sign up">
       <div className="unk-wrap unk-visit__grid">
         <div className="unk-visit__col" data-reveal>
           <h2 className="unk-head__label">Visit the store</h2>
@@ -30,7 +30,7 @@ export default function Visit() {
             <label className="unk-sr" htmlFor="unk-email">Email address</label>
             <input id="unk-email" className="unk-signup__input" type="email" name="contact[email]" autoComplete="email"
               placeholder="Email address" required aria-describedby="unk-signup-msg" />
-            <button className="unk-signup__btn" type="submit">Sign up</button>
+            <button className="unk-signup__btn unk-state" type="submit">Sign up</button>
             <p id="unk-signup-msg" className="unk-signup__msg" data-signup-msg aria-live="polite" />
           </form>
         </div>

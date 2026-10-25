@@ -1,24 +1,18 @@
-/* UNKNOWN lookbook (values from components/unknown/tokens.css). */
-.unk-lookbook {
-  position: relative;
-  z-index: 1;
-  padding-block: var(--unk-s8);
-  background: var(--unk-paper);
-  color: var(--unk-ink);
-  font-family: var(--unk-font);
-  --look-h: clamp(360px, 58vh, 600px);
-}
-.unk-lookbook__actions { display: flex; align-items: center; gap: var(--unk-s2); }
-.unk-lookbook__actions .unk-link { margin-left: var(--unk-s3); }
+/* UNKNOWN lookbook (values from components/unknown/tokens.css). Spacing above the section:
+   .unk-section (section gap). */
+.unk-lookbook { --look-h: clamp(360px, 58vh, 600px); }
+.unk-lookbook__actions { display: flex; align-items: center; gap: var(--space-8); }
+.unk-lookbook__actions .unk-link { margin-left: var(--space-16); }
 
-/* the row starts on the content edge and runs to the screen edge */
+/* the row starts on the content edge (the margin, or the centring offset past the max content
+   width) and runs to the screen edge */
 .unk-lookbook__row {
-  --edge: max(var(--unk-gutter), calc((100vw - var(--unk-max)) / 2 + var(--unk-gutter)));
+  --edge: max(var(--margin), calc((100vw - var(--content-max)) / 2 + var(--margin)));
   display: flex;
   align-items: flex-start;
-  gap: var(--unk-s3);
+  gap: var(--gutter);
   margin: 0;
-  padding: 0 var(--edge) var(--unk-s6);
+  padding: 0 var(--edge);
   list-style: none;
   overflow-x: auto;
   overscroll-behavior-x: contain;
@@ -27,10 +21,10 @@
   scrollbar-width: none;
 }
 .unk-lookbook__row::-webkit-scrollbar { display: none; }
-.unk-lookbook__row:focus-visible { outline: 2px solid var(--unk-ink); outline-offset: 4px; border-radius: var(--unk-radius); }
+.unk-lookbook__row:focus-visible { outline: var(--focus-ring); outline-offset: var(--space-4); border-radius: var(--unk-radius); }
 .unk-look { flex: none; scroll-snap-align: start; }
 /* editorial stagger: every other look sits lower */
-.unk-look:nth-child(even) { margin-top: var(--unk-s6); }
+.unk-look:nth-child(even) { margin-top: var(--space-48); }
 .unk-look__figure { margin: 0; }
 .unk-look__well {
   display: block;
@@ -45,43 +39,33 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform var(--unk-dur-3) var(--unk-ease-out);
+  transition: transform var(--dur-long-2) var(--ease-standard);
 }
-.unk-look__cap {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--unk-s3);
-  min-height: var(--unk-target);
-  padding-top: var(--unk-s1);
-}
-.unk-look__num {
-  font-size: var(--unk-text-xs);
-  font-weight: 500;
-  letter-spacing: var(--unk-track-label);
-  text-transform: uppercase;
-  color: var(--unk-mute);
-}
+/* only looks with a known product have a caption: its link, under the photo */
+.unk-look__cap { display: flex; padding-top: var(--space-4); }
+.unk-look__product { max-width: 100%; }
 .unk-look__product .unk-link { max-width: 100%; }
 .unk-look__product .unk-link__text { overflow: hidden; text-overflow: ellipsis; }
-/* product link: revealed on hover / focus with a pointer, always visible on touch */
+/* product link: revealed on hover / focus with a pointer, always visible on touch. With a pointer
+   it hangs below the photo without taking layout space, so the row ends at the photos and the gap
+   to the next section stays exactly the section gap. */
 @media (hover: hover) {
+  .unk-look__figure { position: relative; }
+  .unk-look__cap { position: absolute; top: 100%; left: 0; right: 0; }
   .unk-look__product {
     opacity: 0;
-    transform: translate3d(0, 4px, 0);
-    transition: opacity var(--unk-dur-2) var(--unk-ease-out), transform var(--unk-dur-2) var(--unk-ease-out);
+    transform: translate3d(0, var(--space-4), 0);
+    transition: opacity var(--dur-medium-2) var(--ease-standard), transform var(--dur-medium-2) var(--ease-standard);
   }
   .unk-look:hover .unk-look__product,
   .unk-look:focus-within .unk-look__product { opacity: 1; transform: none; }
   .unk-look:hover .unk-look__img { transform: scale(1.02); }
 }
 
-
-@media (max-width: 767px) {
-  .unk-lookbook { padding-block: var(--unk-s7); }
-  /* phones: looks sized by width (72vw) so the next one always peeks in, hinting the swipe */
+@media (max-width: 839px) {
+  /* compact / medium: looks sized by width (72vw) so the next one always peeks in, hinting the swipe */
   .unk-look__well { height: auto; width: min(72vw, 320px); }
-  .unk-lookbook__actions .unk-icon-btn { display: none; } /* swipe on phones */
+  .unk-lookbook__actions .unk-icon-btn { display: none; } /* swipe on touch-first widths */
   .unk-lookbook__actions .unk-link { margin-left: 0; }
-  .unk-look:nth-child(even) { margin-top: var(--unk-s4); }
+  .unk-look:nth-child(even) { margin-top: var(--space-24); }
 }

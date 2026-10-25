@@ -4,12 +4,12 @@ import { NEW_ARRIVALS, arrivals } from "./new-arrivals.data";
 import "./new-arrivals.css";
 
 /* sized to the card (in Liquid: image_url + widths + sizes); never the full-size photo */
-const SIZES = "(max-width: 1023px) 50vw, min(25vw, 340px)";
+const SIZES = "(max-width: 839px) 50vw, min(25vw, 340px)";
 
 /** New Arrivals: a 4-up grid (2-up on phones) fed by /collections/new-arrival in Shopify. */
 export default function NewArrivals() {
   return (
-    <section className="unk-arrivals" aria-labelledby="unk-arrivals-title">
+    <section className="unk-section unk-arrivals" aria-labelledby="unk-arrivals-title">
       <div className="unk-wrap">
         <header className="unk-head">
           <div>

@@ -3,12 +3,12 @@ import UnkLink from "../link/UnkLink";
 import { CAPS, caps } from "./caps.data";
 import "./caps-styles.css";
 
-const SIZES = "(max-width: 767px) 50vw, min(25vw, 340px)";
+const SIZES = "(max-width: 839px) 50vw, min(25vw, 340px)";
 
 /** Caps / headwear: the 4 real headwear products, a square shelf fed by /collections/headwear. */
 export default function Caps() {
   return (
-    <section className="unk-caps" aria-labelledby="unk-caps-title">
+    <section className="unk-section unk-caps" aria-labelledby="unk-caps-title">
       <div className="unk-wrap">
         <header className="unk-head">
           <div>
