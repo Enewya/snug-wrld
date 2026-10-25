@@ -1,0 +1,190 @@
+/* UNKNOWN hero header + compact dropdown menu (values from components/unknown/tokens.css).
+   No solid header bar: it sits on the hero's white patterned wall. */
+.unk-header {
+  --header-h: max(64px, 10.4vh); /* the draft's band on large screens; M3 top app bar (64) minimum */
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 60;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  height: var(--header-h);
+  padding-inline: var(--margin);
+  color: var(--unk-ink);
+}
+.unk-header [hidden] { display: none !important; }
+.unk-header__start { display: flex; align-items: center; justify-self: start; }
+.unk-header__end {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  /* the last icon's glyph lines up with the content margin (48px target, 24px glyph) */
+  margin-inline-end: calc(-1 * var(--space-12));
+}
+
+/* ABOUT: M3 Label Large, uppercase; underline draws in on hover (same as the text links) */
+.unk-header__about {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target);
+  font: var(--type-label-l);
+  letter-spacing: var(--track-label-l);
+  text-transform: uppercase;
+  color: inherit;
+  text-decoration: none;
+  background: linear-gradient(currentColor, currentColor) no-repeat 0 calc(50% + 12px) / 0 1px;
+}
+.unk-header__about:hover { background-size: 100% 1px; transition: background-size var(--dur-medium-2) var(--ease-standard); }
+
+/* wordmark: the draft's 12.55% of the viewport width on large screens */
+.unk-header__logo { justify-self: center; display: block; line-height: 0; }
+.unk-header__logo img { display: block; width: max(120px, 12.55vw); height: auto; }
+
+/* icon buttons: 48px target, 24px glyph, 12px corners, M3 state layer (.unk-state) */
+.unk-header__icon {
+  display: inline-grid;
+  place-items: center;
+  width: var(--target);
+  height: var(--target);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-button);
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+.unk-header__burger { display: none; }
+
+/* hamburger: two bars that morph into a close icon (transform only) */
+.unk-burger { position: relative; display: block; width: 18px; height: 12px; }
+.unk-burger span {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 1.5px;
+  border-radius: 1px;
+  background: currentColor;
+  transition: transform var(--dur-medium-2) var(--ease-standard);
+}
+.unk-burger span:first-child { top: 2px; }
+.unk-burger span:last-child { bottom: 2px; }
+.is-menu-open .unk-burger span:first-child { transform: translateY(3.25px) rotate(45deg); }
+.is-menu-open .unk-burger span:last-child { transform: translateY(-3.25px) rotate(-45deg); }
+
+/* the focus view's Close button, in place of the icons */
+.unk-header .unknown-close {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  min-height: var(--target);
+  padding: 0 var(--space-12);
+  border: 0;
+  border-radius: var(--radius-button);
+  background: none;
+  color: inherit;
+  font: var(--type-label-l);
+  letter-spacing: var(--track-label-l);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.unk-header .unknown-close span { font-size: 24px; line-height: 1; }
+
+/* ---------- compact (< 600px): hamburger left, wordmark centred, icons right ---------- */
+.unk-menu__scrim,
+.unk-menu { display: none; }
+
+@media (max-width: 599px) {
+  .unk-header {
+    --header-h: 64px; /* M3 small top app bar */
+    /* M3 top app bar: 4px edge padding around 48px icon buttons (glyphs 16px from the edge) */
+    padding-inline: var(--space-4);
+  }
+  .unk-header__end { margin-inline-end: 0; }
+  .unk-header__about { display: none; }
+  .unk-header__burger { display: inline-grid; }
+  /* the wordmark takes what is left between the two icon groups, 64-112px */
+  .unk-header__logo img { width: clamp(64px, calc(100vw - 2 * (var(--space-4) + 3 * var(--target) + var(--space-8))), 112px); }
+
+  .unk-menu__scrim {
+    display: block;
+    position: fixed;
+    inset: var(--header-h) 0 0;
+    z-index: 1;
+    background: rgba(21, 21, 21, 0.32); /* M3 scrim: 32% */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--dur-short-4) var(--ease-emphasized-accelerate), visibility 0s linear var(--dur-short-4);
+    touch-action: none;
+  }
+  .unk-menu {
+    display: block;
+    position: fixed;
+    top: var(--header-h);
+    left: 0;
+    right: 0;
+    z-index: 2;
+    max-height: calc(100dvh - var(--header-h) - var(--space-48));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-block: var(--space-8);
+    border-top: var(--unk-hairline);
+    border-radius: 0 0 var(--unk-radius) var(--unk-radius);
+    background: var(--unk-paper);
+    box-shadow: 0 2px 6px 2px rgba(21, 21, 21, 0.08), 0 1px 2px rgba(21, 21, 21, 0.12); /* M3 elevation 2 */
+    opacity: 0;
+    transform: translate3d(0, calc(-1 * var(--space-8)), 0);
+    visibility: hidden;
+    transition:
+      opacity var(--dur-short-4) var(--ease-emphasized-accelerate),
+      transform var(--dur-short-4) var(--ease-emphasized-accelerate),
+      visibility 0s linear var(--dur-short-4);
+  }
+  .is-menu-open .unk-menu__scrim {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity var(--dur-medium-4) var(--ease-emphasized-decelerate), visibility 0s;
+  }
+  .is-menu-open .unk-menu {
+    opacity: 1;
+    transform: none;
+    visibility: visible;
+    transition:
+      opacity var(--dur-medium-4) var(--ease-emphasized-decelerate),
+      transform var(--dur-medium-4) var(--ease-emphasized-decelerate),
+      visibility 0s;
+  }
+}
+
+.unk-menu__list,
+.unk-menu__sub { margin: 0; padding: 0; list-style: none; }
+.unk-menu__item + .unk-menu__item { border-top: var(--unk-hairline); }
+.unk-menu__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: var(--target);
+  padding: 0 var(--space-16);
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--unk-ink);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+/* M3 Title Medium for top-level rows, Body Large for children */
+.unk-menu__row--top { font: var(--type-title-m); letter-spacing: var(--track-title-m); }
+.unk-menu__row--child { padding-left: var(--space-32); font: var(--type-body-l); letter-spacing: var(--track-body-l); }
+.unk-menu__sub { padding-bottom: var(--space-8); }
+.unk-menu__chev { flex: none; transition: transform var(--dur-medium-2) var(--ease-standard); }
+[aria-expanded="true"] > .unk-menu__chev { transform: rotate(180deg); }
+
+/* page scroll locked while the menu is open */
+html.unk-menu-open,
+html.unk-menu-open body { overflow: hidden; }
+
+@media (prefers-reduced-motion: reduce) {
+  .unk-menu, .unk-menu__scrim, .unk-burger span, .unk-menu__chev { transition: none !important; }
+  .unk-menu { transform: none; }
+}

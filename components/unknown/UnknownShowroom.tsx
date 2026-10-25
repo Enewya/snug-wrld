@@ -6,11 +6,13 @@ import Rack, { rackOrigin, type RackOrigin } from "@/components/rack/Rack";
 import FocusView, { type FocusHandle } from "@/components/focus/FocusView";
 import { unknownProducts } from "@/lib/unknown-products";
 import { preloadFocus } from "@/lib/preload";
-
-import { UNKNOWN_LOGO } from "@/lib/unknown-brand";
+import UnknownHeader from "./header/UnknownHeader";
+import MobileRack, { type MobileRackHandle } from "./mobile-rack/MobileRack";
 
 type Selection = { start: number; origin: RackOrigin; key: number };
 const keepWhite = () => {};
+/** Compact window class (M3): the mobile rack is shown instead of the desktop rack. */
+const compact = () => window.matchMedia("(max-width: 599px)").matches;
 
 export default function UnknownShowroom() {
   const [selection, setSelection] = useState<Selection | null>(null);
@@ -18,6 +20,7 @@ export default function UnknownShowroom() {
   const [shown, setShown] = useState<number | null>(null);
   const view = useRef<FocusHandle>(null);
   const browse = useRef<HTMLSelectElement>(null);
+  const mobile = useRef<MobileRackHandle>(null);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -37,33 +40,38 @@ export default function UnknownShowroom() {
     document.querySelector<HTMLAnchorElement>(".unknown-wordmark")?.focus({ preventScroll: true });
   }, []);
   const closeStart = useCallback(() => setActive(false), []);
-  const getOrigin = useCallback((i: number) => rackOrigin(i), []);
+  // the focus view flies back to the rack that is on screen; on phones the rack first centres the
+  // piece being shown (it is hidden behind the focus view), so the flight ends in view
+  const getOrigin = useCallback((i: number) => (compact() ? mobile.current?.origin(i) ?? null : rackOrigin(i)), []);
+  const onIndex = useCallback((i: number) => {
+    setShown(i);
+    if (compact()) mobile.current?.jumpTo(i);
+  }, []);
 
   return (
     <div className="unknown-showroom">
-      <header className="unknown-header">
-        <a className="unknown-about" href="https://www.unk-nown.com/pages/about-unknown">About</a>
-        <a className="unknown-wordmark" href="/unknown" aria-label="UNKNOWN home">
-          {/* eslint-disable-next-line @next/next/no-img-element -- SVG wordmark, swapped by file */}
-          <img src={UNKNOWN_LOGO.src} width={UNKNOWN_LOGO.width} height={UNKNOWN_LOGO.height} alt={UNKNOWN_LOGO.alt} />
-        </a>
-        {selection ? <button className="unknown-close" type="button" onClick={() => view.current?.close()}>Close <span aria-hidden="true">×</span></button> :
-          <a className="unknown-contact" href="#visit">Contact</a>}
-      </header>
+      <UnknownHeader close={selection ? (
+        <button className="unknown-close" type="button" onClick={() => view.current?.close()}>Close <span aria-hidden="true">×</span></button>
+      ) : undefined} />
       <div className="unknown-wall" aria-hidden="true" />
       <main>
-        <h1 className="sr-only">UNKNOWN — eleven tops, three views</h1>
+        <h1 className="sr-only">UNKNOWN — the rack: seven pieces, three views</h1>
         <motion.div className="unknown-rack-wrap" inert={!!selection}
           initial={false}
           animate={active ? { filter: "blur(8px)", opacity: 0.25 } : { filter: "blur(0px)", opacity: 1 }}
-          transition={{ duration: 0.5 }}>
-          <Rack products={unknownProducts} onSelect={open} hiddenIndex={shown} paused={!!selection} />
+          transition={{ duration: 0.5, ease: [0.2, 0, 0, 1] }}>
+          <div className="unknown-rack-desktop">
+            <Rack products={unknownProducts} onSelect={open} hiddenIndex={shown} paused={!!selection} />
+          </div>
+          <div className="unknown-rack-mobile">
+            <MobileRack ref={mobile} products={unknownProducts} onSelect={open} hiddenIndex={shown} />
+          </div>
         </motion.div>
         {!selection && <div className="unknown-intro">
           <label className="sr-only" htmlFor="unknown-piece">Choose a piece to explore</label>
           <select id="unknown-piece" ref={browse} value="" onChange={e => {
             const i = Number(e.target.value);
-            const origin = rackOrigin(i);
+            const origin = getOrigin(i);
             if (origin) open(i, origin);
           }}>
             <option value="" disabled>Explore the collection</option>
@@ -72,7 +80,7 @@ export default function UnknownShowroom() {
         </div>}
         {selection && <FocusView key={selection.key} ref={view} products={unknownProducts}
           start={selection.start} origin={selection.origin} getOrigin={getOrigin}
-          onIndex={setShown} onTint={keepWhite} onCloseStart={closeStart} onClosed={closed} />}
+          onIndex={onIndex} onTint={keepWhite} onCloseStart={closeStart} onClosed={closed} />}
       </main>
     </div>
   );

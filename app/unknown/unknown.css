@@ -1,6 +1,7 @@
-/* UNKNOWN-only shell. Shared rack movement and the Snug homepage are unchanged. */
+/* UNKNOWN-only hero shell. Shared rack movement and the Snug homepage are unchanged. The header
+   lives in components/unknown/header/, the phone rack in components/unknown/mobile-rack/. */
 .unknown-showroom {
-  --paper: #e9e8e4; /* draft: warm grey wall */
+  --paper: #ffffff; /* developer's new draft: pure white */
   --ink: #151515;
   position: relative;
   isolation: isolate;
@@ -9,68 +10,47 @@
   background: var(--paper);
   color: var(--ink);
 }
+/* The Snug Wrld hero's pattern, at the same scale and opacity: a faint grid of small round hanger
+   hooks (46 x 37 tile, 1px stroke at 5%). Hero only: every section below is plain white. */
 .unknown-wall {
   position: absolute;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  /* UNKNOWN's own X-eyes face mark (the "xx_" on the LGT Strikes), widely spaced, ~5% lighter-
-     darker than the wall. Hero only: every other section is plain white. Candidates compared in
-     reference/draft-hero/pattern-candidates.png. */
-  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27240%27%20height%3D%27240%27%20viewBox%3D%270%200%20240%20240%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23151515%27%20stroke-opacity%3D%27.065%27%20stroke-width%3D%271.1%27%20stroke-linecap%3D%27round%27%3E%3Cg%20transform%3D%27translate%2844%2052%29%20rotate%28-8%29%27%3E%3Cpath%20d%3D%27M0%200l6%206M6%200L0%206M14%200l6%206M20%200l-6%206M1%2013h18%27/%3E%3C/g%3E%3Cg%20transform%3D%27translate%28164%20172%29%20rotate%289%29%27%3E%3Cpath%20d%3D%27M0%200l6%206M6%200L0%206M14%200l6%206M20%200l-6%206M3%2013c5%203%2011%203%2016%20-1%27/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='46' height='37' viewBox='0 0 46 37'%3E%3Cg fill='none' stroke='%23151513' stroke-opacity='.05' stroke-width='1' stroke-linecap='round'%3E%3Ccircle cx='23' cy='21' r='4.5'/%3E%3Cpath d='M23 16.5 V14.5 c0-1.6 2.2-1.8 2.2-3.2'/%3E%3C/g%3E%3C/svg%3E");
   background-position: center top;
 }
-.unknown-header {
-  position: absolute;
-  inset: 0 0 auto;
-  z-index: 60;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  /* draft: same geometry as the Snug Wrld header (10.4vh band, 2.2vw side padding) */
-  height: 10.4vh;
-  min-height: 64px;
-  padding-inline: 2.2vw;
-  background: transparent;
-}
-/* draft: ABOUT / CONTACT in small uppercase, letter-spaced (same style as the Snug Wrld header) */
-.unknown-about, .unknown-contact { display: inline-flex; align-items: center; min-height: 44px; font-size: clamp(12px, 0.9vw, 18px); font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); text-decoration: none; transition: opacity .16s cubic-bezier(.22,.61,.36,1); }
-.unknown-about { justify-self: start; }
-.unknown-contact { justify-self: end; }
-.unknown-about:hover, .unknown-contact:hover { opacity: .55; }
-.unknown-about:active, .unknown-contact:active { opacity: .4; }
-.unknown-wordmark { justify-self: center; display: block; line-height: 0; }
-/* draft: the wordmark is 12.55% of the viewport width (251px at 2000px) */
-.unknown-wordmark img { display: block; width: max(120px, 12.55vw); height: auto; }
-.unknown-close { justify-self: end; min-height: 44px; cursor: pointer; font-size: 14px; }
-.unknown-close span { font-size: 24px; margin-left: 10px; vertical-align: middle; }
+
 .unknown-rack-wrap { position: absolute; inset: 0; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; }
+.unknown-rack-desktop { position: absolute; inset: 0; }
+.unknown-rack-mobile { display: none; }
+@media (max-width: 599px) {
+  /* compact: the phone rack replaces the desktop rack (both share the same photo files) */
+  .unknown-rack-wrap { overflow: hidden; }
+  .unknown-rack-desktop { display: none; }
+  .unknown-rack-mobile { display: block; position: absolute; inset: 0; }
+}
+
 /* draft: the rack uses the shared defaults from globals.css (garment width min(36vh, 22.5vw), rail
    74.5% wide at 27.2% height, pitch 0.33 garment widths); only the garments are drawn 9.5% larger
    (measured from the draft screenshot: hem 532px below the rail at 2000x1109, vs 486px). */
 .unknown-showroom .rack { --garment-scale: 1.095; }
-.unknown-showroom .rack-caption { top: calc(var(--rail-y) + var(--iw) * var(--garment-scale) * var(--hem) + 28px); }
+.unknown-showroom .rack-caption { top: calc(var(--rail-y) + var(--iw) * var(--garment-scale) * var(--hem) + var(--space-24)); }
+.unknown-showroom .rack-caption { color: #626262; font: var(--type-label-m); letter-spacing: var(--track-label-m); }
+
 /* Keep a keyboard-accessible product chooser without adding a second visual focal point. */
 .unknown-intro { position: absolute; left: 50%; bottom: 6dvh; transform: translateX(-50%); z-index: 25; }
 .unknown-intro select { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-.unknown-intro select:focus { position: static; width: auto; height: 44px; clip-path: none; background: #fff; padding: 0 20px; border: 1px solid #101010; border-radius: 12px; outline-offset: 4px; }
-.unknown-showroom .rack-caption { color: #626262; }
+.unknown-intro select:focus { position: static; width: auto; height: var(--target); clip-path: none; background: #fff; padding: 0 var(--space-24); border: 1px solid #101010; border-radius: var(--radius-button); outline-offset: var(--space-4); font: var(--type-body-l); }
+
 .unknown-showroom .focus { --fy: max(110px, 15dvh); --fiw: min(45dvh, 68vw, var(--fit-h) / var(--stage)); --g-cta: 0px; --cta-h: 0px; --g-hem: 32px; --fit-h: calc(100dvh - 75px - var(--fy) - var(--g-hem) - var(--stack)); }
-@media (max-width: 640px) {
-  .unknown-header { padding-inline: 16px; height: 88px; }
-  .unknown-wordmark img { width: 112px; }
-  .unknown-showroom .rack { --iw: min(34dvh, 220px); --garment-scale: 1; width: max(100%, calc(var(--iw) * 4.4)); --rail-w: 94%; }
+@media (max-width: 599px) {
   .unknown-showroom .focus { --fy: max(110px, 16dvh); --fiw: min(40dvh, 72vw, var(--fit-h) / var(--stage)); --g-hem: 24px; --fit-h: calc(100dvh - 95px - var(--fy) - var(--g-hem) - var(--stack)); }
-  .unknown-showroom .focus-arrow { bottom: 32px; }
+  .unknown-showroom .focus-arrow { bottom: var(--space-32); }
 }
-@media (max-width: 360px) {
-  .unknown-header { padding-inline: 12px; }
-  .unknown-wordmark img { width: 100px; }
-}
-/* one button radius (12px, as --radius-button) for the focus view's controls on /unknown */
+/* 12px corners for the focus view's controls on /unknown */
 .unknown-showroom .focus-arrow,
 .unknown-showroom .focus-arrow::before,
-.unknown-showroom .focus-arrow:focus-visible { border-radius: 12px; }
-.unknown-showroom .seg,
-.unknown-showroom .seg-knob { border-radius: 12px; }
+.unknown-showroom .focus-arrow:focus-visible { border-radius: var(--radius-button); }
+.unknown-showroom .seg { border-radius: var(--radius-button); }
 .unknown-showroom .seg-knob { border-radius: 9px; } /* concentric inside the 12px pill (3px inset) */
