@@ -1,0 +1,98 @@
+/* UNKNOWN mobile rack (< 600px). Geometry values are provisional until measured against the
+   reference reel (see HANDOFF.md, "Mobile rack"): three hangers across, garments drawn large. */
+.umr {
+  --umr-iw: 64vw; /* rendered photo width: the side views read large, the centred front fits between its neighbours */
+  --umr-pitch: 33.333vw; /* three hangers across the screen */
+  --umr-rail-y: calc(64px + var(--space-24)); /* just under the 64px header */
+  --rod: calc(var(--umr-iw) * 0.03039 - 1px); /* fits inside every hook loop (as the desktop rack) */
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  touch-action: pan-y; /* vertical swipes scroll the page; horizontal ones are ours */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+@property --umr-iw-px {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+.umr { --umr-iw-px: var(--umr-iw); } /* resolved in px for the behaviour file */
+
+/* the rod: static, past both screen edges */
+.umr__rail {
+  position: absolute;
+  z-index: 200;
+  left: calc(-1 * var(--space-24));
+  right: calc(-1 * var(--space-24));
+  top: var(--umr-rail-y);
+  height: var(--rod);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.umr__track {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  will-change: transform;
+}
+/* zero-size anchor where the hook loop rests on the rod, one pitch apart, garment 0 in the centre */
+.umr__item {
+  position: absolute;
+  top: calc(var(--umr-rail-y) - var(--rod) / 2);
+  left: calc(50% + var(--i) * var(--umr-pitch));
+  width: 0;
+  height: 0;
+}
+.umr__garment {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  perspective: calc(var(--umr-iw) * 4);
+  filter: drop-shadow(0 6px 8px rgba(20, 20, 18, 0.08)); /* the desktop rack's soft garment shadow */
+}
+.umr__card {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  transform-origin: 0 0; /* turn and grow around the hook */
+}
+.umr__photo { position: absolute; pointer-events: none; }
+.umr__photo img { display: block; width: 100%; height: 100%; }
+
+/* tap / focus target over the garment's body (48px wide at least) */
+.umr__hit {
+  position: absolute;
+  left: calc(-1 * max(var(--target), var(--umr-pitch) / 2));
+  top: 0;
+  width: max(var(--target) * 2, var(--umr-pitch));
+  height: calc(var(--umr-iw) * 1.25);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-button);
+  background: none;
+  cursor: pointer;
+}
+.umr__hit:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+
+/* name of the centred piece, under the rack (M3 Label Large) */
+.umr__caption {
+  position: absolute;
+  left: var(--margin);
+  right: var(--margin);
+  top: calc(var(--umr-rail-y) + var(--umr-iw) * 1.25 * 1.12 + var(--space-24));
+  margin: 0;
+  text-align: center;
+  font: var(--type-label-l);
+  letter-spacing: var(--track-label-l);
+  color: var(--unk-mute);
+  pointer-events: none;
+}
