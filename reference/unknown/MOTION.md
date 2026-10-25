@@ -38,3 +38,12 @@ Re-measured at 60 fps (Video B entry 0.40–0.90 s, tops swap 1.20–1.88 s; Vid
 | Next ghost | Slides in from beyond the right edge, 35–100%, ease-out | Same |
 | Name roll | Up, line by line, 35–50 ms stagger | Same (6% per line) |
 | Easing family | ease-out for travel, ease-in-out for opacity | Same, cubic |
+
+## v3: crop edge (measured October 25)
+
+Sharpest pants frame of `video-b-full-reel.mov` (3.5 s), model cropped to the screen: visible
+height 360 px (crop line to soles), fade at the crop line 14 px from 10% to 90% opacity over the
+skin (39 columns) = **3.9% of the visible height**; frames with motion blur read 5.6-5.9%. Below the
+fade the body is fully opaque; nothing veils it. Ours was 8.0% (a 9% linear ramp) plus a mist band
+in front of the waist. Now: smoothstep over 5.7% of the image height = 3.87% of the visible height,
+mist moved behind the model.

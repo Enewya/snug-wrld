@@ -34,8 +34,11 @@ unknown-logo-sweatpant-red.webp     not supplied yet: red is switched off (`hidd
 <handle>-grey.webp                  greyscale copy of each pair (the ghost), made by the same script
 ```
 
-Every model image has a soft fade baked into its top edge (the crop starts at the waist); the
-cloud mist sits over that line.
+Every model image has a short soft fade baked into its top edge (the crop starts at the waist):
+a smoothstep over the top 5.7% of the image, so the fade's 10-90% span is **3.9% of the model's
+visible height**, measured to match the reference (`reference/unknown/MOTION.md`, "v3"). The body
+is fully opaque below it. The waist mist sits **behind** the model (atmosphere only, it never
+veils the body).
 
 Atmosphere: `public/products/unknown/atmosphere/` (pre-rendered transparent WebP, made by
 `scripts/generate-unknown-clouds.py`): `clouds-back.webp` 1600×700 (17 KB), `clouds-front.webp`
@@ -75,13 +78,14 @@ div.unk-hold                           wraps the hero and this section
         img[data-pants-layer]          state 0: model in the base pants (opacity 1)
         img[data-pants-layer] × N      each pair in colour
         img[data-pants-grey] × N       greyscale copies: the ghost at the right / sliding in
-      img[data-cloud="mist"]           mist over the waist line
+      div[data-cloud="mist"]           mist around the crop line, behind the figure (CSS background)
       button[data-pants-peek]          invisible box where the ghost rests (clickable: next pair)
       article[data-pants-item]         state 0 intro ("4 pairs" / "Scroll to try each one on")
       article[data-pants-item] × N     [data-pants-name] (plain text, split into lines by JS),
                                        [data-pants-fade] price + View product link, [data-pants-buy] bar
       [data-pants-current] [data-pants-progress] [data-pants-prev] [data-pants-next] [data-pants-status]
-div.unk-pants-tail                     28vh fade from the sky colour to the white page below
+(no tail element: the next section's top padding carries the fade from the sky into white,
+ see "Release" below)
 ```
 
 ## Motion, in plain English
@@ -92,7 +96,14 @@ Measured first; numbers in `reference/unknown/MOTION.md` (v2 table).
   edge is a 30vh feather (clear → sky) with a mist band, so there is never a hard line. Two cloud
   layers rise a little slower than the section (depth) and drift sideways with progress at two
   speeds; the waist mist drifts the other way. All by `transform`.
-- **Pinning** is CSS: the section is N+1 screens tall and the stage is `position: sticky`.
+- **Pinning** is CSS: the stage is `position: sticky`. The section is `112svh + (states - 1.2) x
+  94svh` tall: a 0.12-screen lead-in on the first state, then 0.94 of a screen per state, ending
+  exactly where the last pair has settled (so it **releases immediately**, no dead scroll). The
+  same numbers are `LEAD` / `STEP` in `pants-section-behaviour.js`; keep them in step.
+- **Release:** the buy bar sits `--pants-inset` above the stage's bottom (32px, 16px on phones /
+  tall screens); the next section's top padding is the section gap minus that inset (64 / 48 / 80,
+  all on the scale), so the visible gap from the buy bar to New Arrivals is exactly the section gap
+  (96 expanded, 64 compact), and that padding fades from the sky colour into white.
 - **Rest state 0:** the model in the neutral base pants, the first pair waiting at the right as a
   faint grey ghost (opacity `--peek-opacity`, 0.2).
 - **One loop:** a single `requestAnimationFrame` loop. Scroll position becomes a progress value
@@ -127,17 +138,18 @@ Measured first; numbers in `reference/unknown/MOTION.md` (v2 table).
 - **Overflow:** the mist bands are wider than the screen; `overflow-x: clip` on the section keeps
   the page from scrolling sideways on phones (use `clip`, not `hidden`, or sticky breaks).
 
-## Fonts
+## Type and colour
 
-Product names use **Hanken Grotesk 500** (Google Fonts), the closest free match to the
-reference's neo-grotesque (comparison: `reference/unknown/font-compare.png`). It is a close
-match, not the same typeface. Loading in Shopify: see the page-level HANDOFF.
+Hanken Grotesk on M3 roles: label Label Small, product name Headline Large (32/40), price Body
+Large, intro line Body Medium, counter and buy-bar name Label Medium, Add to cart Label Large.
+Sky (re-tuned for the white hero): `#F0F3F6` → `#F8FAFB`, ink 16.4:1, mute 6.0:1 (AA). Loading the
+font in Shopify: see the page-level HANDOFF.
 
 ## Accessibility
 
 Real `<h2>` (the "PANTS" label) and `<h3>` names; only the active pair is focusable (`inert` +
 `aria-hidden` on the others, switched at the halfway point of a swap); polite live region
-announces "2 of 4: NAME, PRICE"; the counter shows "—" on the intro state; 44px targets; arrows use `aria-disabled` so focus is never lost;
+announces "2 of 4: NAME, PRICE"; the counter shows "—" on the intro state; 48px targets; arrows use `aria-disabled` so focus is never lost;
 model images are decorative (`alt=""`) because the name is announced.
 
 ## Shopify version
@@ -166,8 +178,8 @@ model images are decorative (`alt=""`) because the name is announced.
   Optional: on `shopify:block:select`, scroll to that pair.
 - **Held hero:** in the theme the hero and pants are two sections, so wrap neither; instead give
   the hero section `position: sticky; top: 0` and the pants section a higher `z-index` and
-  `position: relative` (same effect as `.unk-hold`). The tail div goes at the end of the pants
-  section.
+  `position: relative` (same effect as `.unk-hold`). Give the next section the
+  `.unk-hold + .unk-section` padding / fade rule (in the theme: a class on that section).
 - **CSS:** drop the `body:has()` rule (a theme page scrolls normally); no ancestor of the section
   may have `overflow: hidden/auto` (it would break `position: sticky`).
 - **Still to decide:** real add to cart needs a size choice (or quick-add drawer) before posting
