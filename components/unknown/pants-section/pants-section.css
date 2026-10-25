@@ -20,8 +20,10 @@ body:has(.unk-pants) {
 
 .unk-pants {
   /* atmosphere: neutral cool white sky (no saturated blue), from the reference's tone */
-  --sky-top: #e8ecf0; /* ink 15.1:1, mute 5.6:1 (AA) */
-  --sky-bottom: #f7f9fa;
+  /* re-tuned for the white hero (was #e8ecf0 against the grey wall): just enough below white for
+     the white cloud layers to read. Ink 16.4:1, mute 6.0:1 (AA) */
+  --sky-top: #f0f3f6;
+  --sky-bottom: #f8fafb;
   --peek-opacity: 0.2;
   /* the model: one fixed 3:4 frame, centred, between the top margin and the bottom row */
   --fig-top: max(var(--space-24), 5svh);
@@ -75,7 +77,7 @@ body:has(.unk-pants) {
   pointer-events: none;
   /* hidden at rest on the hero; pants-section-behaviour.js fades it in as the section starts to rise */
   opacity: 0;
-  background: linear-gradient(180deg, rgba(232, 236, 240, 0) 0%, rgba(232, 236, 240, 0.55) 55%, var(--sky-top) 100%);
+  background: linear-gradient(180deg, rgba(240, 243, 246, 0) 0%, rgba(240, 243, 246, 0.55) 55%, var(--sky-top) 100%);
 }
 .unk-pants__edge-mist {
   position: absolute;
@@ -129,7 +131,7 @@ body:has(.unk-pants) {
    80, all on the scale) carries the fade from the sky into the plain white page */
 .unk-hold + .unk-section {
   padding-top: calc(var(--section-gap) - var(--pants-inset));
-  background: linear-gradient(180deg, var(--sky-bottom, #f7f9fa) 0%, var(--unk-paper) calc(var(--section-gap) - var(--pants-inset)));
+  background: linear-gradient(180deg, var(--sky-bottom, #f8fafb) 0%, var(--unk-paper) calc(var(--section-gap) - var(--pants-inset)));
 }
 
 
