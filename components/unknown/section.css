@@ -1,59 +1,68 @@
-/* UNKNOWN section header: label + title on the left, a quiet link on the right. Shared by the
-   sections below the pants (in the theme: part of the base stylesheet). */
+/* UNKNOWN shared section styles (in the theme: part of the base stylesheet). Values from
+   components/unknown/tokens.css. */
+
+/* content width: M3 window-class margin, centred max content width */
 .unk-wrap {
   width: 100%;
-  max-width: var(--unk-max);
+  max-width: var(--content-max);
   margin-inline: auto;
-  padding-inline: var(--unk-gutter);
+  padding-inline: var(--margin);
   box-sizing: border-box;
 }
+
+/* every section below the pants: one-sided top padding = the section gap (Carbon layout token) */
+.unk-section {
+  position: relative;
+  z-index: 1;
+  padding-top: var(--section-gap);
+  background: var(--unk-paper);
+  color: var(--unk-ink);
+  font-family: var(--unk-font);
+}
+
+/* section header: label + title on the left, a text link on the right */
 .unk-head {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: var(--unk-s4);
-  margin-bottom: var(--unk-s5);
+  gap: var(--space-24);
+  margin-bottom: var(--space-24);
 }
 .unk-head__label {
   display: block;
-  margin: 0 0 var(--unk-s2);
-  font-size: var(--unk-text-xs);
-  font-weight: 500;
-  letter-spacing: var(--unk-track-label);
+  margin: 0 0 var(--space-8);
+  font: var(--type-label-s);
+  letter-spacing: var(--track-label-s);
   text-transform: uppercase;
   color: var(--unk-mute);
 }
 .unk-head__title {
   margin: 0;
-  font-size: var(--unk-text-xl);
-  font-weight: 500;
-  line-height: 1.05;
-  letter-spacing: var(--unk-track-tight);
+  font: var(--type-headline-l);
+  letter-spacing: var(--track-headline-l);
 }
-/* The one text link (see link/UnkLink.tsx): underline under the text only, 6px gap, ↗ icon. */
+@media (min-width: 840px) {
+  .unk-head { margin-bottom: var(--space-32); }
+}
+
+/* The one text link (see link/UnkLink.tsx): plain text, no arrow, underline under the text only,
+   drawn in on hover; 48px touch target. */
 .unk-link {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-height: var(--unk-target);
-  font-size: var(--unk-text-xs);
-  font-weight: 500;
-  letter-spacing: var(--unk-track-label);
+  min-height: var(--target);
+  font: var(--type-label-l);
+  letter-spacing: var(--track-label-l);
   text-transform: uppercase;
   color: inherit;
   text-decoration: none;
   white-space: nowrap;
 }
 .unk-link__text {
-  padding-bottom: 3px;
+  padding-bottom: var(--space-2);
   background: linear-gradient(currentColor, currentColor) no-repeat 0 100% / 100% 1px;
 }
-.unk-link__icon {
-  flex: none;
-  transition: transform var(--unk-dur-1) var(--unk-ease-out);
-}
-.unk-link:hover .unk-link__text { animation: unk-underline var(--unk-dur-2) var(--unk-ease-out); }
-.unk-link:hover .unk-link__icon { transform: translate(2px, -2px); }
+.unk-link:hover .unk-link__text { animation: unk-underline var(--dur-medium-2) var(--ease-standard); }
 .unk-link:active { opacity: 0.6; }
 @keyframes unk-underline {
   from { background-size: 0 1px; }
@@ -61,26 +70,24 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .unk-link:hover .unk-link__text { animation: none; }
-  .unk-link__icon { transition: none; }
 }
-@media (max-width: 640px) {
+@media (max-width: 599px) {
   .unk-head { flex-wrap: wrap; align-items: flex-start; }
 }
 
-/* square icon button (prev / next): 44px target, button radius */
+/* square icon button (prev / next): 48px target, 12px corners, M3 state layer (.unk-state) */
 .unk-icon-btn {
   display: grid;
   place-items: center;
-  width: var(--unk-target);
-  height: var(--unk-target);
+  width: var(--target);
+  height: var(--target);
   padding: 0;
   border: var(--unk-hairline);
   border-radius: var(--radius-button);
   background: none;
   color: var(--unk-ink);
   cursor: pointer;
-  transition: background-color var(--unk-dur-1) var(--unk-ease-out), opacity var(--unk-dur-1) var(--unk-ease-out);
+  transition: opacity var(--dur-short-3) var(--ease-standard);
 }
-.unk-icon-btn:hover { background: rgba(21, 21, 21, 0.05); }
-.unk-icon-btn:active { background: rgba(21, 21, 21, 0.1); }
-.unk-icon-btn[aria-disabled="true"] { opacity: 0.3; cursor: default; background: none; }
+.unk-icon-btn[aria-disabled="true"] { opacity: 0.3; cursor: default; }
+.unk-icon-btn[aria-disabled="true"]::after { opacity: 0; }

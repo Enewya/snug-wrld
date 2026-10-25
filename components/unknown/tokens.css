@@ -1,59 +1,133 @@
-/* UNKNOWN design tokens: shared by every /unknown section (pants, new arrivals, caps, visit, footer).
-   In the Shopify theme these become the theme's base CSS variables. Scoped to .unk-page so the Snug
-   Wrld pages are unaffected. */
+/* UNKNOWN design tokens: shared by every /unknown section. Every value comes from a published
+   system; the source of each rule is listed in components/unknown/HANDOFF.md ("Design system").
+   In the Shopify theme these become the theme's base CSS variables. Scoped to .unk-page so the
+   Snug Wrld pages are unaffected. */
 .unk-page {
-  /* colour (all text pairs pass WCAG AA on their background) */
+  /* ---- colour (every text pair passes WCAG 2.2 AA on its background) ---- */
   --unk-ink: #151515;
   --unk-paper: #ffffff;
-  --unk-warm: #e9e8e4; /* hero wall */
+  --unk-warm: #e9e8e4; /* footer only */
   --unk-mute: #5c5c5c; /* 6.6:1 on white, 5.3:1 on warm */
   --unk-line: rgba(21, 21, 21, 0.12);
   --unk-tint: #f4f4f2; /* image wells */
 
-  /* type: one family (Hanken Grotesk, Google Fonts), two weights */
+  /* ---- spacing: Material 3 / IBM Carbon 8px-grid scale. No other margin/padding/gap values. ---- */
+  --space-2: 2px;
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-40: 40px;
+  --space-48: 48px;
+  --space-64: 64px;
+  --space-80: 80px;
+  --space-96: 96px;
+  /* Carbon layout tokens (section-level): 16, 24, 32, 48, 64, 96, 160 */
+  --layout-160: 160px; /* reserved for the hero-to-pants transition (not needed: it overlaps) */
+
+  /* section rhythm (Carbon layout tokens): the gap between consecutive sections, applied once,
+     as padding-top on the lower section, so gaps never double. 64 compact/medium, 96 expanded. */
+  --section-gap: var(--space-64);
+
+  /* ---- layout: Material 3 window size classes ---- */
+  /* compact 0-599: 16 margin, 4 columns, 16 gutter */
+  --margin: var(--space-16);
+  --columns: 4;
+  --gutter: var(--space-16);
+  --content-max: 1440px; /* centred max content width (expanded) */
+
+  /* ---- type: Material 3 type roles (size / line-height / weight / tracking). Typeface kept:
+     Hanken Grotesk 400/500. Use as `font: var(--type-…); letter-spacing: var(--track-…)`. ---- */
   --unk-font: var(--font-unk), "Helvetica Neue", Arial, sans-serif;
-  --unk-text-xs: 11px; /* labels, uppercase + tracked */
-  --unk-text-sm: 13px; /* meta, prices in grids */
-  --unk-text-md: 15px; /* body, prices */
-  --unk-text-lg: clamp(20px, 1.8vw, 26px); /* card titles on large layouts */
-  --unk-text-xl: clamp(28px, 3vw, 46px); /* product names (measured from the reference: ~3vw) */
-  --unk-text-2xl: clamp(40px, 6.4vw, 104px); /* section statements */
-  --unk-track-label: 0.14em;
-  --unk-track-tight: -0.015em;
+  --type-display-l: 400 57px/64px var(--unk-font);
+  --track-display-l: -0.25px;
+  --type-headline-l: 400 32px/40px var(--unk-font);
+  --track-headline-l: 0px;
+  --type-headline-m: 400 28px/36px var(--unk-font);
+  --track-headline-m: 0px;
+  --type-headline-s: 400 24px/32px var(--unk-font);
+  --track-headline-s: 0px;
+  --type-title-l: 400 22px/28px var(--unk-font);
+  --track-title-l: 0px;
+  --type-title-m: 500 16px/24px var(--unk-font);
+  --track-title-m: 0.15px;
+  --type-body-l: 400 16px/24px var(--unk-font);
+  --track-body-l: 0.5px;
+  --type-body-m: 400 14px/20px var(--unk-font);
+  --track-body-m: 0.25px;
+  --type-label-l: 500 14px/20px var(--unk-font);
+  --track-label-l: 0.1px;
+  --type-label-m: 500 12px/16px var(--unk-font);
+  --track-label-m: 0.5px;
+  --type-label-s: 500 11px/16px var(--unk-font);
+  --track-label-s: 0.5px;
 
-  /* space: 8-pt scale (4 is the only half step) */
-  --unk-s1: 4px;
-  --unk-s2: 8px;
-  --unk-s3: 16px;
-  --unk-s4: 24px;
-  --unk-s5: 32px;
-  --unk-s6: 48px;
-  --unk-s7: 64px;
-  --unk-s8: 96px;
-  --unk-s9: 128px;
-  --unk-gutter: clamp(16px, 4.17vw, 64px);
-  --unk-max: 1440px;
+  /* ---- interaction: Material 3 touch target and state layers; WCAG 2.2 focus appearance ---- */
+  --target: 48px; /* M3 minimum; meets Apple HIG 44pt and WCAG 2.2 target size */
+  --state-hover: 0.08;
+  --state-focus: 0.1;
+  --state-pressed: 0.1;
+  --focus-ring: 2px solid var(--unk-ink); /* 2px, 15:1 against white (>= 3:1) */
+  --focus-offset: var(--space-2);
 
-  /* shape: one radius for every button, input and button-like control, and for cards / media */
+  /* ---- shape: 12px corners on buttons, inputs and containers ---- */
   --radius-button: 12px;
   --unk-radius: var(--radius-button);
   --unk-hairline: 1px solid var(--unk-line);
-  --unk-target: 44px; /* minimum touch target */
 
-  /* motion: one easing family, three durations */
-  --unk-ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
-  --unk-ease-in: cubic-bezier(0.55, 0, 0.75, 0.2);
-  --unk-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  --unk-dur-1: 160ms; /* hover, press */
-  --unk-dur-2: 320ms; /* reveals, fades */
-  --unk-dur-3: 640ms; /* larger moves */
+  /* ---- motion: Material 3 easing + duration tokens. NOT used by the pants swap, the
+     hero-to-pants entry or the mobile rack, which keep their measured video values. ---- */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --ease-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --dur-short-2: 100ms;
+  --dur-short-3: 150ms;
+  --dur-short-4: 200ms;
+  --dur-medium-1: 250ms;
+  --dur-medium-2: 300ms;
+  --dur-medium-4: 400ms;
+  --dur-long-2: 500ms;
+}
+/* medium 600-839: 24 margin, 8 columns, 24 gutter */
+@media (min-width: 600px) {
+  .unk-page { --margin: var(--space-24); --columns: 8; --gutter: var(--space-24); }
+}
+/* expanded 840+: 24-32 margin (32 from 1200), 12 columns, section gap 96 */
+@media (min-width: 840px) {
+  .unk-page { --columns: 12; --section-gap: var(--space-96); }
+}
+@media (min-width: 1200px) {
+  .unk-page { --margin: var(--space-32); }
 }
 
-.unk-page :where(a, button):focus-visible {
-  outline: 2px solid var(--unk-ink);
-  outline-offset: 3px;
+/* visible focus ring on every interactive element (WCAG 2.2 focus appearance) */
+.unk-page :where(a, button, input, [tabindex]):focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
   border-radius: var(--unk-radius);
 }
+
+/* M3 state layer: an overlay in the element's content colour, 8% hover, 10% focus, 10% pressed.
+   Put .unk-state on any button-like element (it must not be position: static). */
+.unk-state { position: relative; isolation: isolate; }
+.unk-state::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: currentColor;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-short-3) var(--ease-standard);
+}
+@media (hover: hover) {
+  .unk-state:hover::after { opacity: var(--state-hover); }
+}
+.unk-state:focus-visible::after { opacity: var(--state-focus); }
+.unk-state:active::after { opacity: var(--state-pressed); }
 
 .unk-sr {
   position: absolute;

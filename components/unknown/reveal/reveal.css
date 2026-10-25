@@ -1,14 +1,16 @@
-/* UNKNOWN reveal (see reveal-behaviour.js). Delay steps let a row of cards arrive one after another. */
+/* UNKNOWN reveal (see reveal-behaviour.js): a once-only 16px fade-up as content enters (M3
+   emphasized-decelerate, long-2). Delay steps (M3 short-2 each) let a row of cards arrive one
+   after another. */
 .unk-reveal-on [data-reveal] {
   opacity: 0;
-  transform: translate3d(0, 16px, 0);
-  transition: opacity var(--unk-dur-3) var(--unk-ease-out), transform var(--unk-dur-3) var(--unk-ease-out);
-  transition-delay: calc(var(--reveal-step, 0) * 80ms);
+  transform: translate3d(0, var(--space-16), 0);
+  transition: opacity var(--dur-long-2) var(--ease-emphasized-decelerate), transform var(--dur-long-2) var(--ease-emphasized-decelerate);
+  transition-delay: calc(var(--reveal-step, 0) * var(--dur-short-2));
 }
 .unk-reveal-on [data-reveal].is-in {
   opacity: 1;
   transform: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  .unk-reveal-on [data-reveal] { transform: none; transition: opacity var(--unk-dur-2) linear; transition-delay: 0s; }
+  .unk-reveal-on [data-reveal] { transform: none; transition: opacity var(--dur-medium-2) linear; transition-delay: 0s; }
 }

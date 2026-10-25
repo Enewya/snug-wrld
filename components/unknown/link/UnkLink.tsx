@@ -1,7 +1,7 @@
 /**
- * The one text link of the UNKNOWN site: a single <a>, text underlined (text only, not the icon
- * or the gap), a 6px gap, then a top-right arrow. Hover: the arrow nudges 2px up-right and the
- * underline draws in from the left. Styles: components/unknown/section.css (.unk-link).
+ * The one text link of the UNKNOWN site ("View all", "View product", "Get directions"): a single
+ * <a> with plain text, no arrow. The underline sits under the text only and draws in from the left
+ * on hover; the link is a 48px touch target. Styles: components/unknown/section.css (.unk-link).
  * In Liquid: snippets/unk-link.liquid with the same markup.
  */
 type Props = {
@@ -17,9 +17,6 @@ export default function UnkLink({ href, children, external, className }: Props) 
     <a className={`unk-link${className ? ` ${className}` : ""}`} href={href}
       {...(external ? { target: "_blank", rel: "noopener" } : {})}>
       <span className="unk-link__text">{children}</span>
-      <svg className="unk-link__icon" viewBox="0 0 10 10" width="10" height="10" aria-hidden="true">
-        <path d="M2.5 7.5l5-5M3.5 2.5h4v4" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
       {external && <span className="unk-sr"> (opens in a new tab)</span>}
     </a>
   );
