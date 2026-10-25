@@ -55,7 +55,6 @@
   width: 0;
   height: 0;
   perspective: calc(var(--umr-iw) * 4);
-  filter: drop-shadow(0 6px 8px rgba(20, 20, 18, 0.08)); /* the desktop rack's soft garment shadow */
 }
 .umr__card {
   position: absolute;
@@ -64,8 +63,10 @@
   width: 0;
   height: 0;
   transform-origin: 0 0; /* turn and grow around the hook */
+  will-change: transform; /* own layer: the turn only re-composites it, the shadow is drawn once */
 }
-.umr__photo { position: absolute; pointer-events: none; }
+/* the desktop rack's soft garment shadow, inside the turning card so a turn never redraws it */
+.umr__photo { position: absolute; pointer-events: none; filter: drop-shadow(0 6px 8px rgba(20, 20, 18, 0.08)); }
 .umr__photo img { display: block; width: 100%; height: 100%; }
 
 /* tap / focus target over the garment's body (48px wide at least) */

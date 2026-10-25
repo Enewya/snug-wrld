@@ -65,15 +65,17 @@ const MobileRack = forwardRef<MobileRackHandle, Props>(function MobileRack({ pro
           <li key={p.slug} className="umr__item" data-umr-item
             style={{ "--i": i, visibility: hiddenIndex === i ? "hidden" : undefined } as React.CSSProperties}>
             <div className="umr__garment">
-              <div className="umr__card" data-umr-card>
-                <div className="umr__photo" data-umr-side style={box(p.side)}>
+              {/* the first garment starts in the centre, already turned to its front (the state the
+                  behaviour file starts in), so the first paint needs no JavaScript */}
+              <div className="umr__card" data-umr-card style={i === 0 ? { transform: "rotateY(0deg) scale(1.12)" } : undefined}>
+                <div className="umr__photo" data-umr-side style={{ ...box(p.side), opacity: i === 0 ? 0 : 1 }}>
                   {/* same `sizes` as the desktop rack, so both share one cached file per photo */}
                   <Image src={p.side} width={photos[p.side].width} height={photos[p.side].height} sizes="36vh" alt=""
-                    draggable={false} loading={i < 3 ? "eager" : "lazy"} fetchPriority={i === 0 ? "high" : "auto"} />
+                    draggable={false} loading={i < 3 ? "eager" : "lazy"} />
                 </div>
-                <div className="umr__photo" data-umr-front style={{ ...box(p.front), opacity: 0 }}>
+                <div className="umr__photo" data-umr-front style={{ ...box(p.front), opacity: i === 0 ? 1 : 0 }}>
                   <Image src={p.front} width={photos[p.front].width} height={photos[p.front].height} sizes="41vh" alt=""
-                    draggable={false} loading={i < 2 ? "eager" : "lazy"} />
+                    draggable={false} loading={i < 2 ? "eager" : "lazy"} fetchPriority={i === 0 ? "high" : "auto"} />
                 </div>
               </div>
             </div>
