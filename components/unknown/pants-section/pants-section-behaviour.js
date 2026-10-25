@@ -33,8 +33,12 @@
 const SMOOTH = 0.1; // s: time constant of the scroll lerp
 const IDLE = 160; // ms without scrolling before a half-finished swap settles
 const DRIFT = 0.02; // outgoing drift to the left, as a share of the frame width
-const PAD = 0.03; // share of the section's scroll held at each end
 const SWAP = [0.2, 0.8]; // part of each step that plays the swap (the rest holds still)
+// Scroll lengths, in screens (must match the section height in pants-section.css): a 0.12 lead-in
+// held on the first state, then 0.94 per state. The section ends where the last pair has settled
+// (u = n - 2 + SWAP[1]), so it releases immediately: no dead scroll after the last pair.
+const LEAD = 0.12;
+const STEP = 0.94;
 
 // phase windows within a swap (0 → 1), from reference/unknown/MOTION.md (v2)
 const P = {
@@ -133,9 +137,10 @@ export function initPantsSection(root) {
       });
       /** @type {string[][]} */
       const groups = [];
-      let lastTop = -1;
+      // (inline boxes can start above the line box, e.g. offsetTop -1, so no numeric sentinel)
+      let lastTop = Number.NaN;
       for (const w of words) {
-        if (w.offsetTop !== lastTop) groups.push([]);
+        if (groups.length === 0 || w.offsetTop !== lastTop) groups.push([]);
         lastTop = w.offsetTop;
         groups[groups.length - 1].push(w.textContent ?? "");
       }
@@ -262,9 +267,12 @@ export function initPantsSection(root) {
   let lastT = 0;
   let idleTimer = 0;
 
+  // last settled progress value; from here to n - 1 the picture is identical (the swap is done)
+  const uEnd = () => n - 2 + SWAP[1];
+  const lead = () => LEAD / (LEAD + uEnd() * STEP); // share of the travel held before the first swap
   const fromScroll = () => {
-    const p = clamp01(((window.scrollY - top) / travel - PAD) / (1 - 2 * PAD));
-    return p * (n - 1);
+    const u = clamp01(((window.scrollY - top) / travel - lead()) / (1 - lead())) * uEnd();
+    return u >= uEnd() - 1e-4 ? n - 1 : u;
   };
   /** Nearest rest for a progress value that is mid-swap. @param {number} u */
   const rest = (u) => {
@@ -310,8 +318,8 @@ export function initPantsSection(root) {
   /** Scroll the page to the resting point of state i (arrows, peek). @param {number} i */
   function go(i) {
     if (i < 0 || i >= n) return;
-    const p = i / (n - 1);
-    window.scrollTo({ top: top + travel * (PAD + p * (1 - 2 * PAD)), behavior: reduced.matches ? "auto" : "smooth" });
+    const u = Math.min(i, uEnd());
+    window.scrollTo({ top: top + travel * (lead() + (1 - lead()) * (u / uEnd())), behavior: reduced.matches ? "auto" : "smooth" });
   }
   const onPrev = () => go(active - 1);
   const onNext = () => go(active + 1);

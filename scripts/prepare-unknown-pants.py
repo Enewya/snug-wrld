@@ -18,7 +18,7 @@ name and rerun; nothing else changes.
    once aligned, so all of them are cropped to the area every photo covers (keeping 3:4, centred on
    the body) and written back at the source size (1086 x 1448) to aligned/<name>.png.
 4. Baked effects (so the browser never filters or masks while animating; measured to remove the
-   dropped frames during swaps): the top 9% fades to transparent (the torso fades out instead of
+   dropped frames during swaps): the top 5.7% fades to transparent (smoothstep) (the torso fades out instead of
    ending in a hard line), and every pair except the base also gets a greyscale copy,
    aligned/<name>-grey.png, used for the peek and the ghost.
 """
@@ -32,7 +32,10 @@ from PIL import Image
 DIR = Path("assets/products-src/unknown/pants")
 BASE = "model-base"
 OUT_W, OUT_H = 1086, 1448
-FADE = 0.09  # share of the height that fades in from the top edge
+# share of the height that fades in from the top edge. Smoothstep (soft at both ends); its 10-90%
+# span is 0.61 x FADE x height = 3.9% of the model's visible height, as measured on the reference
+# (reference/unknown/MOTION.md, "v3: crop edge"). Was a 9% linear ramp.
+FADE = 0.057
 
 
 def cut_one(name):
@@ -104,7 +107,8 @@ def main():
             (w, h), Image.AFFINE, (k / s, 0, (left - dx) / s, 0, k / s, (top - dy) / s), resample=Image.BICUBIC
         ).convert("RGBA")
         a = np.asarray(out.getchannel("A")).astype(np.float32)
-        ramp = np.clip(np.arange(h) / (h * FADE), 0, 1)[:, None]
+        t = np.clip(np.arange(h) / (h * FADE), 0, 1)
+        ramp = (t * t * (3 - 2 * t))[:, None]
         out.putalpha(Image.fromarray((a * ramp).round().astype(np.uint8)))
         out.save(DIR / "aligned" / f"{n}.png")
         if n != BASE:

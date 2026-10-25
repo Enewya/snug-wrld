@@ -82,7 +82,7 @@ export default function PantsSection() {
               <div className="unk-pants__buy" data-pants-buy>
                 <img className="unk-pants__thumb" src={p.image} alt="" width={1086} height={1448} loading="lazy" decoding="async" />
                 <span className="unk-pants__buy-name">{p.name}</span>
-                <a className="unk-pants__cart" href={p.url} aria-label={`Add to cart: ${p.name}`}>
+                <a className="unk-pants__cart unk-state" href={p.url} aria-label={`Add to cart: ${p.name}`}>
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
                     <path d="M5 8h14l-1 12H6L5 8Z M9 8V6a3 3 0 0 1 6 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
                   </svg>
@@ -97,18 +97,16 @@ export default function PantsSection() {
               <span data-pants-current>—</span> / {pad(pants.length)}
             </p>
             <span className="unk-pants__progress" aria-hidden="true"><span data-pants-progress /></span>
-            <button type="button" className="unk-icon-btn" data-pants-prev aria-label="Previous pants" aria-disabled="true">
+            <button type="button" className="unk-icon-btn unk-state" data-pants-prev aria-label="Previous pants" aria-disabled="true">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </button>
-            <button type="button" className="unk-icon-btn" data-pants-next aria-label="Next pants">
+            <button type="button" className="unk-icon-btn unk-state" data-pants-next aria-label="Next pants">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </button>
           </div>
           <p className="unk-sr" aria-live="polite" data-pants-status />
         </div>
       </section>
-      {/* the atmosphere fades out into the plain white of the sections below */}
-      <div className="unk-pants-tail" aria-hidden="true" />
     </>
   );
 }

@@ -24,24 +24,27 @@ body:has(.unk-pants) {
   --sky-bottom: #f7f9fa;
   --peek-opacity: 0.2;
   /* the model: one fixed 3:4 frame, centred, between the top margin and the bottom row */
-  --fig-top: max(var(--unk-s4), 5svh);
-  --fig-bottom: 112px;
+  --fig-top: max(var(--space-24), 5svh);
+  /* bottom row: inset + 48px target + inset */
+  --fig-bottom: calc(var(--pants-inset) + var(--target) + var(--space-32));
   --fig-h: calc(100svh - var(--fig-top) - var(--fig-bottom));
   --fig-w: calc(var(--fig-h) * 0.75);
   /* peek at rest: centred at ~0.83 of the screen width, as measured in the reference */
   --peek-x: 33vw;
   --info-top: 30svh;
   /* the name column ends just short of the pants (the model fills the middle of its frame) */
-  --info-w: calc(50vw - var(--fig-w) * 0.36 - var(--unk-gutter) - var(--unk-s4));
+  --info-w: calc(50vw - var(--fig-w) * 0.36 - var(--margin) - var(--space-24));
   position: relative;
   /* rises over the held hero */
   z-index: 1;
   /* the mist bands are wider than the screen: clip sideways only (clip, unlike hidden, keeps
      position: sticky working and leaves the feather above the section visible) */
   overflow-x: clip;
-  /* one screen of scrolling per pair; the stage stays pinned throughout */
-  height: calc(var(--unk-pants-count, 4) * 100vh);
-  height: calc(var(--unk-pants-count, 4) * 100svh);
+  /* one screen-and-a-bit of scrolling per swap (0.94 of a screen, plus a 0.12 lead-in), ending the
+     moment the last pair has settled: no dead scroll before the section releases. Must match
+     LEAD / STEP in pants-section-behaviour.js. */
+  height: calc(112vh + (var(--unk-pants-count, 5) - 1.2) * 94vh);
+  height: calc(112svh + (var(--unk-pants-count, 5) - 1.2) * 94svh);
   background: var(--sky-top);
   color: var(--unk-ink);
   font-family: var(--unk-font);
@@ -101,10 +104,12 @@ body:has(.unk-pants) {
 }
 .unk-pants__cloud--back { top: -2%; }
 .unk-pants__cloud--front { bottom: 6%; opacity: 0.9; }
-/* mist over the waist, where the crop fades out (in front of the figure) */
+/* mist around the crop line, BEHIND the figure: atmosphere only, it never veils the body (the
+   reference shows the model fully clear right up to a short, soft fade baked into the image:
+   3.9% of the visible height, see reference/unknown/MOTION.md "v3") */
 .unk-pants__mist {
   position: absolute;
-  z-index: 1;
+  z-index: 0;
   top: calc(var(--fig-top) - var(--fig-h) * 0.09);
   left: 50%;
   width: calc(var(--fig-w) * 2.2);
@@ -114,13 +119,17 @@ body:has(.unk-pants) {
   pointer-events: none;
 }
 
-/* the atmosphere fades out into the plain white sections below */
-.unk-pants-tail {
-  position: relative;
-  z-index: 1;
-  height: 28vh;
-  background: linear-gradient(180deg, #f7f9fa 0%, #fff 100%);
-  margin-top: -1px;
+/* bottom inset of the stage's last row (buy bar). Page-level so the next section can subtract it:
+   the visible gap from the buy bar to New Arrivals is then exactly the section gap. */
+.unk-page { --pants-inset: var(--space-32); }
+@media (max-width: 760px), (max-aspect-ratio: 5/4) {
+  .unk-page { --pants-inset: var(--space-16); }
+}
+/* the section after the pants: its top padding (section gap minus the inset above, so 64 / 48 /
+   80, all on the scale) carries the fade from the sky into the plain white page */
+.unk-hold + .unk-section {
+  padding-top: calc(var(--section-gap) - var(--pants-inset));
+  background: linear-gradient(180deg, var(--sky-bottom, #f7f9fa) 0%, var(--unk-paper) calc(var(--section-gap) - var(--pants-inset)));
 }
 
 
@@ -128,6 +137,7 @@ body:has(.unk-pants) {
 /* ---------- Pants: base + colour layer + grey copy per pair, all in one frame ---------- */
 .unk-pants__figure {
   position: absolute;
+  z-index: 1;
   top: var(--fig-top);
   left: 50%;
   width: var(--fig-w);
@@ -163,71 +173,77 @@ body:has(.unk-pants) {
 /* ---------- Text ---------- */
 .unk-pants__label {
   position: absolute;
-  left: var(--unk-gutter);
+  left: var(--margin);
   top: var(--info-top);
   margin: 0;
-  font-size: var(--unk-text-xs);
-  font-weight: 500;
-  line-height: 16px;
-  letter-spacing: var(--unk-track-label);
+  font: var(--type-label-s);
+  letter-spacing: var(--track-label-s);
   text-transform: uppercase;
   color: var(--unk-mute);
 }
+/* text, controls and the ghost's hit box stay above the figure (z-index 1) where they overlap it */
+.unk-pants__label,
+.unk-pants__info,
+.unk-pants__buy,
+.unk-pants__nav,
+.unk-pants__peek-hit { z-index: 2; }
 /* one article per pair, all stacked; pants-section-behaviour.js shows the current (and next) one */
 .unk-pants__info {
   position: absolute;
-  left: var(--unk-gutter);
-  top: calc(var(--info-top) + var(--unk-s5));
+  left: var(--margin);
+  top: calc(var(--info-top) + var(--space-32));
   width: var(--info-w);
 }
+/* M3 Headline Large */
 .unk-pants__name {
   margin: 0;
-  font-size: var(--unk-text-xl);
-  font-weight: 500;
-  line-height: 1.08;
-  letter-spacing: var(--unk-track-tight);
+  font: var(--type-headline-l);
+  letter-spacing: var(--track-headline-l);
   text-wrap: balance;
 }
-/* each line rolls inside its own window */
+/* each line rolls inside its own window (the 40px line box holds the descenders) */
 .unk-pants__line {
   display: block;
   overflow: hidden;
-  padding-bottom: 0.1em;
-  margin-bottom: -0.1em;
 }
 .unk-pants__line > span { display: inline-block; }
+/* M3 Body Medium */
 .unk-pants__meta {
-  margin: var(--unk-s4) 0 0;
-  font-size: var(--unk-text-md);
+  margin: var(--space-24) 0 0;
+  font: var(--type-body-m);
+  letter-spacing: var(--track-body-m);
   color: var(--unk-mute);
 }
+/* M3 Body Large */
 .unk-pants__price {
-  margin: var(--unk-s4) 0 0;
-  font-size: var(--unk-text-md);
+  margin: var(--space-24) 0 0;
+  font: var(--type-body-l);
+  letter-spacing: var(--track-body-l);
   font-variant-numeric: tabular-nums;
 }
-.unk-pants__link { display: inline-block; margin-top: var(--unk-s2); } /* wraps the shared .unk-link */
+.unk-pants__link { display: inline-block; margin-top: var(--space-8); } /* wraps the shared .unk-link */
 
 /* ---------- Bottom row: progress + arrows (left), buy bar (centre) ---------- */
 .unk-pants__nav {
   position: absolute;
-  left: var(--unk-gutter);
-  bottom: var(--unk-s5);
+  left: var(--margin);
+  /* centred on the buy bar (inset + 8px padding) */
+  bottom: calc(var(--pants-inset) + var(--space-8));
   display: flex;
   align-items: center;
-  gap: var(--unk-s3);
-  height: var(--unk-target);
+  gap: var(--space-16);
+  height: var(--target);
 }
+/* M3 Label Medium */
 .unk-pants__count {
   margin: 0;
-  font-size: var(--unk-text-xs);
-  font-weight: 500;
-  letter-spacing: 0.08em;
+  font: var(--type-label-m);
+  letter-spacing: var(--track-label-m);
   font-variant-numeric: tabular-nums;
 }
 .unk-pants__progress {
   position: relative;
-  width: var(--unk-s7);
+  width: var(--space-64);
   height: 1px;
   background: var(--unk-line);
 }
@@ -243,16 +259,15 @@ body:has(.unk-pants) {
 .unk-pants__buy {
   position: absolute;
   left: 50%;
-  bottom: var(--unk-s4);
+  bottom: var(--pants-inset);
   /* centring uses `translate`, so pants-section-behaviour.js can drive `transform` freely */
   translate: -50% 0;
   display: flex;
   align-items: center;
-  gap: var(--unk-s3);
-  padding: var(--unk-s2);
+  gap: var(--space-16);
+  padding: var(--space-8);
   border: var(--unk-hairline);
-  /* concentric with the 12px button inside its 8px padding */
-  border-radius: calc(var(--radius-button) + var(--unk-s2));
+  border-radius: var(--unk-radius); /* 12px container */
   background: rgba(255, 255, 255, 0.9);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
@@ -270,29 +285,24 @@ body:has(.unk-pants) {
   max-width: clamp(120px, 16vw, 260px);
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: var(--unk-text-xs);
-  font-weight: 500;
-  letter-spacing: 0.06em;
+  font: var(--type-label-m);
+  letter-spacing: var(--track-label-m);
 }
 
 .unk-pants__cart {
   display: inline-flex;
   align-items: center;
-  gap: var(--unk-s2);
-  height: var(--unk-target);
-  padding: 0 var(--unk-s4);
+  gap: var(--space-8);
+  height: var(--target);
+  padding: 0 var(--space-24);
   border-radius: var(--radius-button);
   background: var(--unk-ink);
   color: #fff;
-  font-size: var(--unk-text-xs);
-  font-weight: 500;
-  letter-spacing: var(--unk-track-label);
+  font: var(--type-label-l); /* M3 Label Large; state layer from .unk-state */
+  letter-spacing: var(--track-label-l);
   text-transform: uppercase;
   text-decoration: none;
-  transition: background-color var(--unk-dur-1) var(--unk-ease-out);
 }
-.unk-pants__cart:hover { background: #000; }
-.unk-pants__cart:active { background: #333; }
 
 /* the buy bar drops the name where it would reach the arrows (the name is large on the left) */
 @media (max-width: 1180px) {
@@ -302,31 +312,32 @@ body:has(.unk-pants) {
 /* ---------- Phones and tall screens: name on top, pants in the middle, buy row at the bottom ---------- */
 @media (max-width: 760px), (max-aspect-ratio: 5/4) {
   .unk-pants {
-    --info-top: var(--unk-s4);
-    /* label + up to three lines of name + the price line + a gap: the text never covers the pants */
-    --fig-top: calc(var(--info-top) + var(--unk-s5) + 3 * 1.08 * var(--unk-text-xl) + 32px + var(--unk-s3));
-    --fig-bottom: 136px;
-    --fig-h: min(calc(100svh - var(--fig-top) - var(--fig-bottom)), calc((100vw - 2 * var(--unk-gutter)) / 0.75));
+    --info-top: var(--space-24);
+    /* label + up to three 40px lines of name + the 24px price line + gaps: the text never covers the pants */
+    --fig-top: calc(var(--info-top) + var(--space-24) + 3 * 40px + var(--space-8) + 24px + var(--space-16));
+    /* buy row (inset + 64px bar) + 8 + nav row (48px) */
+    --fig-bottom: calc(var(--pants-inset) + var(--space-64) + var(--space-8) + var(--target));
+    --fig-h: min(calc(100svh - var(--fig-top) - var(--fig-bottom)), calc((100vw - 2 * var(--margin)) / 0.75));
     --peek-x: calc(var(--fig-w) * 0.62);
-    --info-w: calc(100vw - 2 * var(--unk-gutter));
+    --info-w: calc(100vw - 2 * var(--margin));
   }
-  .unk-pants__info { top: calc(var(--info-top) + var(--unk-s4)); }
+  .unk-pants__info { top: calc(var(--info-top) + var(--space-24)); }
   /* the price stays with the name; the product link lives in the buy row's name */
-  .unk-pants__price { margin-top: var(--unk-s2); }
-  .unk-pants__meta { margin-top: var(--unk-s2); }
+  .unk-pants__price { margin-top: var(--space-8); }
+  .unk-pants__meta { margin-top: var(--space-8); }
   .unk-pants__link { display: none; }
   .unk-pants__nav {
-    right: var(--unk-gutter);
-    bottom: 80px;
+    right: var(--margin);
+    bottom: calc(var(--pants-inset) + var(--space-64) + var(--space-8));
   }
   .unk-pants__progress { flex: 1; }
   .unk-pants__buy {
-    left: var(--unk-gutter);
-    right: var(--unk-gutter);
-    bottom: var(--unk-s3);
+    left: var(--margin);
+    right: var(--margin);
+    bottom: var(--pants-inset);
     translate: none;
     justify-content: space-between;
-    padding-left: var(--unk-s3);
+    padding-left: var(--space-16);
   }
   .unk-pants__thumb { display: none; }
   .unk-pants__buy-name { display: block; min-width: 0; max-width: none; flex: 1; }
