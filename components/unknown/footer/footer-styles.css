@@ -2,12 +2,16 @@
    (section gap). Layout: brand block left, link columns as one group on the right.
    Type is deliberately unchanged from the approved footer (brief: "keep it exactly as is"), so the
    footer keeps its own three sizes below instead of M3 roles; see HANDOFF.md. */
-.unk-footer {
+/* colours exactly as before round 6 (git e41921d): warm wall #E9E8E4, ink #151515, mute #5C5C5C.
+   Two classes, so the shared white .unk-section background can never override it again (it did
+   in round 6, by stylesheet order). */
+.unk-section.unk-footer {
   --footer-text: 15px;
   --footer-small: 13px;
   --footer-label: 11px;
   padding-bottom: var(--space-32);
   background: var(--unk-warm);
+  color: var(--unk-ink);
 }
 .unk-footer__grid {
   display: grid;
@@ -16,12 +20,6 @@
   gap: var(--space-48) var(--space-64);
 }
 .unk-footer__brand img { display: block; width: auto; height: 28px; }
-.unk-footer__brand p {
-  margin: var(--space-24) 0 0;
-  font-size: var(--footer-small);
-  line-height: 1.6;
-  color: var(--unk-mute);
-}
 .unk-footer__links {
   display: flex;
   justify-self: end;
@@ -70,7 +68,7 @@
 
 /* compact: the link group stacks under the brand block, columns still side by side */
 @media (max-width: 599px) {
-  .unk-footer { padding-bottom: var(--space-24); }
+  .unk-section.unk-footer { padding-bottom: var(--space-24); }
   .unk-footer__grid { grid-template-columns: minmax(0, 1fr); }
   .unk-footer__links { justify-self: start; gap: var(--space-48); }
   .unk-footer__brand img { height: 22px; }

@@ -9,8 +9,8 @@ export default function Footer() {
     <footer className="unk-section unk-footer">
       <div className="unk-wrap unk-footer__grid">
         <div className="unk-footer__brand">
+          {/* address and opening hours removed: the Visit section right above shows both */}
           <img src={UNKNOWN_LOGO.src} width={UNKNOWN_LOGO.width} height={UNKNOWN_LOGO.height} alt={UNKNOWN_LOGO.alt} loading="lazy" />
-          <p>{UNKNOWN_STORE.address.join(", ")}<br />{UNKNOWN_STORE.hours}</p>
         </div>
         {/* the link columns sit side by side, as one group on the right edge of the content */}
         <div className="unk-footer__links">
