@@ -1,0 +1,47 @@
+{
+ "model-base": {
+  "photo_top": 0.0,
+  "fade_start": 0.0,
+  "fade_end": 47.0,
+  "waistband": 111.0,
+  "clear_skin": 64,
+  "fade_len": 47.0,
+  "short_by": 37.0
+ },
+ "unknown-denim-jean": {
+  "photo_top": 2.1,
+  "fade_start": 2.1,
+  "fade_end": 52.9,
+  "waistband": 116.9,
+  "clear_skin": 64,
+  "fade_len": 50.8,
+  "short_by": 33.2
+ },
+ "unknown-lgt-strikes-joggers": {
+  "photo_top": 129.2,
+  "fade_start": 129.2,
+  "fade_end": 171.5,
+  "waistband": 235.5,
+  "clear_skin": 64,
+  "fade_len": 42.2,
+  "short_by": 41.8
+ },
+ "unknown-logo-sweatpant-brown": {
+  "photo_top": 43.8,
+  "fade_start": 43.8,
+  "fade_end": 88.8,
+  "waistband": 152.8,
+  "clear_skin": 64,
+  "fade_len": 44.9,
+  "short_by": 39.1
+ },
+ "unknown-side-eye-baggy-pant": {
+  "photo_top": 0.0,
+  "fade_start": 0.0,
+  "fade_end": 44.2,
+  "waistband": 108.2,
+  "clear_skin": 64,
+  "fade_len": 44.2,
+  "short_by": 39.8
+ }
+}
