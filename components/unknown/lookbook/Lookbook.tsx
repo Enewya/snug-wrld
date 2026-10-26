@@ -17,8 +17,8 @@ export default function Lookbook() {
       <div className="unk-wrap">
         <header className="unk-head">
           <div>
-            <span className="unk-head__label">{LOOKBOOK.label}</span>
-            <h2 id="unk-lookbook-title" className="unk-head__title">{LOOKBOOK.title}</h2>
+            <span className="unk-head__label unk-lookbook__label">{LOOKBOOK.label}</span>
+            <h2 id="unk-lookbook-title" className="unk-head__title unk-lookbook__title">{LOOKBOOK.title}</h2>
           </div>
           <div className="unk-lookbook__actions">
             <button type="button" className="unk-icon-btn unk-state" data-look-prev aria-label="Previous look" aria-disabled="true">
@@ -27,7 +27,6 @@ export default function Lookbook() {
             <button type="button" className="unk-icon-btn unk-state" data-look-next aria-label="Next look">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </button>
-            <UnkLink href={LOOKBOOK.pageUrl}>View all</UnkLink>
           </div>
         </header>
       </div>

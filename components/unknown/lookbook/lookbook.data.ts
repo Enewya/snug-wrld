@@ -16,9 +16,9 @@ const STORE = "https://www.unk-nown.com";
 const IMG = "/products/unknown/lookbook";
 
 export const LOOKBOOK = {
-  label: "Worn in Lagos",
-  title: "Lookbook",
-  pageUrl: `${STORE}/pages/unknown-lookbook`,
+  label: "Look-Book",
+  // PROVISIONAL: the brief's example heading; replace with the client's chosen heading
+  title: "Off the rack",
 };
 
 export const looks: Look[] = [

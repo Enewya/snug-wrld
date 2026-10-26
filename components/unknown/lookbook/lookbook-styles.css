@@ -2,7 +2,9 @@
    .unk-section (section gap). */
 .unk-lookbook { --look-h: clamp(360px, 58vh, 600px); }
 .unk-lookbook__actions { display: flex; align-items: center; gap: var(--space-8); }
-.unk-lookbook__actions .unk-link { margin-left: var(--space-16); }
+/* "Look-Book" label: M3 Label Medium; headline: M3 Headline Medium */
+.unk-lookbook__label { font: var(--type-label-m); letter-spacing: var(--track-label-m); }
+.unk-lookbook__title { font: var(--type-headline-m); letter-spacing: var(--track-headline-m); }
 
 /* the row starts on the content edge (the margin, or the centring offset past the max content
    width) and runs to the screen edge */
@@ -65,7 +67,6 @@
 @media (max-width: 839px) {
   /* compact / medium: looks sized by width (72vw) so the next one always peeks in, hinting the swipe */
   .unk-look__well { height: auto; width: min(72vw, 320px); }
-  .unk-lookbook__actions .unk-icon-btn { display: none; } /* swipe on touch-first widths */
-  .unk-lookbook__actions .unk-link { margin-left: 0; }
+  .unk-lookbook__actions { display: none; } /* swipe on touch-first widths */
   .unk-look:nth-child(even) { margin-top: var(--space-24); }
 }
