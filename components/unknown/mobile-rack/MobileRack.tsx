@@ -66,33 +66,30 @@ const MobileRack = forwardRef<MobileRackHandle, Props>(function MobileRack({ pro
 
   return (
     <div ref={root} className="umr" role="group" aria-roledescription="carousel" aria-label="The rack: drag sideways, tap the centre piece to open it">
-      {/* the rail: static, an end bracket 1.5vw in from each edge (as in the reel) */}
+      {/* the rail: static, an end bracket just inside each side margin (as in the reel); the
+          garments pass behind the brackets and are clipped at the margin line */}
       <div className="umr__rail" aria-hidden="true">
         <div className="rail-tube" />
         <div className="rail-end l"><div className="rail-plate" /><div className="rail-cap" /></div>
         <div className="rail-end r"><div className="rail-plate" /><div className="rail-cap" /></div>
       </div>
+      <div className="umr__clip">
       <ul className="umr__track" data-umr-track role="list">
         {products.map((p, i) => (
           <li key={p.slug} className="umr__item" data-umr-item
-            style={{
-              "--i": i,
-              visibility: hiddenIndex === i ? "hidden" : undefined,
-              // garment 0 starts centred and facing front, so its neighbours start pushed out
-              transform: i === 0 ? undefined : "translate3d(var(--umr-push), 0, 0)",
-            } as React.CSSProperties}>
+            style={{ "--i": i, visibility: hiddenIndex === i ? "hidden" : undefined } as React.CSSProperties}>
             <div className="umr__garment">
-              {/* the first garment starts in the centre, already showing its front (the state the
-                  behaviour file starts in), so the first paint needs no JavaScript */}
+              {/* every garment starts on its side view, evenly spaced (the state the behaviour file
+                  starts in), so the first paint needs no JavaScript */}
               <div className="umr__card">
-                <div className="umr__photo" data-umr-side style={{ ...box(p.side), opacity: i === 0 ? 0 : 1, ...(p.mirrorSide ? mirror(p.side) : {}) }}>
+                <div className="umr__photo" data-umr-side style={{ ...box(p.side), opacity: 1, ...(p.mirrorSide ? mirror(p.side) : {}) }}>
                   {/* same `sizes` as the desktop rack, so both share one cached file per photo */}
                   <Image src={p.side} width={photos[p.side].width} height={photos[p.side].height} sizes="36vh" alt=""
-                    draggable={false} loading={i < 3 ? "eager" : "lazy"} />
+                    draggable={false} loading={i < 3 ? "eager" : "lazy"} fetchPriority={i === 0 ? "high" : "auto"} />
                 </div>
-                <div className="umr__photo" data-umr-front style={{ ...box(p.front), opacity: i === 0 ? 1 : 0 }}>
+                <div className="umr__photo" data-umr-front style={{ ...box(p.front), opacity: 0 }}>
                   <Image src={p.front} width={photos[p.front].width} height={photos[p.front].height} sizes="41vh" alt=""
-                    draggable={false} loading={i < 2 ? "eager" : "lazy"} fetchPriority={i === 0 ? "high" : "auto"} />
+                    draggable={false} loading="lazy" />
                 </div>
               </div>
             </div>
@@ -101,6 +98,7 @@ const MobileRack = forwardRef<MobileRackHandle, Props>(function MobileRack({ pro
           </li>
         ))}
       </ul>
+      </div>
       <p className="umr__caption" data-umr-caption aria-live="polite">{products[0]?.name}</p>
       <p id="umr-hint" className="unk-sr">Tap the piece in the centre to open it. Use the left and right arrow keys to move along the rack.</p>
     </div>

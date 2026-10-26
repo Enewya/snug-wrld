@@ -89,7 +89,7 @@
 }
 .unk-header .unknown-close span { font-size: 24px; line-height: 1; }
 
-/* ---------- compact (< 600px): hamburger left, wordmark centred, icons right ---------- */
+/* ---------- compact (< 600px): search, account, cart, hamburger on the right ---------- */
 .unk-menu__scrim,
 .unk-menu { display: none; }
 
@@ -100,10 +100,23 @@
     padding-inline: var(--space-4);
   }
   .unk-header__end { margin-inline-end: 0; }
-  .unk-header__about { display: none; }
+  .unk-header__start { display: none; } /* no left control: ABOUT is in the menu */
   .unk-header__burger { display: inline-grid; }
-  /* the wordmark takes what is left between the two icon groups, 64-112px */
-  .unk-header__logo img { width: clamp(64px, calc(100vw - 2 * (var(--space-4) + 3 * var(--target) + var(--space-8))), 112px); }
+  /* below 488px a centred wordmark would run into the four 48px targets (they reach past the
+     middle of the screen), so it sits on the content margin, left; it takes the space left of the
+     icons, 64-112px */
+  .unk-header { grid-template-columns: minmax(0, 1fr) auto; }
+  .unk-header__logo { justify-self: start; margin-inline-start: var(--space-12); }
+  .unk-header__logo img { width: clamp(64px, calc(100vw - 2 * var(--space-4) - var(--space-12) - 4 * var(--target) - var(--space-16)), 112px); }
+
+  /* 488px and wider: room for a truly centred wordmark, at least 16px clear of the icons on each
+     side (2 x (4 + 4 x 48 + 16) + a 64px wordmark = 488) */
+  @media (min-width: 488px) {
+    .unk-header { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
+    .unk-header__logo { grid-column: 2; justify-self: center; margin-inline-start: 0; }
+    .unk-header__end { grid-column: 3; }
+    .unk-header__logo img { width: clamp(64px, calc(100vw - 2 * (var(--space-4) + 4 * var(--target) + var(--space-16))), 112px); }
+  }
 
   .unk-menu__scrim {
     display: block;

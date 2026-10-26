@@ -8,6 +8,8 @@
  * - The rail never moves; only the garments do.
  * - Drag: once a touch has moved 6px more sideways than up/down, the garments follow the finger
  *   1:1 (vertical swipes are left to the browser, so the page still scrolls: touch-action: pan-y).
+ * - First load: every garment shows its side view and they hang evenly spaced. Nothing turns
+ *   to the front until the visitor has dragged the row at least once (brief, round 8).
  * - Release: the row glides on with the finger's speed and slows down exponentially (time
  *   constant 100ms). It is not snapped mid-glide; where it comes to rest, it waits 300ms, then the
  *   garment nearest the centre is eased into the centre (300ms) while its neighbours move out
@@ -80,8 +82,9 @@ export function initMobileRack(root, { onSelect }) {
   let dwellAt = 0;
   /** @type {Tween | null} */ let centreTw = null;
   let centre = 0; // garment whose front shows / is being turned
-  let spread = 1; // 0 = even spacing, 1 = neighbours of `centre` pushed out
-  let face = 1; // front photo opacity of `centre`
+  let spread = 0; // 0 = even spacing, 1 = neighbours of `centre` pushed out
+  let face = 0; // front photo opacity of `centre`
+  let dragged = false; // the turn to the front is only allowed after the first drag
   /** @type {Tween | null} */ let spreadTw = null;
   /** @type {Tween | null} */ let faceTw = null;
   let dragEndedAt = -1e9; // a click right after a drag is the drag's own, not a tap
@@ -156,19 +159,21 @@ export function initMobileRack(root, { onSelect }) {
     spreadTw = { from: spread, to: 0, t0: now, dur: CONFIG.SPREAD_MS, ease: easeOut };
     faceTw = { from: face, to: 0, t0: now, dur: CONFIG.FADE_MS, ease: linear };
   }
-  /** centre garment c and turn it to the front @param {number} c @param {number} now */
+  /** centre garment c and (once the row has been dragged) turn it to the front
+   *  @param {number} c @param {number} now */
   function turnTo(c, now) {
     const to = Math.max(0, Math.min(n - 1, c));
+    const on = dragged ? 1 : 0;
     if (reduced.matches) {
-      pos = to; setCentre(to); spread = 1; face = 1; spreadTw = faceTw = centreTw = null;
+      pos = to; setCentre(to); spread = on; face = on; spreadTw = faceTw = centreTw = null;
       mode = "rest";
       return;
     }
     // a different garment: the old one is already back to its side (unturn on grab / glide)
     if (to !== centre) { spread = 0; face = 0; setCentre(to); }
     centreTw = { from: pos, to, t0: now, dur: CONFIG.CENTRE_MS, ease: easeInOut };
-    spreadTw = { from: spread, to: 1, t0: now, dur: CONFIG.SPREAD_MS, ease: easeOut };
-    faceTw = { from: face, to: 1, t0: now + CONFIG.FADE_DELAY, dur: CONFIG.FADE_MS, ease: linear };
+    spreadTw = { from: spread, to: on, t0: now, dur: CONFIG.SPREAD_MS, ease: easeOut };
+    faceTw = { from: face, to: on, t0: now + CONFIG.FADE_DELAY, dur: CONFIG.FADE_MS, ease: linear };
     mode = "centre";
   }
 
@@ -262,6 +267,7 @@ export function initMobileRack(root, { onSelect }) {
       }
       if (Math.abs(dx) < CONFIG.DRAG_START || Math.abs(dx) < Math.abs(dy)) return;
       mode = "drag";
+      dragged = true;
       unturn(e.timeStamp);
       try { root.setPointerCapture(e.pointerId); } catch { /* pointer already gone */ }
     }
@@ -279,7 +285,7 @@ export function initMobileRack(root, { onSelect }) {
     gesture = null;
     if (!wasDrag) {
       // a tap: handled by the button's click; a still row turns its centre garment (again)
-      if (spread < 1 || face < 1) turnTo(Math.round(pos), e.timeStamp);
+      if (dragged && (spread < 1 || face < 1)) turnTo(Math.round(pos), e.timeStamp);
       else mode = "rest";
       kick();
       return;
@@ -314,7 +320,8 @@ export function initMobileRack(root, { onSelect }) {
     const hit = /** @type {HTMLElement | null} */ (/** @type {HTMLElement} */ (e.target).closest("[data-umr-hit]"));
     if (!hit) return;
     const i = Number(hit.dataset.index);
-    if (i === centre && mode === "rest" && face === 1) {
+    // the centred garment opens: turned to its front, or on its side before the first drag
+    if (i === centre && mode === "rest" && (face === 1 || !dragged)) {
       const o = origin(i);
       if (o) onSelect(i, o);
     } else {
@@ -347,12 +354,13 @@ export function initMobileRack(root, { onSelect }) {
     mode = "rest";
     centreTw = spreadTw = faceTw = null;
     setCentre(pos);
-    spread = 1;
+    spread = dragged ? 1 : 0;
     face = 0;
     th = om = 0;
     render();
   }
-  /** After the focus view has closed: rest, then turn the centre garment to its front as usual. */
+  /** After the focus view has closed: rest, then turn the centre garment to its front as usual
+   *  (only once the row has been dragged; before that it stays on its side). */
   function resume() {
     mode = "dwell";
     dwellAt = performance.now();
@@ -364,7 +372,7 @@ export function initMobileRack(root, { onSelect }) {
     render();
   };
 
-  // first paint: garment 0 in the centre, facing front, neighbours out (as server-rendered)
+  // first paint: garment 0 in the centre, every garment on its side, evenly spaced (as server-rendered)
   measure();
   items.forEach((it, i) => (it.style.zIndex = String(i === 0 ? 3 : 1)));
   render();

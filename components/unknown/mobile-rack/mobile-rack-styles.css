@@ -30,18 +30,33 @@
 /* resolved in px for the behaviour file */
 .umr { --umr-iw-px: var(--umr-iw); --umr-pitch-px: var(--umr-pitch); }
 
-/* the rail: static, from 1.5vw to 1.5vw with an end bracket at each end (the shared rail parts) */
+/* the rail: static, between the side margins (16px compact), an end bracket on each margin line.
+   Reel: garments are cut off at the brackets' outer edges (x = 1.3% and 97.2% of the screen),
+   brackets ~2.7vw x 6.2vw; mapped to the margin token and a 12 x 24px plate. */
 .umr__rail {
   position: absolute;
-  z-index: 200;
-  left: 1.5vw;
-  right: 1.5vw;
+  z-index: 200; /* above the garments: they pass behind the brackets */
+  left: var(--margin);
+  right: var(--margin);
   top: var(--umr-rail-y);
   height: var(--rod);
   transform: translateY(-50%);
   pointer-events: none;
 }
 
+.umr .rail-end { width: var(--space-12); height: var(--space-24); }
+.umr .rail-plate { inset: 0; }
+.umr .rail-tube { inset: 0 var(--space-12); }
+.umr .rail-end.l .rail-cap { left: var(--space-12); }
+.umr .rail-end.r .rail-cap { right: var(--space-12); }
+
+/* the garments hang in a clipped strip between the side margins (white margin outside it, as in
+   the reel); a static clip, so the moving row inside is never re-masked */
+.umr__clip {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(-100vh var(--margin));
+}
 .umr__track {
   position: absolute;
   inset: 0;

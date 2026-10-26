@@ -16,8 +16,10 @@ type Props = {
 
 /**
  * Hero header. No solid bar. Expanded/medium: ABOUT left, wordmark centred, search / account /
- * cart right. Compact (< 600px): hamburger left (ABOUT moves into the menu), wordmark centred,
- * the same three icons right; the hamburger opens a dropdown panel with the store navigation.
+ * cart right. Compact (< 600px): no left control (ABOUT moves into the menu); search, account,
+ * cart and then the hamburger at the far right; the hamburger opens a dropdown panel with the
+ * store navigation. The wordmark is centred where it fits beside four 48px targets (488px and
+ * wider) and sits on the left margin below that (see header-styles.css and HANDOFF.md).
  * All menu behaviour lives in header-behaviour.js (plain JS, same file in the theme).
  */
 export default function UnknownHeader({ close }: Props) {
@@ -27,11 +29,6 @@ export default function UnknownHeader({ close }: Props) {
   return (
     <header ref={ref} className="unk-header">
       <div className="unk-header__start">
-        {/* always rendered (header-behaviour.js holds on to it); hidden while the focus view is open */}
-        <button type="button" className="unk-header__icon unk-header__burger unk-state" data-menu-toggle
-          aria-expanded="false" aria-controls="unk-menu" aria-label="Menu" hidden={!!close}>
-          <span className="unk-burger" aria-hidden="true"><span /><span /></span>
-        </button>
         <a className="unk-header__about" href={ABOUT.url}>{ABOUT.text}</a>
       </div>
 
@@ -47,6 +44,12 @@ export default function UnknownHeader({ close }: Props) {
             <a className="unk-header__icon unk-state" href={ICON_LINKS.cart.url} aria-label={ICON_LINKS.cart.label}><Icon paths={ShoppingCart02} /></a>
           </>
         )}
+        {/* compact only, at the far right; always rendered (header-behaviour.js holds on to it),
+            hidden while the focus view is open */}
+        <button type="button" className="unk-header__icon unk-header__burger unk-state" data-menu-toggle
+          aria-expanded="false" aria-controls="unk-menu" aria-label="Menu" hidden={!!close}>
+          <span className="unk-burger" aria-hidden="true"><span /><span /></span>
+        </button>
       </div>
 
       {/* compact menu: scrim + dropdown panel under the header */}
