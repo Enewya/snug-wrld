@@ -74,7 +74,7 @@ export default function PantsSection() {
           <div className="unk-pants__figure" aria-hidden="true">
             <Layer data-pants-body src={PANTS_BODY.src} box={PANTS_BODY.box} />
             <Layer data-pants-layer src={PANTS_BASE.src} box={PANTS_BASE.box} style={{ opacity: 1 }} />
-            {pants.map((p, i) => (
+            {pants.map((p) => (
               <Layer key={p.handle} data-pants-layer src={p.image} box={p.box} style={{ opacity: 0 }} />
             ))}
             {/* grey copies: the ghost waiting at the right, sliding onto the body (pants only) */}
