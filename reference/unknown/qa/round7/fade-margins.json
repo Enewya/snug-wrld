@@ -1,0 +1,162 @@
+{
+ "360": [
+  {
+   "pair": "model-base",
+   "marginCss": 17.1,
+   "fadeCss": 12.6,
+   "mistBottomAboveWaistCss": 18.1
+  },
+  {
+   "pair": "unknown-denim-jean",
+   "marginCss": 17.1,
+   "fadeCss": 13.6,
+   "mistBottomAboveWaistCss": 19.7
+  },
+  {
+   "pair": "unknown-side-eye-baggy-pant",
+   "marginCss": 17.1,
+   "fadeCss": 11.8,
+   "mistBottomAboveWaistCss": 17.4
+  },
+  {
+   "pair": "unknown-logo-sweatpant-brown",
+   "marginCss": 17.1,
+   "fadeCss": 12.1,
+   "mistBottomAboveWaistCss": 29.3
+  },
+  {
+   "pair": "unknown-lgt-strikes-joggers",
+   "marginCss": 17.1,
+   "fadeCss": 11.3,
+   "mistBottomAboveWaistCss": 51.5
+  }
+ ],
+ "390": [
+  {
+   "pair": "model-base",
+   "marginCss": 21.1,
+   "fadeCss": 15.5,
+   "mistBottomAboveWaistCss": 22.3
+  },
+  {
+   "pair": "unknown-denim-jean",
+   "marginCss": 21.1,
+   "fadeCss": 16.7,
+   "mistBottomAboveWaistCss": 24.2
+  },
+  {
+   "pair": "unknown-side-eye-baggy-pant",
+   "marginCss": 21.1,
+   "fadeCss": 14.6,
+   "mistBottomAboveWaistCss": 21.4
+  },
+  {
+   "pair": "unknown-logo-sweatpant-brown",
+   "marginCss": 21.1,
+   "fadeCss": 14.8,
+   "mistBottomAboveWaistCss": 36.1
+  },
+  {
+   "pair": "unknown-lgt-strikes-joggers",
+   "marginCss": 21.1,
+   "fadeCss": 13.9,
+   "mistBottomAboveWaistCss": 63.3
+  }
+ ],
+ "768": [
+  {
+   "pair": "model-base",
+   "marginCss": 29.7,
+   "fadeCss": 21.8,
+   "mistBottomAboveWaistCss": 31.4
+  },
+  {
+   "pair": "unknown-denim-jean",
+   "marginCss": 29.7,
+   "fadeCss": 23.6,
+   "mistBottomAboveWaistCss": 34.1
+  },
+  {
+   "pair": "unknown-side-eye-baggy-pant",
+   "marginCss": 29.7,
+   "fadeCss": 20.5,
+   "mistBottomAboveWaistCss": 30.1
+  },
+  {
+   "pair": "unknown-logo-sweatpant-brown",
+   "marginCss": 29.7,
+   "fadeCss": 20.9,
+   "mistBottomAboveWaistCss": 50.8
+  },
+  {
+   "pair": "unknown-lgt-strikes-joggers",
+   "marginCss": 29.7,
+   "fadeCss": 19.6,
+   "mistBottomAboveWaistCss": 89.2
+  }
+ ],
+ "1024": [
+  {
+   "pair": "model-base",
+   "marginCss": 26.2,
+   "fadeCss": 19.2,
+   "mistBottomAboveWaistCss": 27.6
+  },
+  {
+   "pair": "unknown-denim-jean",
+   "marginCss": 26.2,
+   "fadeCss": 20.8,
+   "mistBottomAboveWaistCss": 30
+  },
+  {
+   "pair": "unknown-side-eye-baggy-pant",
+   "marginCss": 26.2,
+   "fadeCss": 18.1,
+   "mistBottomAboveWaistCss": 26.5
+  },
+  {
+   "pair": "unknown-logo-sweatpant-brown",
+   "marginCss": 26.2,
+   "fadeCss": 18.4,
+   "mistBottomAboveWaistCss": 44.7
+  },
+  {
+   "pair": "unknown-lgt-strikes-joggers",
+   "marginCss": 26.2,
+   "fadeCss": 17.3,
+   "mistBottomAboveWaistCss": 78.5
+  }
+ ],
+ "1440": [
+  {
+   "pair": "model-base",
+   "marginCss": 32,
+   "fadeCss": 23.5,
+   "mistBottomAboveWaistCss": 33.8
+  },
+  {
+   "pair": "unknown-denim-jean",
+   "marginCss": 32,
+   "fadeCss": 25.4,
+   "mistBottomAboveWaistCss": 36.7
+  },
+  {
+   "pair": "unknown-side-eye-baggy-pant",
+   "marginCss": 32,
+   "fadeCss": 22.1,
+   "mistBottomAboveWaistCss": 32.4
+  },
+  {
+   "pair": "unknown-logo-sweatpant-brown",
+   "marginCss": 32,
+   "fadeCss": 22.5,
+   "mistBottomAboveWaistCss": 54.7
+  },
+  {
+   "pair": "unknown-lgt-strikes-joggers",
+   "marginCss": 32,
+   "fadeCss": 21.2,
+   "mistBottomAboveWaistCss": 96
+  }
+ ]
+}

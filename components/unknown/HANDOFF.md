@@ -324,46 +324,51 @@ npx netlify-cli deploy --build --alias unknown-preview
 
 ## Verification (what was measured, and how)
 
-All on the production build. Sheets and recordings: `reference/unknown/qa/round6/`.
+All on the production build, round 7 (26 Oct 2026). Before = commit 5f68f27 built and measured the
+same way on the same machine. Sheets, recordings and reports: `reference/unknown/qa/round7/`
+(round 6's are in `qa/round6/`).
 
-- **Section gaps** (content edge to content edge; components measured by their container, as in
-  M3; script `reference/unknown/qa/round6/README.md`):
+- **Section gaps** (content edge to content edge, containers as in M3):
 
-  | Gap | Before (1440 / 390) | After (1440 / 1024 / 768 / 390 / 360) |
-  |---|---|---|
-  | Hero > pants | transition: the pants section rises over the held hero (no gap) | unchanged |
-  | Pants > New Arrivals | 403 / 347 | 96 / 96 / 64 / 64 / 64 |
-  | New Arrivals > Caps | 224 / 160 | 96 / 96 / 64 / 64 / 64 |
-  | Caps > Lookbook | 192 / 128 | 96 / 96 / 64 / 64 / 64 |
-  | Lookbook > Visit | 255 / 177 | 96 / 96 / 64 / 64 / 64 |
-  | Visit > footer | 205 / 156 | 96 / 96 / 64 / 64 / 64 |
-- **Pants release:** scrolling slowly through the last swap, the stage stays pinned for 24px (1440)
-  / 21px (390) after the last pair is fully on (the 0.1s scroll smoothing catching up), against
-  300 / 282px before.
-- **Pants crop fade:** reference 3.9% of the model's visible height (10-90% of the fade, sharpest
-  frame of `video-b-full-reel.mov`; 5.6-5.9% on motion-blurred frames), body fully opaque below;
-  ours was 8.0% plus a mist band over the waist, now 3.87% with the mist behind the model.
-- **Phone rack** (390 x 844, touch emulation, synthetic drags / flings): drag 1:1 (100px finger =
-  100px row), rubber band 150px pull = 51px (0.35) then back to 0, vertical swipe on the rack scrolls
-  the page 285px with the rack still, tap on the centre opens the focus view, Close closes it; same at
-  360 and 430; reduced motion: instant snap and turn. 60 fps recording with a frame-time log:
-  1 of 1162 frames over 20ms in each of two runs (17 before the shadow was moved inside the card).
-- **60 fps page scroll** (fresh load, headed Chromium on a virtual display, ffmpeg x11grab):
-  phone-sized 0 of 1090 frames over 20ms. Desktop varies a lot with the recorder running on the
-  same CPU (4 runs: 1-28 of 901; the previous build 6-48 of 1017 in 3 runs). Without the
-  recorder, a fresh first pass through the hero and pants: 2 of 412 frames (previous build 0-5 of
-  437). This machine has no GPU (software compositing), which is harsher than real devices.
-- **Lighthouse:** desktop 98-100 performance, 100 accessibility, 100 best practices (LCP 0.8-1.1s,
-  CLS 0-0.004). Mobile 81-84 / 100 / 100 (LCP 4.2-4.8s, the phone rack's first garment); the
-  previous build measured 79-81 on the same machine the same day. SEO 63 only because the
-  prototype route is `noindex` on purpose; the theme won't have that.
+  | Gap | 1440 / 1024 / 768 / 390 / 360 |
+  |---|---|
+  | Pants > New Arrivals (at release) | 96 / 96 / 64 / 64 / 64 |
+  | New Arrivals > Two Piece | 96 / 96 / 64 / 64 / 64 |
+  | Two Piece > Caps | 96 / 96 / 64 / 64 / 64 |
+  | Caps > Lookbook | 96 / 96 / 64 / 64 / 64 |
+  | Lookbook > Visit | 96 / 96 / 64 / 64 / 64 |
+  | Visit > footer | 96 / 96 / 64 / 64 / 64 |
+- **Rack facing:** every side view faces left at 1440 and 390; after the flip each hanger neck sits
+  within 0.2px of where it was on the rail. Mirrored lettering: the black jacket's sleeve print
+  ("unknown") reads backwards in its side view (see mirrorSide above).
+- **Phone rack** (360 / 390 / 430, touch emulation): drag 1:1 (100px finger = 100px row), rubber band
+  150px pull = 53px then back to 0, vertical swipe scrolls the page 285px with the rack still, tap
+  opens the focus view and Close closes it, reduced motion snaps. A fling settles in about 420ms
+  (reel: about 430). 60 fps recordings with a frame-time log: 4 of 1159 (360), 5 of 1160 (390),
+  5 of 1159 (430) frames over 20ms, all inside the focus view's open / close (the existing 8px blur
+  on the rack behind it); none during drags, flings or the turn.
+- **Entry veil** (darkest background row, text ignored, start / middle / end of the entry): before
+  4.0-4.3% grey at 1440 and 390, now 2.0% at every point; the hero at rest 0.0%. The cloud
+  faintness is baked into the images (a layer opacity on them cost frames, see below).
+- **Pants fade vs waistband** (`qa/round7/fade-margins.json`): smallest gap from the end of the fade
+  to the top of the waistband, any pair: 17.1px (360), 21.1 (390), 29.7 (768), 26.2 (1024), 32
+  (1440); the mist ends 17.4px or more above every waistband. Overlays per pair at 1440 and 390.
+- **Pants links:** exactly two (View all, the bar's button); the button's href and "View [name]"
+  label always match the counter, including after fast scrolling and prev / next. Tab order: View
+  all, Previous, Next, button. View all overlaps nothing (header, model, ghost) in 41 samples
+  across the pinned range at each of the 5 widths.
+- **Footer colours:** wall sampled at rgb(233, 232, 228) = `#E9E8E4` before round 6 and now, at 1440
+  and 390.
+- **60 fps page scroll** (fresh load, headed Chromium on a virtual display, ffmpeg x11grab): phone
+  0 of 1184 frames over 20ms; desktop 9 of 989 (none over 50ms; the recorder shares the CPU).
+  Without the recorder, a first pass through the hero and pants: 1 of 412 frames, the same as before
+  round 7 (6-19 of 412 while the clouds used CSS opacity). No GPU on this machine (software
+  compositing), harsher than real devices.
+- **Lighthouse:** desktop 100 performance, 100 accessibility, 100 best practices (LCP 0.8s, CLS
+  0.002). Mobile 83-84 / 100 / 100 in 3 runs (LCP 4.2-4.6s, the phone rack's first garment); before:
+  desktop 99, mobile 81. SEO 63 only because the prototype route is `noindex` on purpose.
 - **No sideways scroll** at 1440, 1024, 768, 390 and 360 (real mobile emulation below 800).
-- **Console / hydration:** no errors, warnings or hydration messages from our code at 1440, 1024,
-  768, 390, 360 (dev server; the Next dev overlay shows no issues).
-- **Hero vs draft:** the rack (rail, hanger spacing, garment order and scale, shadows) is unchanged
-  from the last verified match to the draft (rail within 1-3px, logo within 2-4px at 1440). The
-  developer's new draft screenshot did not reach the build, so the white-wall header with icons
-  could not be compared pixel by pixel.
+- **Console / hydration:** no errors, warnings or hydration messages at the 5 widths (dev server).
 
 ## Quality notes
 
