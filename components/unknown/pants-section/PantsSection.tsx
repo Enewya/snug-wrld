@@ -22,7 +22,7 @@ function Layer({ src, box, style, ...rest }: { src: string; box: LayerBox } & Om
   const [x, y, w, h] = box;
   const f = w / PANTS_CANVAS.width;
   return (
-    <Image className="unk-pants__layer" src={src} alt="" width={w} height={h} loading="eager"
+    <Image className="unk-pants__layer" src={src} alt="" width={w} height={h} loading="eager" fetchPriority="low"
       sizes={`(max-aspect-ratio: 5/4) ${Math.ceil(90 * f)}vw, ${Math.ceil(60 * f)}vh`}
       style={{
         left: `${((x / PANTS_CANVAS.width) * 100).toFixed(3)}%`,
@@ -65,23 +65,22 @@ export default function PantsSection() {
             <img className="unk-pants__cloud unk-pants__cloud--front" data-cloud="front" src={PANTS_ATMOSPHERE.front} alt="" width={1600} height={500} />
           </div>
 
-          {/* one fixed 3:4 canvas; every layer fills it identically. Bottom to top: the body (never
-              moves or fades), the pants of each state (the base chinos, then each pair), the grey
-              pants-only ghosts, and the hands, which stay in front of whatever pants are on. All
-              eager: each is decoded right after load anyway (pants-section-behaviour.js), and any of
-              them can become the largest image on screen. Low fetch priority for the pairs the entry
-              doesn't show, so they never hold up the hero's photos on a slow phone. */}
+          {/* one fixed 3:4 canvas, each layer cropped and placed on it. Bottom to top: the body
+              (never moves or fades), the pants of each state (the base chinos, then each pair), the
+              grey pants-only ghosts, and the hands, which stay in front of whatever pants are on.
+              All eager (each is decoded right after load anyway, pants-section-behaviour.js) but at
+              low fetch priority: the section is below the fold at load, so none of them may hold up
+              the hero's photos (the page's LCP). */}
           <div className="unk-pants__figure" aria-hidden="true">
             <Layer data-pants-body src={PANTS_BODY.src} box={PANTS_BODY.box} />
             <Layer data-pants-layer src={PANTS_BASE.src} box={PANTS_BASE.box} style={{ opacity: 1 }} />
             {pants.map((p, i) => (
-              <Layer key={p.handle} data-pants-layer src={p.image} box={p.box}
-                fetchPriority={i === 0 ? "auto" : "low"} style={{ opacity: 0 }} />
+              <Layer key={p.handle} data-pants-layer src={p.image} box={p.box} style={{ opacity: 0 }} />
             ))}
             {/* grey copies: the ghost waiting at the right, sliding onto the body (pants only) */}
             {pants.map((p, i) => (
               <Layer key={p.handle} data-pants-grey src={p.grey} box={p.box}
-                fetchPriority={i === 0 ? "auto" : "low"} style={{ opacity: i === 0 ? "var(--peek-opacity)" : 0 }} />
+                style={{ opacity: i === 0 ? "var(--peek-opacity)" : 0 }} />
             ))}
             <Layer data-pants-hands src={PANTS_HANDS.src} box={PANTS_HANDS.box} />
           </div>
