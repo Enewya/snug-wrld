@@ -152,12 +152,11 @@ body:has(.unk-pants) {
   margin-left: calc(var(--fig-w) / -2);
 }
 .unk-pants__layer {
+  /* each layer is cropped to its content and placed on the 3:4 canvas by inline left / top / width /
+     height percentages (PantsSection.tsx, boxes in pants.data.ts) */
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: 50% 100%;
+  display: block;
+  max-width: none;
   /* the soft top fade and the grey peek copies are baked into the image files (no CSS mask or
      filter while animating: measured to remove the dropped frames during swaps) */
   -webkit-user-drag: none;

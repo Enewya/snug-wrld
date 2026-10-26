@@ -5,13 +5,13 @@
 //
 // A copy of scripts/optimize-images.mjs scoped to the pants folders (same quality ladder and
 // 200 KB budget). Sources: assets/products-src/unknown/pants/aligned/<name>.png. Output:
-// public/products/unknown/pants/<name>.webp at full size (1086 x 1448).
+// public/products/unknown/pants-layers/<name>.webp at the layer's own (cropped) size.
 import { mkdirSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import sharp from "sharp";
 
 const SRC = "assets/products-src/unknown/pants/aligned";
-const OUT = "public/products/unknown/pants";
+const OUT = "public/products/unknown/pants-layers";
 const MAX_KB = 200;
 mkdirSync(OUT, { recursive: true });
 

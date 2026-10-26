@@ -5,15 +5,35 @@
    <img> (already sized). */
 /* eslint-disable @next/next/no-img-element */
 
-import Image from "next/image";
+import Image, { type ImageProps } from "next/image";
 import { useEffect, useRef } from "react";
 import UnkLink from "../link/UnkLink";
-import { PANTS_ATMOSPHERE, PANTS_BASE_IMAGE, PANTS_BODY_IMAGE, PANTS_HANDS_IMAGE, PANTS_INTRO, PANTS_LABEL, PANTS_VIEW_ALL, PANTS_VIEW_PRODUCT, pants } from "./pants.data";
+import {
+  PANTS_ATMOSPHERE, PANTS_BASE, PANTS_BODY, PANTS_CANVAS, PANTS_HANDS, PANTS_INTRO, PANTS_LABEL, PANTS_VIEW_ALL,
+  PANTS_VIEW_PRODUCT, pants, type LayerBox,
+} from "./pants.data";
 import { initPantsSection } from "./pants-section-behaviour";
 import "./pants-section.css";
 
 const pad = (n: number) => String(n).padStart(2, "0");
-const MODEL = { width: 1086, height: 1448, sizes: "(max-aspect-ratio: 5/4) 90vw, 60vh" };
+/** One cropped layer, placed on the 3:4 canvas by percentages of the frame; its file is sized to
+ *  its share of the frame width (the frame is ~90vw on portrait screens, ~60vh otherwise). */
+function Layer({ src, box, style, ...rest }: { src: string; box: LayerBox } & Omit<ImageProps, "src" | "alt" | "width" | "height" | "sizes">) {
+  const [x, y, w, h] = box;
+  const f = w / PANTS_CANVAS.width;
+  return (
+    <Image className="unk-pants__layer" src={src} alt="" width={w} height={h} loading="eager"
+      sizes={`(max-aspect-ratio: 5/4) ${Math.ceil(90 * f)}vw, ${Math.ceil(60 * f)}vh`}
+      style={{
+        left: `${((x / PANTS_CANVAS.width) * 100).toFixed(3)}%`,
+        top: `${((y / PANTS_CANVAS.height) * 100).toFixed(3)}%`,
+        width: `${(f * 100).toFixed(3)}%`,
+        height: `${((h / PANTS_CANVAS.height) * 100).toFixed(3)}%`,
+        ...style,
+      }}
+      {...rest} />
+  );
+}
 
 /**
  * Pinned, scroll-scrubbed pants showcase (see HANDOFF.md). React only renders the markup; all
@@ -52,18 +72,18 @@ export default function PantsSection() {
               them can become the largest image on screen. Low fetch priority for the pairs the entry
               doesn't show, so they never hold up the hero's photos on a slow phone. */}
           <div className="unk-pants__figure" aria-hidden="true">
-            <Image className="unk-pants__layer" data-pants-body src={PANTS_BODY_IMAGE} alt="" {...MODEL} loading="eager" />
-            <Image className="unk-pants__layer" data-pants-layer src={PANTS_BASE_IMAGE} alt="" {...MODEL} loading="eager" style={{ opacity: 1 }} />
+            <Layer data-pants-body src={PANTS_BODY.src} box={PANTS_BODY.box} />
+            <Layer data-pants-layer src={PANTS_BASE.src} box={PANTS_BASE.box} style={{ opacity: 1 }} />
             {pants.map((p, i) => (
-              <Image key={p.handle} className="unk-pants__layer" data-pants-layer src={p.image} alt="" {...MODEL}
-                loading="eager" fetchPriority={i === 0 ? "auto" : "low"} style={{ opacity: 0 }} />
+              <Layer key={p.handle} data-pants-layer src={p.image} box={p.box}
+                fetchPriority={i === 0 ? "auto" : "low"} style={{ opacity: 0 }} />
             ))}
             {/* grey copies: the ghost waiting at the right, sliding onto the body (pants only) */}
             {pants.map((p, i) => (
-              <Image key={p.handle} className="unk-pants__layer" data-pants-grey src={p.grey} alt="" {...MODEL}
-                loading="eager" fetchPriority={i === 0 ? "auto" : "low"} style={{ opacity: i === 0 ? "var(--peek-opacity)" : 0 }} />
+              <Layer key={p.handle} data-pants-grey src={p.grey} box={p.box}
+                fetchPriority={i === 0 ? "auto" : "low"} style={{ opacity: i === 0 ? "var(--peek-opacity)" : 0 }} />
             ))}
-            <Image className="unk-pants__layer" data-pants-hands src={PANTS_HANDS_IMAGE} alt="" {...MODEL} loading="eager" />
+            <Layer data-pants-hands src={PANTS_HANDS.src} box={PANTS_HANDS.box} />
           </div>
           {/* soft mist over the waist, where the crop fades out */}
           <div className="unk-pants__mist" data-cloud="mist" style={{ backgroundImage: `url(${PANTS_ATMOSPHERE.mist})` }} aria-hidden="true" />

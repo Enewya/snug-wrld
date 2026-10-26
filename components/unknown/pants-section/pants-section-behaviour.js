@@ -75,6 +75,7 @@ export function initPantsSection(root) {
   const qa = (/** @type {string} */ s, el = root) => /** @type {HTMLElement[]} */ ([...el.querySelectorAll(s)]);
 
   const stage = q("[data-pants-stage]");
+  const figure = q(".unk-pants__figure");
   const colour = qa("[data-pants-layer]"); // pants only: [base chinos, pair 1, ... pair N]
   const fixed = qa("[data-pants-body], [data-pants-hands]"); // never move
   const greys = qa("[data-pants-grey]"); // [pair 1, ... pair N]
@@ -175,7 +176,7 @@ export function initPantsSection(root) {
     vw = window.innerWidth / 100;
     top = root.getBoundingClientRect().top + window.scrollY;
     travel = Math.max(1, root.offsetHeight - stage.offsetHeight);
-    const f = colour[0].getBoundingClientRect();
+    const f = figure.getBoundingClientRect(); // the canvas (each layer is cropped to its content)
     const pk = peekHit.getBoundingClientRect();
     frameW = f.width;
     peekX = pk.left - f.left;

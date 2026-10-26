@@ -27,9 +27,11 @@ except for the pants, so the layers come from the photos themselves:
 6. One shared top fade on the body (smoothstep), ending SAFE px above the highest waistband of all
    pants, so it sits on bare skin only.
 
-Outputs (aligned/, all 1086 x 1448 RGBA on one canvas): body.png, hands.png, <name>.png (pants only,
-the base chinos included as model-base.png), <name>-grey.png (pants only, for the ghost),
-layers.json (waistbands, fade zone, registration, error checks), contact-sheet.jpg.
+Outputs (aligned/): body.png, hands.png, <name>.png (pants only, the base chinos included as
+model-base.png), <name>-grey.png (pants only, for the ghost), each CROPPED to its own content (a
+full-canvas layer is mostly transparent, and the browser composites every pixel of it on every
+frame of a swap), layers.json (each layer's box on the 1086 x 1448 canvas, which pants.data.ts
+copies; waistbands, fade zone, registration, error checks), contact-sheet.jpg.
 """
 import json
 import sys
@@ -333,16 +335,23 @@ def main():
         })
         print(n, report["checks"][n])
 
-    # save
-    Image.fromarray(body_l, "RGBA").save(OUT / "body.png")
-    Image.fromarray(hands, "RGBA").save(OUT / "hands.png")
+    # save, each layer cropped to its content (2px clear); its box goes into layers.json
+    report["boxes"] = {}
+    def save(arr, name):
+        ys, xs = np.where(arr[..., 3] > 0)
+        x0, y0 = max(0, xs.min() - 2), max(0, ys.min() - 2)
+        x1, y1 = min(W, xs.max() + 3), min(H, ys.max() + 3)
+        Image.fromarray(arr[y0:y1, x0:x1], "RGBA").save(OUT / f"{name}.png")
+        report["boxes"][name] = [int(x0), int(y0), int(x1 - x0), int(y1 - y0)]
+    save(body_l, "body")
+    save(hands, "hands")
     for n in names:
-        Image.fromarray(layers[n], "RGBA").save(OUT / f"{n}.png")
+        save(layers[n], n)
         g = layers[n].astype(np.float32)
         lum = g[..., :3] @ np.array([0.299, 0.587, 0.114])
         grey = np.dstack([lum, lum, lum, g[..., 3]]).clip(0, 255).astype(np.uint8)
         if n != BASE:
-            Image.fromarray(grey, "RGBA").save(OUT / f"{n}-grey.png")
+            save(grey, f"{n}-grey")
     (OUT / "layers.json").write_text(json.dumps(report, indent=1))
 
     # contact sheet: per photo its pants on a checkerboard, then body, hands, composite, overlay

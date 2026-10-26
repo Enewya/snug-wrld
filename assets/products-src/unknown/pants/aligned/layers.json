@@ -68,5 +68,73 @@
   "end": 35,
   "highest_waistband": 99,
   "safe": 64
+ },
+ "boxes": {
+  "body": [
+   225,
+   0,
+   626,
+   1317
+  ],
+  "hands": [
+   225,
+   59,
+   626,
+   418
+  ],
+  "model-base": [
+   317,
+   87,
+   446,
+   1113
+  ],
+  "unknown-denim-jean": [
+   298,
+   87,
+   492,
+   1119
+  ],
+  "unknown-denim-jean-grey": [
+   298,
+   87,
+   492,
+   1119
+  ],
+  "unknown-side-eye-baggy-pant": [
+   254,
+   87,
+   567,
+   1172
+  ],
+  "unknown-side-eye-baggy-pant-grey": [
+   254,
+   87,
+   567,
+   1172
+  ],
+  "unknown-logo-sweatpant-brown": [
+   308,
+   87,
+   473,
+   1123
+  ],
+  "unknown-logo-sweatpant-brown-grey": [
+   308,
+   87,
+   473,
+   1123
+  ],
+  "unknown-lgt-strikes-joggers": [
+   316,
+   83,
+   456,
+   1106
+  ],
+  "unknown-lgt-strikes-joggers-grey": [
+   316,
+   83,
+   456,
+   1106
+  ]
  }
 }

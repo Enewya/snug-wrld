@@ -16,7 +16,7 @@ Kept byte-for-byte as supplied, renamed to the file names the section expects:
 
 ```
 python3 scripts/build-unknown-pants-layers.py   # masks/ (subject masks), aligned/ (layers + checks)
-node scripts/optimize-unknown-pants.mjs         # public/products/unknown/pants/*.webp
+node scripts/optimize-unknown-pants.mjs         # public/products/unknown/pants-layers/*.webp
 ```
 
 `build-unknown-pants-layers.py` needs `pip install "rembg[cpu]" pillow numpy scipy`; rembg only
