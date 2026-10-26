@@ -23,7 +23,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${archivo.variable} ${archivoBlack.variable} h-full antialiased`}>
+    // suppressHydrationWarning: browser extensions add attributes to <html> before React hydrates
+    // (the documented fix; it applies to this element's own attributes only, not its children)
+    <html lang="en" suppressHydrationWarning className={`${archivo.variable} ${archivoBlack.variable} h-full antialiased`}>
       <body className="h-full">{children}</body>
     </html>
   );
