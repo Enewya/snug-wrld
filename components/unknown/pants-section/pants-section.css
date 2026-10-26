@@ -19,11 +19,11 @@ body:has(.unk-pants) {
 }
 
 .unk-pants {
-  /* atmosphere: neutral cool white sky (no saturated blue), from the reference's tone */
-  /* re-tuned for the white hero (was #e8ecf0 against the grey wall): just enough below white for
-     the white cloud layers to read. Ink 16.4:1, mute 6.0:1 (AA) */
-  --sky-top: #f0f3f6;
-  --sky-bottom: #f8fafb;
+  /* atmosphere: white to white (brief: nothing in the veil darker than ~4% grey). #F9FAFB is
+     2.0% below white, #FDFDFD 0.8%. Ink 17.5:1, mute 6.4:1 (AA). Was #F0F3F6 -> #F8FAFB, which
+     read as a grey shadow rising over the white hero. */
+  --sky-top: #f9fafb;
+  --sky-bottom: #fdfdfd;
   --peek-opacity: 0.2;
   /* the model: one fixed 3:4 frame, centred, between the top margin and the bottom row */
   --fig-top: max(var(--space-24), 5svh);
@@ -64,29 +64,30 @@ body:has(.unk-pants) {
   background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 100%);
 }
 
-/* feathered top edge: 30vh above the section fading from clear to sky, with a mist band riding
-   the edge, so the section arrives without a hard line (measured: ~20-25% of the screen) */
+/* feathered top edge: a short white fade above the section (8vh; was 30vh) with a faint white mist
+   band riding the edge, so the section arrives without a hard line. The reference's edge is almost
+   crisp (its step takes under 1% of the screen height; reference/unknown/MOTION.md "v5"). */
 .unk-pants__feather {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 100%;
-  height: 30vh;
+  height: 8vh;
   /* above the stage, so the mist band can overlap the stage's top instead of being cut by it */
   z-index: 2;
   pointer-events: none;
   /* hidden at rest on the hero; pants-section-behaviour.js fades it in as the section starts to rise */
   opacity: 0;
-  background: linear-gradient(180deg, rgba(240, 243, 246, 0) 0%, rgba(240, 243, 246, 0.55) 55%, var(--sky-top) 100%);
+  background: linear-gradient(180deg, rgba(249, 250, 251, 0) 0%, var(--sky-top) 100%);
 }
 .unk-pants__edge-mist {
   position: absolute;
   left: -10%;
-  bottom: -8vh;
+  bottom: -3vh;
   width: 120%;
-  height: 26vh;
+  height: 10vh;
   background: no-repeat center / 100% 100%;
-  opacity: 0.95;
+  opacity: 0.6;
 }
 
 /* pre-rendered clouds (transparent WebP), moved with transform only */
@@ -104,8 +105,9 @@ body:has(.unk-pants) {
   height: auto;
   max-width: none;
 }
-.unk-pants__cloud--back { top: -2%; }
-.unk-pants__cloud--front { bottom: 6%; opacity: 0.9; }
+/* faint: white clouds on a near-white sky (were 100% / 90%) */
+.unk-pants__cloud--back { top: -2%; opacity: 0.45; }
+.unk-pants__cloud--front { bottom: 6%; opacity: 0.4; }
 /* mist around the crop line, BEHIND the figure: atmosphere only, it never veils the body (the
    reference shows the model fully clear right up to a short, soft fade baked into the image:
    3.9% of the visible height, see reference/unknown/MOTION.md "v3") */
@@ -131,7 +133,7 @@ body:has(.unk-pants) {
    80, all on the scale) carries the fade from the sky into the plain white page */
 .unk-hold + .unk-section {
   padding-top: calc(var(--section-gap) - var(--pants-inset));
-  background: linear-gradient(180deg, var(--sky-bottom, #f8fafb) 0%, var(--unk-paper) calc(var(--section-gap) - var(--pants-inset)));
+  background: linear-gradient(180deg, var(--sky-bottom, #fdfdfd) 0%, var(--unk-paper) calc(var(--section-gap) - var(--pants-inset)));
 }
 
 
