@@ -8,7 +8,7 @@ import { photos, photoScale } from "@/lib/photo-catalog";
 import { DIP_MS, dipPath, makeFingers } from "@/lib/dyeDip";
 import { FOCUS_SIZES, focusImgProps, preloadFocus, readyUrl } from "@/lib/preload";
 
-export type FocusViewSet = { side: string; front: string; back?: string };
+export type FocusViewSet = { side: string; front: string; back?: string; mirrorSide?: boolean };
 
 const SIZES = FOCUS_SIZES;
 
@@ -85,6 +85,7 @@ function Face({
   bodyScale,
   back,
   preload,
+  mirror,
 }: {
   src: string;
   opacity?: MotionValue<number>;
@@ -92,6 +93,8 @@ function Face({
   bodyScale: MotionValue<number>;
   back?: boolean;
   preload?: boolean;
+  /** Side photo that faces right: mirrored about the hook axis (lib/products.ts mirrorSide). */
+  mirror?: boolean;
 }) {
   const m = photos[src];
   const { style, axisX } = boxFor(src);
@@ -110,6 +113,7 @@ function Face({
         opacity,
         // the back faces away: half a turn about the hook axis
         rotateY: back ? 180 : 0,
+        scaleX: mirror ? -1 : 1,
         originX: axisX,
       }}
     >
@@ -267,7 +271,7 @@ export default function FocusGarment({ view, phase, angle, swing, bodyScale, dye
   return (
     <motion.div className="fg" style={{ rotateZ: swing, willChange: moving ? "transform" : "auto" }}>
       <motion.div className="fg-card" style={{ rotateY: turn, willChange: moving ? "transform" : "auto" }}>
-        <Face key={view.side} src={view.side} opacity={sideOpacity} turn={turn} bodyScale={bodyScale} />
+        <Face key={view.side} src={view.side} opacity={sideOpacity} turn={turn} bodyScale={bodyScale} mirror={view.mirrorSide} />
         {/* while dyeing, the old and new photos of that face are drawn (masked by one wave) in the dye-dip */}
         <Face
           key={view.front}

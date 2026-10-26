@@ -71,7 +71,7 @@ export default function RackItem({ product, index, count, hovered, shift, zIndex
   }, [shift, reduce, shiftMv]);
 
   const layers = [
-    { src: product.side, opacity: sideOpacity, sizes: "36vh", preload: true },
+    { src: product.side, opacity: sideOpacity, sizes: "36vh", preload: true, mirror: product.mirrorSide },
     { src: product.front, opacity: frontOpacity, sizes: "41vh" },
   ];
 

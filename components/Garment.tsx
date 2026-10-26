@@ -11,6 +11,8 @@ export type GarmentLayer = {
   opacity: MotionValue<number>;
   sizes: string;
   preload?: boolean;
+  /** Draw the photo mirrored about its hook loop (scaleX(-1)), so the hook stays exactly on the rod. */
+  mirror?: boolean;
 };
 
 type Props = {
@@ -44,7 +46,7 @@ export default function Garment({ layers, turn, swing, bodyScale, part = "hanger
   return (
     <motion.div className="garment" style={{ rotateZ: swing }}>
       <motion.div className="garment-card" style={{ rotateY: turn }}>
-        {layers.map(({ src, opacity, sizes, preload }) => {
+        {layers.map(({ src, opacity, sizes, preload, mirror }) => {
           const m = photos[src];
           const gapMid = (m.loopInnerTopY + m.loopInnerBottomY) / 2;
           const box = {
@@ -63,6 +65,7 @@ export default function Garment({ layers, turn, swing, bodyScale, part = "hanger
               preload={preload}
               loading={preload ? undefined : "eager"}
               draggable={false}
+              style={mirror ? { transform: "scaleX(-1)", transformOrigin: `${((m.loopCenterX / m.width) * 100).toFixed(3)}% 0` } : undefined}
             />
           );
           if (part === "crest") {

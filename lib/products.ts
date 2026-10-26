@@ -14,6 +14,9 @@ export type Product = {
   side: string;
   front: string;
   back?: string;
+  /** The side photo faces right: show it mirrored (scaleX(-1) about the hook) so every garment on
+   *  the rack faces left. Side view only; front and back are never flipped. */
+  mirrorSide?: boolean;
   /** First colourway is the one hanging on the rack. */
   colourways?: Colourway[];
   url?: string;
