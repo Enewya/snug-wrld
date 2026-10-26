@@ -35,14 +35,16 @@ Every value on /unknown comes from a published system. One rule per row, with it
 | Spacing scale | 2, 4, 8, 12, 16, 24, 32, 40, 48, 64, 80, 96 px. No other margin / padding / gap values | `--space-2` … `--space-96` | Material 3 spacing / IBM Carbon spacing (8px grid) |
 | Section-level spacing | 16, 24, 32, 48, 64, 96, 160 | `--space-*`, `--layout-160` | IBM Carbon layout tokens |
 | Section rhythm | gap between consecutive sections: **64** compact + medium, **96** expanded; applied once, as `padding-top` on the lower section (`.unk-section`), so gaps never double. 160 kept for the hero-to-pants transition (not needed: the pants section overlaps the held hero) | `--section-gap` | IBM Carbon layout tokens |
-| Window classes | compact 0-599: 16 margin, 4 columns, 16 gutter. Medium 600-839: 24 margin, 8 columns, 24 gutter. Expanded 840+: 24 margin (32 from 1200), 12 columns, 24 gutter, centred 1440 max content width | `--margin`, `--columns`, `--gutter`, `--content-max` | Material 3 window size classes / layout |
+| Window classes | compact 0-599: 16 margin, 4 columns, 16 gutter. Medium 600-839: 24 margin, 8 columns, 24 gutter. Expanded 840+: 24 margin (32 from 1200), 12 columns, 24 gutter, centred 1440 max content width. Every margin is `max(token, safe-area inset)`: it only grows on notched phones in landscape (the page uses `viewport-fit=cover`) | `--margin`, `--columns`, `--gutter`, `--content-max` | Material 3 window size classes / layout; safe areas: CSS env() |
+| Viewport units | `svh` for the pinned pants stage and everything sized to the screen height (never `100vh`, so the mobile browser bars cannot break it); `dvh` for the hero and the menu's max height | – | CSS Values 4 |
+| Hover | every `:hover` effect sits inside `@media (hover: hover)`, so touch screens never get a stuck hover state | – | Material 3 states (hover is a pointer state) |
 | Top app bar | 64px tall on compact, 4px edge padding around 48px icon buttons | `.unk-header` | Material 3 top app bar |
 | Type roles (size/line-height, weight) | Display L 57/64 · Headline L 32/40 · Headline M 28/36 · Headline S 24/32 · Title L 22/28 · Title M 16/24 (500) · Body L 16/24 · Body M 14/20 · Label L 14/20 (500) · Label M 12/16 (500) · Label S 11/16 (500); M3 tracking per role | `--type-*` (`font` shorthand) + `--track-*` | Material 3 type scale |
-| Touch targets | 48 x 48 minimum | `--target` | Material 3 (meets Apple HIG 44pt and WCAG 2.2 2.5.8 target size) |
+| Touch targets | 48 x 48 minimum; short text links (a 37px "Pants" in the footer) get an invisible centred 48 x 48 hit box (`.unk-hit48`), layout and underline unchanged | `--target` | Material 3 (meets Apple HIG 44pt and WCAG 2.2 2.5.8 target size) |
 | State layers | hover 8%, focus 10%, pressed 10%, in the element's content colour | `--state-*`, `.unk-state` | Material 3 states |
 | Focus ring | 2px solid ink, 2px offset (15:1 on white) | `--focus-ring`, `--focus-offset` | WCAG 2.2 2.4.13 focus appearance |
 | Text contrast | AA everywhere: mute `#5c5c5c` 6.6:1 on white, 6.0:1 on the pants sky | colour tokens | WCAG 2.2 1.4.3 |
-| Shape | 12px corners on buttons, inputs and containers (cards, wells, buy bar, menu panel) | `--radius-button` | brief |
+| Shape | 12px corners on buttons, inputs and containers (cards, wells, menu panel) | `--radius-button` | brief |
 | Scrim | ink at 32% behind the menu | `.unk-menu__scrim` | Material 3 scrim |
 | Elevation | menu panel: M3 level 2 shadow | `.unk-menu` | Material 3 elevation |
 | Easing | standard `cubic-bezier(0.2, 0, 0, 1)`; emphasized-decelerate `(0.05, 0.7, 0.1, 1)` (entering); emphasized-accelerate `(0.3, 0, 0.8, 0.15)` (leaving) | `--ease-*` | Material 3 motion |
@@ -61,8 +63,8 @@ Every value on /unknown comes from a published system. One rule per row, with it
 | Two Piece eyebrow / product name / price | Label Medium, uppercase / Title Large / Title Medium |
 | Section titles (New Arrivals, Caps, Lookbook) | Headline Large |
 | Pants product name | Headline Large (was a fluid 28-46px) |
-| Pants price / intro line / counter / buy-bar name | Body Large / Body Medium / Label Medium / Label Medium |
-| Text links, Add to cart, Sign up | Label Large, uppercase |
+| Pants price / intro line / counter | Body Large / Body Medium / Label Medium |
+| Text links (View product, View all, Get directions), Sign up | Label Large, uppercase |
 | Card names (New Arrivals, Caps) / prices | Label Large (same metrics as M3 Title Small) / Body Medium |
 | Visit address and email lead / hours / email field / status line | Title Large / Body Large / Body Large / Body Medium |
 | Footer | **unchanged on purpose** (brief: keep the footer exactly as it is): 15px links, 13px base line, 11px column titles. Mapping them would be Body Large 16 / Body Medium 14 / Label Small 11 |
@@ -89,10 +91,19 @@ Every value on /unknown comes from a published system. One rule per row, with it
   wordmark centred (12.55% of the viewport width, as the draft), search / account / cart right
   (Hugeicons `search-02`, `user-02`, `shopping-cart-02` from `icon-paths.ts`, 24px glyphs in 48px
   targets, the last glyph aligned to the content margin).
-- **Compact (< 600px):** hamburger left (ABOUT moves into the menu), wordmark centred, the same
-  three icons right. The wordmark takes the room left between the icon groups: 64-112px wide
-  (78px at 390, 64px at 360, 112px from 424 up). With three 48px icons on the right that is the
-  most a centred wordmark can have; moving search to the left of the wordmark would allow 112px.
+- **Compact (< 600px, and touch phones in landscape up to 500px tall):** no left control (ABOUT
+  moves into the menu); on the right, in order, search, account, cart and the **hamburger at the
+  far right** (same Hugeicons set, 1.5px strokes, 24px glyphs in 48px targets). Transparent, no
+  bar, as on desktop. **Wordmark:** the brief asked for it centred. Four 48px targets plus the 4px
+  edge take 196px, which reaches past the middle of any phone narrower than 392px; a truly centred
+  wordmark therefore needs `2 x (196 + 16) + 64 = 488px`. Measured with the requested layout forced:
+  a centred 112px wordmark overlaps the icons by 92 / 72 / 57 / 37px at 320 / 360 / 390 / 430
+  (`reference/unknown/qa/round8/6c-header-requested-vs-shipped.jpg`). So: **488px and wider**
+  (large phones in landscape, small tablets): centred, as requested. **Below 488px:** the
+  alternative, the wordmark on the left content margin (16px), 92-112px wide, 16-106px clear of
+  the icons, targets kept at 48px. Trade-off: the wordmark is not centred on portrait phones (the
+  same structure as the reel's top bar); the other option, shrinking the targets to 44px, still
+  only fits a centred wordmark from 424px, so it would not help at 390 or 360.
 - **Menu:** a white dropdown panel under the header (12px bottom corners, M3 level-2 shadow) with
   the store navigation from `header.data.ts`: Our Collections (Caps, Jackets, Shirts, Pants, All),
   Best Sellers, New Arrivals, Look-Book, Contact, About Us, Shop All. 48px rows, Title Medium top
@@ -105,6 +116,9 @@ Every value on /unknown comes from a published system. One rule per row, with it
   and is trapped (Tab / Shift+Tab cycle through the hamburger and the panel only); Esc returns it
   to the hamburger. `aria-expanded` / `aria-controls` on the hamburger and on Our Collections; page
   scroll locked while open (`html.unk-menu-open`); reduced motion: no slide, no morph animation.
+- Clears the notch: `padding-top: env(safe-area-inset-top)` and side insets in landscape; the menu
+  panel opens below that. In landscape the panel scrolls within the screen (measured at 844 x 390
+  and 667 x 375: opens, scrolls, Esc closes).
 - **Liquid:** `sections/unknown-header.liquid` in the header group; rows from
   `linklists['main-menu'].links` (child links → the expandable group); icons link to
   `routes.search_url`, `routes.account_url`, `routes.cart_url` (add `cart.item_count` as a badge if
@@ -120,7 +134,7 @@ block of `mobile-rack-behaviour.js` and the custom properties at the top of
 
 | What | Provisional (round 6) | Measured from the reel, now used |
 |---|---|---|
-| Rail | static, past both screen edges, 24px under the header | static; an end bracket 1.5vw in from each edge (not past the edges); centre 26vw under the header icons; ~1.3vw thick |
+| Rail | static, past both screen edges, 24px under the header | static; centre 26vw under the header icons; ~1.3vw thick. **Round 8:** an end bracket on each side margin line; garments hang in a strip clipped at the margins and pass behind the brackets (reel: garments cut off at x = 1.3% and 97.2% of the screen, at the brackets' outer edges; brackets ~2.7vw x 6.2vw). Mapped to the 16px compact margin and a 12 x 24px bracket |
 | Garments across | 3 | 3 whole + slivers at both edges |
 | Hanger spacing | 33.3vw | **27.8vw** |
 | Garment size | photo 64vw wide | sized so each hangs **66vw** from the rail to the hem (photo 55vw wide); side views ~17-19vw wide |
@@ -134,6 +148,7 @@ block of `mobile-rack-behaviour.js` and the custom properties at the top of
 | Sway | none | damped pendulum about the hook: period **1.37s**, damping ratio **0.2**, ~3.9deg for a fast glide; the hem lags as the row speeds up and swings on as it slows |
 | Ends | rubber band 0.35 | **not measurable** (the reel never reaches an end; it loops back to its own first frame, which is what read as "returning to the first garment"): rubber band 0.35 kept, the only unmeasured value |
 | Tap | centre opens the focus view | confirmed (the reel's focus view: Close, Front / Back, counter) |
+| First load | garment 0 facing front | **round 8 (brief):** every garment on its left-facing side view, evenly spaced; the side-to-front turn only starts after the visitor has dragged and the row has come to rest (tap on the centre garment still opens it) |
 | Indicators | none | none (the dots under the reel belong to the reel itself) |
 
 Implementation: pointer events, one `requestAnimationFrame` loop that runs only while something
@@ -141,19 +156,35 @@ moves and writes only `transform` / `opacity` (plus a z-index and the caption te
 garment changes); layout is read on resize only. Vertical swipes scroll the page
 (`touch-action: pan-y` + horizontal-intent detection, 6px). Each photo hangs by its own measured
 hook loop (same geometry as `components/Garment.tsx`); every side view faces left (`mirrorSide`,
-below). The first garment is server-rendered centred and facing front with its neighbours pushed
-out, so the first paint needs no JavaScript (it is the mobile LCP image). Reduced motion: dragging
-works, the row snaps without gliding, the swap and the gap are instant, nothing sways.
-The focus view opens from the centred front view (`origin.bodyScale: 1`); when it closes, the rack
-takes over on the side view and turns to the front after the usual 300ms rest (`resume()`).
+below). Every garment is server-rendered on its side view, evenly spaced, so the first paint needs
+no JavaScript (garment 0's side photo is the mobile LCP image, fetch priority high). Reduced
+motion: dragging works, the row snaps without gliding, the swap and the gap are instant, nothing
+sways. The focus view opens from the centred garment; when it closes, the rack takes over on the
+side view and, once the row has been dragged at least once, turns to the front after the usual
+300ms rest (`resume()`).
 **Liquid:** inside `sections/unknown-hero.liquid`, one `<li>` per garment block (side + front
 image, `image_url` widths as the desktop rack); load `mobile-rack-behaviour.js` and call
 `initMobileRack(el, { onSelect })`, where `onSelect(index, origin)` opens the focus view.
 
 ## Every garment faces left (`mirrorSide`)
 
-Each side photo was checked one by one (which side the front placket, print or hood is on). The
-**black jacket** and the **green plaid shirt** face right; the other five face left. Those two
+Re-checked in round 8 with a labelled contact sheet of every side photo at 3x beside its front
+(`reference/unknown/qa/round8/2-rack-facing-contact-sheet.jpg`), using real cues (the collar dips at
+the front, the hood's bulk sits at the back, zip / buttons / placket at the front, front-only prints):
+
+| Garment | Side photo faces | Cue | Evidence |
+|---|---|---|---|
+| Beige Panel Jacket | left | grey front panel + flap pocket on the left edge; collar point projects left | strong |
+| Orange Bird Knit Vest | left | the front-only bird print shows on the left edge (back is plain) | **medium** (a sliver of print) |
+| Black Graphic Jacket | right → mirrored | collar dips, button placket and welt pockets on the right | strong |
+| Green Panel Plaid Shirt | right → mirrored | collar dips, button placket on the right | strong |
+| Ivory Hoodie | left | hood bulk (back) on the right; chest label on the left | strong |
+| Grey Zip Hoodie | left | zip + kangaroo pocket on the left; hood bulk on the right | strong |
+| Blue Striped Tee | left | the front-only "shhshhsh" print shows on the left edge; sleeve hangs forward | **medium** (a few px of print at rack size) |
+
+The flags were already right (rendered at 3x on desktop and on the phone rack, every front points
+left). What read as "facing different ways" on phones was the centre garment showing its **front**
+on first load; that is gone (first load is side views only, see the phone rack). The **black jacket** and the **green plaid shirt** face right as photographed; the other five face left. Those two
 carry `mirrorSide: true` in `lib/unknown-products.ts`: their side photo (only) is drawn with
 `transform: scaleX(-1)` about the middle of its hook loop, on the desktop rack, its hook crest, the
 focus view's fly-in / out and the phone rack. Front and back photos are never flipped. Measured
@@ -235,7 +266,20 @@ page.
   not be matched to a product with certainty.
 - Layout: a horizontal row with CSS scroll-snap, mixed heights (even looks sit lower), native
   swipe on touch, prev/next buttons on desktop (`initLookbook(sectionEl)`, same custom-element
-  wrapper as pants).
+  wrapper as pants). Long product names wrap under the photo (never cut off).
+- **Scroll lag (round 8), profiled before fixing** (Chrome traces, 4x CPU throttle, MacBook 1512 @2x
+  and phone @3x, wheel / touch input, up from the footer and down): each photo was decoded on the
+  frames it first came on screen: AVIF (the image optimizer served AVIF; it decodes several times
+  slower than WebP), sized from `32vw` (a 9:16 look ~300px wide got the 1080px file), ~60-75 ms per
+  photo at 4x, about 1 s per cold pass, worst frame 216 ms. No layout shift, no network during the
+  scroll, no filter / backdrop-filter / will-change in the section; the reveal already runs once;
+  the scroll-snap row and the hover zoom measured no difference when switched off. Fixed: WebP only
+  (`next.config.ts`), `sizes` per look from its own ratio and the slot's clamp (no file over ~1.7x
+  its display size), and the row is decoded one photo at a time in idle time when the section comes
+  within two screens, from either direction (`lookbook-behaviour.js`). Also: the pants section's
+  scroll listener is detached while that section is far away. Frame tables under Verification.
+- **Liquid:** `image_url` widths from 320 to 1080 with the same `sizes` rule; keep the
+  IntersectionObserver predecode from `lookbook-behaviour.js`.
 
 **Visit + email** (`visit/`)
 - Settings: address lines (text × 3), `hours` (text), `email_copy` (text, "Get exclusive deals and
@@ -244,6 +288,10 @@ page.
   `<input type="hidden" name="contact[tags]" value="newsletter">`; show `form.posted_successfully?`
   and `form.errors` in the `[data-signup-msg]` line. Then `visit-behaviour.js` is no longer needed.
 - `id="visit"` is kept as an anchor (the footer's "Visit the store" link).
+- Spacing (round 8): the section keeps the section gap below its content too (`padding-bottom:
+  var(--section-gap)`), so the white runs 96 / 64 px from the last content (Get directions, the
+  email field) to the footer's warm wall; the footer then has its own section-gap top padding inside
+  the wall. Measured: 0 px before, 64 / 64 / 64 / 96 / 96 at 360 / 390 / 768 / 1024 / 1440.
 
 **Footer** (`footer/`): menus from `linklists` (Shop: New arrivals, Pants, All products;
 UNKNOWN: About, Visit the store). Layout: wordmark left; the two link columns sit side by side as
@@ -271,32 +319,34 @@ grey-zip-hoodie, blue-striped-tee; the 4 tees after them are kept but off.
 
 | What | Where | Needed |
 |---|---|---|
-| Pants photos with more torso | `assets/products-src/unknown/pants/` | all five regenerated with the navel and ~15% bare torso above the waistband, so one shared fade zone works (see the pants HANDOFF, "Fade zone") |
+| Pants photos with more torso | `assets/products-src/unknown/pants/` | the navel and ~15% bare torso above the waistband in all five, so the fade keeps 16 CSS px clear of the waistband on short screens too (see the pants HANDOFF, "Fade zone") |
 | Left-facing side photo of the black jacket | `public/products/unknown/black-jacket-side.webp` | its sleeve lettering reads backwards when mirrored |
 | Lookbook heading | `lookbook/lookbook.data.ts` | the client's chosen heading ("Off the rack" is the brief's example) |
 | Developer's new draft hero (desktop + mobile screenshots) | hero | to compare the white header with icons pixel by pixel |
 | Jackets collection | `header/header.data.ts` | the collection URL (the live store's own menu links Jackets to `#`) |
 | Original vector logo | `public/products/unknown/brand/unknown-wordmark.svg` | the brand's SVG (current one is traced from a raster) |
-| Red sweatpant photo | `pants-section/pants.data.ts` (`hidden`) | the photo, generated in the base pose |
-| Brown + cream photos in the base pose | `assets/products-src/unknown/pants/` | regenerated (arms differ: a second pair of hands can show for a moment mid-swap) |
+| Red sweatpant photo | `pants-section/pants.data.ts` (`hidden`) | the photo in the base pose, then one run of the layer script |
 | Lookbook product links | `lookbook/lookbook.data.ts` | which product each look shows (only 3 are linked) |
-| Add to cart | pants buy bar | links to the current pair's product page (see the pants HANDOFF) |
+| Buying from the pants section | `pants-section/` | removed this round (View product instead); a size picker + cart call if wanted (see the pants HANDOFF) |
 
-## Regenerating the misaligned pants photos (brown, cream)
+## Adding or replacing a pants photo
 
-Prompt wording (run once per pair, with the chinos photo `assets/products-src/unknown/pants/model-base.webp`
-as the first reference image and the product photo as the second):
+Photos must be the same model in the same pose, framing and size as `model-base.webp` (the brown
+and cream ones were regenerated that way on 26 Oct 2026). Prompt (once per pair, the chinos photo
+as the first reference image, the product photo as the second):
 
 > Use the first image as the exact pose and framing reference. Keep the same model, the same
 > arm position (arms hanging straight down at exactly the same angle, hands in exactly the same
 > place beside the thighs), the same stance, the same white sneakers, the same crop, scale and
 > camera height, the same lighting and the same plain white background. Output exactly
-> 1086 × 1448 px. Change only the pants: replace the grey chinos with the exact [brown logo
-> sweatpant / cream lightning-crack jogger] from the second image, keeping every graphic and
-> detail exactly as in the product photo. Do not change the torso, arms, hands or framing.
+> 1086 × 1448 px. Change only the pants: replace the grey chinos with the exact [product] from the
+> second image, keeping every graphic and detail exactly as in the product photo. Do not change the
+> torso, arms, hands or framing.
 
-Then drop the result into `assets/products-src/unknown/pants/` under the same file name and run
-`python3 scripts/prepare-unknown-pants.py && node scripts/optimize-unknown-pants.mjs`.
+Drop it into `assets/products-src/unknown/pants/` under the product's handle, run
+`python3 scripts/build-unknown-pants-layers.py && node scripts/optimize-unknown-pants.mjs`, read
+the checks it prints (registration, waistband, rebuild error) and copy the new boxes from
+`aligned/layers.json` into `pants.data.ts`.
 
 ## Deploying a preview (Netlify, without touching production)
 
@@ -322,53 +372,82 @@ npx netlify-cli deploy --build --alias unknown-preview
 `deploy` without `--prod` is a **draft**: it never replaces the live site. It prints a URL like
 `https://unknown-preview--snugwrld.netlify.app`; add `/unknown`. Never add `--prod`.
 
+## Responsive (round 8)
+
+Tested on the production build with Playwright device emulation (touch on, mobile viewport on
+phones): 320 × 568, 360 × 740, 375 × 667, 390 × 844, 412 × 915, 430 × 932, 480 × 854, 600 × 960,
+768 × 1024, 820 × 1180, 1024 × 768, 1180 × 820, 1280 × 800, 1440 × 900, 1920 × 1080, phones in
+landscape 844 × 390 and 667 × 375, and the iPhone 13, Galaxy S5 and iPad (gen 7) presets. Screenshot
+matrix per section: `reference/unknown/qa/round8/5-matrix-*.jpg`.
+
+Results at every size: no sideways scroll; no clipped or cut-off text; every control 48 × 48 (the
+hidden keyboard-only product chooser excepted: 48px when focused); the pinned pants: no text over
+the model, the ghost or the header, at rest or mid-swap; every image file between 0.95x and 1.7x
+its display size (device pixels).
+
+| Defect found | Fix |
+|---|---|
+| Pinned stage used `100vh` fallbacks; feather, mist, lookbook and header heights in `vh` | `svh` only (dvh for the hero and the menu) |
+| No safe-area handling (notch, home indicator) | `viewport-fit=cover`; margins, header, phone rack, pants bottom row and footer add the insets |
+| A phone in landscape (667 × 375) got the stacked pants layout (chosen by width): the figure had a negative height | stacked layout chosen by shape (portrait); side by side in landscape |
+| Short screens: the details and a pair did not both fit (landscape phones, 568-667px tall portrait phones) | name in Headline Small there; landscape details from the top; pants 246-345px tall on those screens |
+| Phones in landscape got the desktop header, so no menu | the compact header (with the hamburger) also on touch screens up to 500px tall; the menu scrolls within the screen |
+| `:hover` effects outside `@media (hover: hover)` (text links, footer, ABOUT, focus view controls): stuck hover on touch | all inside `@media (hover: hover)` |
+| Wordmark link 18-28px tall; footer "Pants" / "About" 37-40px wide; ABOUT 46px wide | 48px link; invisible 48 x 48 hit boxes (checked with hit-tests 23px from each centre) |
+| Lookbook product names cut off with an ellipsis (1280 and up) | they wrap; the underline follows each line |
+| Lookbook photos 2.3-3x too large on desktop, 0.7x on landscape phones; desktop rack photos 2.4-2.8x on portrait tablets | `sizes` follow the real slots (the rack's `min(36vh, 22.5vw)`; the lookbook's clamp per photo ratio) |
+
+Only on a physical device: Safari's collapsing address bar and toolbar (svh behaviour under real
+scrolling), the real notch / Dynamic Island and home-indicator insets, momentum scrolling and
+rubber-banding feel, real GPU frame times (this machine has no GPU), touch latency and the feel of
+the rack's drag and sway, haptics, the landscape menu with a real on-screen keyboard (sign-up
+field), browser extensions, and memory pressure on low-end Android.
+
 ## Verification (what was measured, and how)
 
-All on the production build, round 7 (26 Oct 2026). Before = commit 5f68f27 built and measured the
-same way on the same machine. Sheets, recordings and reports: `reference/unknown/qa/round7/`
-(round 6's are in `qa/round6/`).
+All on the production build, round 8 (26 Oct 2026), unless marked dev. Before = commit b4146f6
+(end of round 7) built and measured the same way on the same machine. Sheets, recordings and
+reports: `reference/unknown/qa/round8/` (round 7's in `qa/round7/`).
 
-- **Section gaps** (content edge to content edge, containers as in M3):
+- **Visit to footer (item 1):** white from the last Visit content to the footer's wall: before 0 px
+  at all five widths; now 64 / 64 / 64 / 96 / 96 (360 / 390 / 768 / 1024 / 1440). Footer top
+  padding 64 / 64 / 64 / 96 / 96 (section token).
+- **Rack facing (item 2):** see `mirrorSide` above; flags unchanged; hooks unchanged (no geometry
+  change since round 7's 0.2 px check).
+- **Pants (items 3, 7):** exactly 1 pair link and 1 collection link at every position; tab order
+  View product, previous, next, View all; View all on the counter's baseline (0 px); the link
+  follows each pair 01-04; no overlaps (41 positions x 5 widths). Body identical across all five
+  states (max 3 levels at 390). Fade vs waistband per width: see the pants HANDOFF.
+- **Lookbook (item 4)**, frames over 20 ms / over 50 ms / frames / worst, three runs each:
 
-  | Gap | 1440 / 1024 / 768 / 390 / 360 |
-  |---|---|
-  | Pants > New Arrivals (at release) | 96 / 96 / 64 / 64 / 64 |
-  | New Arrivals > Two Piece | 96 / 96 / 64 / 64 / 64 |
-  | Two Piece > Caps | 96 / 96 / 64 / 64 / 64 |
-  | Caps > Lookbook | 96 / 96 / 64 / 64 / 64 |
-  | Lookbook > Visit | 96 / 96 / 64 / 64 / 64 |
-  | Visit > footer | 96 / 96 / 64 / 64 / 64 |
-- **Rack facing:** every side view faces left at 1440 and 390; after the flip each hanger neck sits
-  within 0.2px of where it was on the rail. Mirrored lettering: the black jacket's sleeve print
-  ("unknown") reads backwards in its side view (see mirrorSide above).
-- **Phone rack** (360 / 390 / 430, touch emulation): drag 1:1 (100px finger = 100px row), rubber band
-  150px pull = 53px then back to 0, vertical swipe scrolls the page 285px with the rack still, tap
-  opens the focus view and Close closes it, reduced motion snaps. A fling settles in about 420ms
-  (reel: about 430). 60 fps recordings with a frame-time log: 4 of 1159 (360), 5 of 1160 (390),
-  5 of 1159 (430) frames over 20ms, all inside the focus view's open / close (the existing 8px blur
-  on the rack behind it); none during drags, flings or the turn.
-- **Entry veil** (darkest background row, text ignored, start / middle / end of the entry): before
-  4.0-4.3% grey at 1440 and 390, now 2.0% at every point; the hero at rest 0.0%. The cloud
-  faintness is baked into the images (a layer opacity on them cost frames, see below).
-- **Pants fade vs waistband** (`qa/round7/fade-margins.json`): smallest gap from the end of the fade
-  to the top of the waistband, any pair: 17.1px (360), 21.1 (390), 29.7 (768), 26.2 (1024), 32
-  (1440); the mist ends 17.4px or more above every waistband. Overlays per pair at 1440 and 390.
-- **Pants links:** exactly two (View all, the bar's button); the button's href and "View [name]"
-  label always match the counter, including after fast scrolling and prev / next. Tab order: View
-  all, Previous, Next, button. View all overlaps nothing (header, model, ghost) in 41 samples
-  across the pinned range at each of the 5 widths.
-- **Footer colours:** wall sampled at rgb(233, 232, 228) = `#E9E8E4` before round 6 and now, at 1440
-  and 390.
-- **60 fps page scroll** (fresh load, headed Chromium on a virtual display, ffmpeg x11grab): phone
-  0 of 1184 frames over 20ms; desktop 9 of 989 (none over 50ms; the recorder shares the CPU).
-  Without the recorder, a first pass through the hero and pants: 1 of 412 frames, the same as before
-  round 7 (6-19 of 412 while the clouds used CSS opacity). No GPU on this machine (software
-  compositing), harsher than real devices.
-- **Lighthouse:** desktop 100 performance, 100 accessibility, 100 best practices (LCP 0.8s, CLS
-  0.002). Mobile 83-84 / 100 / 100 in 3 runs (LCP 4.2-4.6s, the phone rack's first garment); before:
-  desktop 99, mobile 81. SEO 63 only because the prototype route is `noindex` on purpose.
-- **No sideways scroll** at 1440, 1024, 768, 390 and 360 (real mobile emulation below 800).
-- **Console / hydration:** no errors, warnings or hydration messages at the 5 widths (dev server).
+  | Scroll | Before | After |
+  |---|---|---|
+  | dev server, cold, desktop 1512 @2x, up | 2/1/118/83, 20/1/128/83 | 4/0/129/33, 6/0/127/33 |
+  | dev server, cold, desktop, down | 22/2/146/117, 20/3/156/83 | 3/0/146/33, 3/0/149/33 |
+  | dev server, cold, phone @3x, up | 4/0/171/50, 8/0/130/50 | 5/0/100/50, 7/0/132/33 |
+  | dev server, cold, phone, down | 8/1/175/67, 3/0/137/50 | 2/0/140/33, 2/0/140/33 |
+  | production, desktop, down (over 20 ms / frames / worst) | 15/143/67, 3/140/33, 2/140/33 | 3/148/33, 2/144/33, 3/147/33 |
+  | production, desktop, up (over 20 ms / frames / worst) | 4/122/33, 5/123/33, 4/121/33 | 2/128/33, 5/127/33, 4/133/33 |
+
+  60 fps recordings of the lookbook scroll (up from the footer and back down): desktop 1 of 341
+  frames over 20 ms (33 ms), phone 0 of 344.
+- **Phone hero (item 6):** first load: every front photo at opacity 0 (360 / 390 / 430); after a
+  drag and rest, the centre garment turns. Garments clipped at the 16px margins behind the
+  brackets at both drag limits (`6ab-rack-load-and-limits.jpg`). Header measurements above.
+- **Hydration (item 8, dev):** with an attribute added to `<html>` before hydration (as an
+  extension does): before 1 issue at every width ("A tree hydrated but some attributes of the
+  server rendered HTML didn't match"), after 0; without it, no hydration messages at 1440, 1024,
+  768, 390, 360.
+- **60 fps recordings** (headed Chromium on a virtual display, ffmpeg x11grab, no GPU): page scroll
+  desktop 1 of 1000 frames over 20 ms, phone 0 of 1192; pants swaps 1440 3 of 519 (one 67 ms frame
+  as the last pair releases), 390 0 of 536; phone rack 360 / 390 / 430: 2 / 1 / 4 of ~1160 (focus
+  view open / close, one 50 ms frame on the first fling at 430, when the first front photos decode).
+- **Lighthouse** (same machine, same day, alternating builds): desktop 98-99 for both before and
+  after (LCP 0.9-1.1 s; round 7 measured 100 on another day); mobile before 80-86 (LCP 3.5-4.2 s,
+  TBT 260-320 ms), after 80-84 (LCP 4.3-5.0 s, TBT 120-150 ms). The mobile LCP element is now the
+  first garment's side photo (first load shows side views only); its render delay is longer.
+  Accessibility 100, best practices 100. SEO 63 only because the prototype route is `noindex`.
+- **Responsive:** see "Responsive" above.
 
 ## Quality notes
 
