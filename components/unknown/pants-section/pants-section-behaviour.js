@@ -328,14 +328,7 @@ export function initPantsSection(root) {
     if (!raf) raf = requestAnimationFrame(tick);
   };
 
-  // out of range (the section more than a screen away): nothing on screen depends on the scroll,
-  // so the handler returns before doing any work
-  let wasFar = false;
   function onScroll() {
-    const y = window.scrollY;
-    const far = y + vh * 2 < top || y > top + travel + vh;
-    if (far && wasFar) return;
-    wasFar = far;
     target = fromScroll();
     entry();
     idle = false;
@@ -411,7 +404,21 @@ export function initPantsSection(root) {
   entry();
   shown = target = rest(fromScroll());
   render(shown);
-  window.addEventListener("scroll", onScroll, { passive: true });
+  // the scroll listener is only attached while the section is within a screen of the viewport:
+  // elsewhere on the page (the lookbook, the footer) scrolling runs none of this code
+  let listening = false;
+  const listen = (/** @type {boolean} */ on) => {
+    if (on === listening) return;
+    listening = on;
+    if (on) window.addEventListener("scroll", onScroll, { passive: true });
+    else window.removeEventListener("scroll", onScroll);
+    onScroll(); // catch up (on leaving: settle on where the page stopped)
+  };
+  const near = "IntersectionObserver" in window
+    ? new IntersectionObserver((entries) => listen(entries[entries.length - 1].isIntersecting), { rootMargin: "100% 0px" })
+    : null;
+  if (near) near.observe(root);
+  else listen(true);
   window.addEventListener("resize", onResize);
   prev.addEventListener("click", onPrev);
   next.addEventListener("click", onNext);
@@ -423,6 +430,7 @@ export function initPantsSection(root) {
     alive = false;
     cancelAnimationFrame(raf);
     clearTimeout(idleTimer);
+    near?.disconnect();
     window.removeEventListener("scroll", onScroll);
     window.removeEventListener("resize", onResize);
     prev.removeEventListener("click", onPrev);

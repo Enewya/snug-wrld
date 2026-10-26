@@ -35,8 +35,12 @@ export default function Lookbook() {
           <li key={l.src} className="unk-look" style={{ "--ar": `${l.width} / ${l.height}` } as React.CSSProperties}>
             <figure className="unk-look__figure">
               <span className="unk-look__well">
+                {/* sized to the slot it fills (lookbook-styles.css): phones 72vw up to 320px wide,
+                    larger screens 58vh tall at the photo's own ratio, so no file is decoded at
+                    more than ~2x its display size */}
                 <Image className="unk-look__img" src={l.src} alt={l.product ? `Look ${i + 1}: ${l.product.name}` : `UNKNOWN look ${i + 1}`}
-                  width={l.width} height={l.height} sizes="(max-width: 767px) 62vw, 32vw" />
+                  width={l.width} height={l.height} decoding="async"
+                  sizes={`(max-width: 444px) 72vw, (max-width: 839px) 320px, calc(58vh * ${(l.width / l.height).toFixed(3)})`} />
               </span>
               {l.product && (
                 <figcaption className="unk-look__cap">
