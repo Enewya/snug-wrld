@@ -76,7 +76,7 @@ The waist mist sits **behind** the model and ends 3% into the frame (atmosphere 
 
 Atmosphere: `public/products/unknown/atmosphere/` (pre-rendered transparent WebP, made by
 `scripts/generate-unknown-clouds.py`): `clouds-back.webp` 1600×700 (17 KB), `clouds-front.webp`
-1600×500 (14 KB), `mist.webp` 1600×360 (11 KB). No live blur anywhere.
+1600×500 (14 KB), alpha at most 40% / 34%, `mist.webp` 1600×360 (11 KB). No live blur anywhere.
 
 Pipeline: `scripts/prepare-unknown-pants.py` (cut-out, align by body, per-photo skin-only fade), then
 `scripts/optimize-unknown-pants.mjs` (WebP). Details: `assets/products-src/unknown/pants/PROCESSING.md`.
@@ -133,7 +133,8 @@ Measured first; numbers in `reference/unknown/MOTION.md` (v2 table).
 - **Entry:** the hero is held (`position: sticky`) and the section scrolls up over it. Its top
   edge is a short, faint white fade (8vh, white to the near-white sky; the reference's edge is almost
   crisp: under 1% of the screen height) with a faint white mist band (10vh at 60%). Nothing in the
-  veil is darker than ~2.6% grey (measured; was 4.0-4.3%). Two cloud layers (45% / 40% opacity) rise
+  veil is darker than 2.0% grey (measured; was 4.0-4.3%). Two faint cloud layers (the faintness is
+  baked into the images' alpha, no layer opacity, which dropped frames while they moved) rise
   a little slower than the section and drift sideways with progress; the waist mist drifts the other
   way. All by `transform`; the hero is clean at rest.
 - **Pinning** is CSS: the stage is `position: sticky`. The section is `112svh + (states - 1.2) x
