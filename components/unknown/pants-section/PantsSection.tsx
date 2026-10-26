@@ -13,7 +13,7 @@ import { initPantsSection } from "./pants-section-behaviour";
 import "./pants-section.css";
 
 const pad = (n: number) => String(n).padStart(2, "0");
-const MODEL = { width: 1086, height: 1448, sizes: "(max-width: 760px) 90vw, (max-aspect-ratio: 5/4) 70vw, 60vh" };
+const MODEL = { width: 1086, height: 1448, sizes: "(max-aspect-ratio: 5/4) 90vw, 60vh" };
 
 /**
  * Pinned, scroll-scrubbed pants showcase (see HANDOFF.md). React only renders the markup; all

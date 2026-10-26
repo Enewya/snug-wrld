@@ -32,8 +32,9 @@
   --section-gap: var(--space-64);
 
   /* ---- layout: Material 3 window size classes ---- */
-  /* compact 0-599: 16 margin, 4 columns, 16 gutter */
-  --margin: var(--space-16);
+  /* compact 0-599: 16 margin, 4 columns, 16 gutter. Every margin grows to clear the notch / rounded
+     corners where the screen has them (safe-area insets; the page uses viewport-fit=cover) */
+  --margin: max(var(--space-16), env(safe-area-inset-left), env(safe-area-inset-right));
   --columns: 4;
   --gutter: var(--space-16);
   --content-max: 1440px; /* centred max content width (expanded) */
@@ -92,14 +93,14 @@
 }
 /* medium 600-839: 24 margin, 8 columns, 24 gutter */
 @media (min-width: 600px) {
-  .unk-page { --margin: var(--space-24); --columns: 8; --gutter: var(--space-24); }
+  .unk-page { --margin: max(var(--space-24), env(safe-area-inset-left), env(safe-area-inset-right)); --columns: 8; --gutter: var(--space-24); }
 }
 /* expanded 840+: 24-32 margin (32 from 1200), 12 columns, section gap 96 */
 @media (min-width: 840px) {
   .unk-page { --columns: 12; --section-gap: var(--space-96); }
 }
 @media (min-width: 1200px) {
-  .unk-page { --margin: var(--space-32); }
+  .unk-page { --margin: max(var(--space-32), env(safe-area-inset-left), env(safe-area-inset-right)); }
 }
 
 /* visible focus ring on every interactive element (WCAG 2.2 focus appearance) */

@@ -1,6 +1,6 @@
 /* UNKNOWN lookbook (values from components/unknown/tokens.css). Spacing above the section:
    .unk-section (section gap). */
-.unk-lookbook { --look-h: clamp(360px, 58vh, 600px); }
+.unk-lookbook { --look-h: clamp(360px, 58svh, 600px); }
 .unk-lookbook__actions { display: flex; align-items: center; gap: var(--space-8); }
 /* "Look-Book" label: M3 Label Medium; headline: M3 Headline Medium */
 .unk-lookbook__label { font: var(--type-label-m); letter-spacing: var(--track-label-m); }
@@ -46,8 +46,14 @@
 /* only looks with a known product have a caption: its link, under the photo */
 .unk-look__cap { display: flex; padding-top: var(--space-4); }
 .unk-look__product { max-width: 100%; }
-.unk-look__product .unk-link { max-width: 100%; }
-.unk-look__product .unk-link__text { overflow: hidden; text-overflow: ellipsis; }
+/* long product names wrap (never cut off); the same 1px underline, drawn as a text underline so
+   it follows each line */
+.unk-look__product .unk-link { max-width: 100%; white-space: normal; }
+.unk-look__product .unk-link__text {
+  background: none;
+  text-decoration: underline 1px;
+  text-underline-offset: 4px;
+}
 /* product link: revealed on hover / focus with a pointer, always visible on touch. With a pointer
    it hangs below the photo without taking layout space, so the row ends at the photos and the gap
    to the next section stays exactly the section gap. */

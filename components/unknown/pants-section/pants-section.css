@@ -27,8 +27,10 @@ body:has(.unk-pants) {
   --peek-opacity: 0.2;
   /* the model: one fixed 3:4 frame, centred, between the top margin and the bottom row */
   --fig-top: max(var(--space-64), 5svh);
-  /* bottom row (counter, arrows, View all): inset + 48px target + 32px clear above it */
-  --fig-bottom: calc(var(--pants-inset) + var(--target) + var(--space-32));
+  /* bottom row (counter, arrows, View all): inset + 48px target + 32px clear above it; the row
+     also clears the home indicator (safe-area inset, zero elsewhere) */
+  --fig-bottom: calc(var(--pants-inset) + env(safe-area-inset-bottom) + var(--target) + var(--space-32));
+  --name-lh: 40px; /* line height of the name (Headline Large; Headline Small on short screens) */
   --fig-h: calc(100svh - var(--fig-top) - var(--fig-bottom));
   --fig-w: calc(var(--fig-h) * 0.75);
   /* peek at rest: centred at ~0.83 of the screen width, as measured in the reference */
@@ -45,7 +47,6 @@ body:has(.unk-pants) {
   /* one screen-and-a-bit of scrolling per swap (0.94 of a screen, plus a 0.12 lead-in), ending the
      moment the last pair has settled: no dead scroll before the section releases. Must match
      LEAD / STEP in pants-section-behaviour.js. */
-  height: calc(112vh + (var(--unk-pants-count, 5) - 1.2) * 94vh);
   height: calc(112svh + (var(--unk-pants-count, 5) - 1.2) * 94svh);
   background: var(--sky-top);
   color: var(--unk-ink);
@@ -57,8 +58,7 @@ body:has(.unk-pants) {
 .unk-pants__stage {
   position: sticky;
   top: 0;
-  height: 100vh;
-  height: 100svh;
+  height: 100svh; /* small viewport: the browser's bars can never cover the pinned stage */
   overflow: hidden;
   isolation: isolate;
   background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 100%);
@@ -72,7 +72,7 @@ body:has(.unk-pants) {
   left: 0;
   right: 0;
   bottom: 100%;
-  height: 8vh;
+  height: 8svh;
   /* above the stage, so the mist band can overlap the stage's top instead of being cut by it */
   z-index: 2;
   pointer-events: none;
@@ -83,9 +83,9 @@ body:has(.unk-pants) {
 .unk-pants__edge-mist {
   position: absolute;
   left: -10%;
-  bottom: -3vh;
+  bottom: -3svh;
   width: 120%;
-  height: 10vh;
+  height: 10svh;
   background: no-repeat center / 100% 100%;
   opacity: 0.6;
 }
@@ -129,7 +129,7 @@ body:has(.unk-pants) {
 /* bottom inset of the stage's last row (counter, arrows, View all). Page-level so the next section can subtract it:
    the visible gap from that row to New Arrivals is then exactly the section gap. */
 .unk-page { --pants-inset: var(--space-32); }
-@media (max-width: 760px), (max-aspect-ratio: 5/4) {
+@media (max-aspect-ratio: 5/4), (max-height: 520px) {
   .unk-page { --pants-inset: var(--space-16); }
 }
 /* the section after the pants: its top padding (section gap minus the inset above, so 64 / 48 /
@@ -243,7 +243,7 @@ body:has(.unk-pants) {
   position: absolute;
   left: var(--margin);
   right: var(--margin);
-  bottom: var(--pants-inset);
+  bottom: calc(var(--pants-inset) + env(safe-area-inset-bottom));
   display: flex;
   align-items: center;
   gap: var(--space-16);
@@ -277,16 +277,17 @@ body:has(.unk-pants) {
 /* "View all" (the shared .unk-link): pushed to the right content margin */
 .unk-pants__all { margin-left: auto; }
 
-/* ---------- Phones and tall screens: details on top, pants in the middle, bottom row ---------- */
-@media (max-width: 760px), (max-aspect-ratio: 5/4) {
+/* ---------- Portrait screens (phones, tablets): details on top, pants in the middle, bottom row.
+   By shape, not width: a phone in landscape keeps the side-by-side layout, where it fits. ---------- */
+@media (max-aspect-ratio: 5/4) {
   .unk-pants {
-    --info-top: var(--space-24);
+    --info-top: calc(var(--space-24) + env(safe-area-inset-top));
     /* eyebrow (16) + 8 + up to three 40px lines of name + 8 + the 24px price line + the View
        product row (48px target, its text 16px under the price) + 16 clear: the details never
        cover the pants */
-    --fig-top: calc(var(--info-top) + var(--space-24) + 3 * 40px + var(--space-8) + 24px + var(--space-16) - (var(--target) - 20px) / 2 + var(--target) + var(--space-16));
+    --fig-top: calc(var(--info-top) + var(--space-24) + 3 * var(--name-lh) + var(--space-8) + 24px + var(--space-16) - (var(--target) - 20px) / 2 + var(--target) + var(--space-16));
     /* bottom row (inset + 48px) + 16 clear */
-    --fig-bottom: calc(var(--pants-inset) + var(--target) + var(--space-16));
+    --fig-bottom: calc(var(--pants-inset) + env(safe-area-inset-bottom) + var(--target) + var(--space-16));
     --fig-h: min(calc(100svh - var(--fig-top) - var(--fig-bottom)), calc((100vw - 2 * var(--margin)) / 0.75));
     --peek-x: calc(var(--fig-w) * 0.62);
     --info-w: calc(100vw - 2 * var(--margin));
@@ -296,4 +297,21 @@ body:has(.unk-pants) {
   .unk-pants__meta { margin-top: var(--space-8); }
   /* the progress line takes what the row has left */
   .unk-pants__progress { flex: 1; width: auto; min-width: 0; }
+}
+
+/* ---------- Short screens: the name drops to Headline Small (24/32), so the details and a
+   legible pair still fit: phones in landscape (side by side, details from the top) and short
+   phones in portrait (iPhone SE class) ---------- */
+@media (min-aspect-ratio: 5/4) and (max-height: 520px) {
+  .unk-pants {
+    --fig-top: calc(var(--space-24) + env(safe-area-inset-top));
+    --info-top: calc(var(--space-24) + env(safe-area-inset-top));
+    --name-lh: 32px;
+  }
+}
+@media (max-aspect-ratio: 5/4) and (max-height: 700px) {
+  .unk-pants { --name-lh: 32px; }
+}
+@media (min-aspect-ratio: 5/4) and (max-height: 520px), (max-aspect-ratio: 5/4) and (max-height: 700px) {
+  .unk-pants__name { font: var(--type-headline-s); letter-spacing: var(--track-headline-s); }
 }

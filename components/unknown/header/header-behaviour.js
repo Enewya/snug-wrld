@@ -75,9 +75,10 @@ export function initHeaderMenu(root) {
     }
     if (target.closest("a[href]")) set(false, { restoreFocus: false });
   };
-  // the panel only exists on compact screens: close it if the window grows past them
-  const wide = window.matchMedia("(min-width: 600px)");
-  const onWide = () => wide.matches && set(false, { restoreFocus: false });
+  // the panel only exists on compact screens (and touch phones in landscape): close it if the
+  // window grows past them (same query as header-styles.css)
+  const wide = window.matchMedia("(max-width: 599px), (pointer: coarse) and (max-height: 500px)");
+  const onWide = () => !wide.matches && set(false, { restoreFocus: false });
 
   toggle.addEventListener("click", onToggle);
   scrim.addEventListener("click", onScrim);

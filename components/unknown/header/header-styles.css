@@ -1,14 +1,16 @@
 /* UNKNOWN hero header + compact dropdown menu (values from components/unknown/tokens.css).
    No solid header bar: it sits on the hero's white patterned wall. */
 .unk-header {
-  --header-h: max(64px, 10.4vh); /* the draft's band on large screens; M3 top app bar (64) minimum */
+  --header-h: max(64px, 10.4svh); /* the draft's band on large screens; M3 top app bar (64) minimum */
   position: absolute;
   inset: 0 0 auto;
   z-index: 60;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  height: var(--header-h);
+  /* clear of the notch / status bar (viewport-fit=cover; zero elsewhere) */
+  height: calc(var(--header-h) + env(safe-area-inset-top));
+  padding-top: env(safe-area-inset-top);
   padding-inline: var(--margin);
   color: var(--unk-ink);
 }
@@ -34,10 +36,12 @@
   text-decoration: none;
   background: linear-gradient(currentColor, currentColor) no-repeat 0 calc(50% + 12px) / 0 1px;
 }
-.unk-header__about:hover { background-size: 100% 1px; transition: background-size var(--dur-medium-2) var(--ease-standard); }
+@media (hover: hover) {
+  .unk-header__about:hover { background-size: 100% 1px; transition: background-size var(--dur-medium-2) var(--ease-standard); }
+}
 
 /* wordmark: the draft's 12.55% of the viewport width on large screens */
-.unk-header__logo { justify-self: center; display: block; line-height: 0; }
+.unk-header__logo { justify-self: center; display: flex; align-items: center; min-height: var(--target); line-height: 0; }
 .unk-header__logo img { display: block; width: max(120px, 12.55vw); height: auto; }
 
 /* icon buttons: 48px target, 24px glyph, 12px corners, M3 state layer (.unk-state) */
@@ -89,15 +93,17 @@
 }
 .unk-header .unknown-close span { font-size: 24px; line-height: 1; }
 
-/* ---------- compact (< 600px): search, account, cart, hamburger on the right ---------- */
+/* ---------- compact (< 600px, and touch phones in landscape): search, account, cart,
+   hamburger on the right ---------- */
 .unk-menu__scrim,
 .unk-menu { display: none; }
 
-@media (max-width: 599px) {
+@media (max-width: 599px), (pointer: coarse) and (max-height: 500px) {
   .unk-header {
     --header-h: 64px; /* M3 small top app bar */
     /* M3 top app bar: 4px edge padding around 48px icon buttons (glyphs 16px from the edge) */
-    padding-inline: var(--space-4);
+    padding-left: max(var(--space-4), env(safe-area-inset-left));
+    padding-right: max(var(--space-4), env(safe-area-inset-right));
   }
   .unk-header__end { margin-inline-end: 0; }
   .unk-header__start { display: none; } /* no left control: ABOUT is in the menu */
@@ -121,7 +127,7 @@
   .unk-menu__scrim {
     display: block;
     position: fixed;
-    inset: var(--header-h) 0 0;
+    inset: calc(var(--header-h) + env(safe-area-inset-top)) 0 0;
     z-index: 1;
     background: rgba(21, 21, 21, 0.32); /* M3 scrim: 32% */
     opacity: 0;
@@ -132,11 +138,11 @@
   .unk-menu {
     display: block;
     position: fixed;
-    top: var(--header-h);
+    top: calc(var(--header-h) + env(safe-area-inset-top));
     left: 0;
     right: 0;
     z-index: 2;
-    max-height: calc(100dvh - var(--header-h) - var(--space-48));
+    max-height: calc(100dvh - var(--header-h) - env(safe-area-inset-top) - var(--space-48));
     overflow-y: auto;
     overscroll-behavior: contain;
     padding-block: var(--space-8);

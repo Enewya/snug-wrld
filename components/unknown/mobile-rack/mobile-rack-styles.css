@@ -7,7 +7,7 @@
   --umr-pitch: 27.8vw; /* hanger spacing at rest (reel: 326-330px of 1180) */
   --umr-push: 10.9vw; /* how far each neighbour moves out from the front-facing garment */
   /* rail centre 26vw under the header icons (reel); our icons sit in the middle of the 64px bar */
-  --umr-rail-y: calc(32px + 26vw);
+  --umr-rail-y: calc(32px + env(safe-area-inset-top) + 26vw); /* the header clears the notch too */
   --rod: calc(var(--umr-iw) * 0.03039 - 1px); /* fits inside every hook loop; ~1.3vw, as the reel */
   position: absolute;
   inset: 0;

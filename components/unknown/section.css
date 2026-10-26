@@ -58,17 +58,31 @@
   text-decoration: none;
   white-space: nowrap;
 }
+/* 48 x 48 hit area for short labels (a footer "About" is 40px wide) without changing the layout or
+   the underline, which stays under the text: an invisible, centred box at least 48px each way */
+.unk-hit48 { position: relative; }
+.unk-hit48::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100%, var(--target));
+  height: max(100%, var(--target));
+  transform: translate(-50%, -50%);
+}
 .unk-link__text {
   padding-bottom: var(--space-2);
   background: linear-gradient(currentColor, currentColor) no-repeat 0 100% / 100% 1px;
 }
-.unk-link:hover .unk-link__text { animation: unk-underline var(--dur-medium-2) var(--ease-standard); }
+@media (hover: hover) {
+  .unk-link:hover .unk-link__text { animation: unk-underline var(--dur-medium-2) var(--ease-standard); }
+}
 .unk-link:active { opacity: 0.6; }
 @keyframes unk-underline {
   from { background-size: 0 1px; }
   to { background-size: 100% 1px; }
 }
-@media (prefers-reduced-motion: reduce) {
+@media (hover: hover) and (prefers-reduced-motion: reduce) {
   .unk-link:hover .unk-link__text { animation: none; }
 }
 @media (max-width: 599px) {

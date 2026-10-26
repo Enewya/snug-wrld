@@ -270,7 +270,7 @@ body {
   border: 1px solid var(--ink);
   transition: background-color 0.2s;
 }
-.focus-arrow:hover::before { background: rgba(21, 21, 19, 0.08); }
+@media (hover: hover) { .focus-arrow:hover::before { background: rgba(21, 21, 19, 0.08); } }
 .focus-arrow svg { position: relative; }
 /* far apart, like bm-10: 6% in from each screen edge */
 .focus-arrow.l { left: 6vw; }
@@ -373,7 +373,7 @@ header button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px
   text-decoration: none;
   border-bottom: 1px solid var(--ink);
 }
-.info-cta:hover { opacity: 0.65; }
+@media (hover: hover) { .info-cta:hover { opacity: 0.65; } }
 
 /* swing tags (prototype) */
 .focus-tags-wrap {
@@ -440,7 +440,7 @@ header button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px
   background: var(--paper);
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
 }
-.tag-hit:hover .tag { transform: rotate(-7deg); }
+@media (hover: hover) { .tag-hit:hover .tag { transform: rotate(-7deg); } }
 .tagwrap.on .tag { transform: translateY(14px); }
 .tagwrap.on .tag-face::after { content: ""; position: absolute; inset: auto 5px 5px; height: 2px; background: currentColor; }
 @keyframes sway {

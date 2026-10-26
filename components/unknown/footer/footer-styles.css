@@ -9,7 +9,7 @@
   --footer-text: 15px;
   --footer-small: 13px;
   --footer-label: 11px;
-  padding-bottom: var(--space-32);
+  padding-bottom: calc(var(--space-32) + env(safe-area-inset-bottom)); /* clears the home indicator */
   background: var(--unk-warm);
   color: var(--unk-ink);
 }
@@ -37,6 +37,7 @@
 .unk-footer__col ul { display: grid; margin: 0; padding: 0; list-style: none; }
 .unk-footer__col a,
 .unk-footer__base a {
+  position: relative; /* for its 48px hit area (::before, as .unk-hit48) */
   display: inline-flex;
   align-items: center;
   min-height: var(--target);
@@ -45,11 +46,23 @@
   text-decoration: none;
   transition: opacity var(--dur-short-3) var(--ease-standard);
 }
+.unk-footer__col a::before,
+.unk-footer__base a::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100%, var(--target));
+  height: max(100%, var(--target));
+  transform: translate(-50%, -50%);
+}
 /* same underline behaviour as .unk-link (text only, draws in on hover) */
 .unk-footer__col a,
 .unk-footer__base a { background: linear-gradient(currentColor, currentColor) no-repeat 0 calc(50% + 0.75em) / 0 1px; }
-.unk-footer__col a:hover,
-.unk-footer__base a:hover { background-size: 100% 1px; transition: background-size var(--dur-medium-2) var(--ease-standard); }
+@media (hover: hover) {
+  .unk-footer__col a:hover,
+  .unk-footer__base a:hover { background-size: 100% 1px; transition: background-size var(--dur-medium-2) var(--ease-standard); }
+}
 .unk-footer__col a:active,
 .unk-footer__base a:active { opacity: 0.4; }
 .unk-footer__base {
@@ -68,7 +81,7 @@
 
 /* compact: the link group stacks under the brand block, columns still side by side */
 @media (max-width: 599px) {
-  .unk-section.unk-footer { padding-bottom: var(--space-24); }
+  .unk-section.unk-footer { padding-bottom: calc(var(--space-24) + env(safe-area-inset-bottom)); }
   .unk-footer__grid { grid-template-columns: minmax(0, 1fr); }
   .unk-footer__links { justify-self: start; gap: var(--space-48); }
   .unk-footer__brand img { height: 22px; }

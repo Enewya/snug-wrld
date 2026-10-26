@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Hanken_Grotesk } from "next/font/google";
 import UnknownShowroom from "@/components/unknown/UnknownShowroom";
 import PantsSection from "@/components/unknown/pants-section/PantsSection";
@@ -22,6 +22,10 @@ export const metadata: Metadata = {
   description: "UNKNOWN, Lagos premium streetwear: homepage preview.",
   robots: { index: false, follow: false },
 };
+
+/* cover: the page runs under the notch and home indicator in landscape, and the header, side
+   margins and the pants' bottom row add the safe-area insets themselves (tokens.css etc.) */
+export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover" };
 
 export default function UnknownPage() {
   return (

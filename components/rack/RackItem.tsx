@@ -71,8 +71,10 @@ export default function RackItem({ product, index, count, hovered, shift, zIndex
   }, [shift, reduce, shiftMv]);
 
   const layers = [
-    { src: product.side, opacity: sideOpacity, sizes: "36vh", preload: true, mirror: product.mirrorSide },
-    { src: product.front, opacity: frontOpacity, sizes: "41vh" },
+    // the garment is min(36vh, 22.5vw) wide (--iw, globals.css): on tall, narrow screens (tablets in
+    // portrait) the 22.5vw side wins, so `sizes` follows the same rule (front photos run ~1.14x)
+    { src: product.side, opacity: sideOpacity, sizes: "min(36vh, 22.5vw)", preload: true, mirror: product.mirrorSide },
+    { src: product.front, opacity: frontOpacity, sizes: "min(41vh, 25.6vw)" },
   ];
 
   return (

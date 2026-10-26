@@ -29,7 +29,7 @@ export default function UnknownHeader({ close }: Props) {
   return (
     <header ref={ref} className="unk-header">
       <div className="unk-header__start">
-        <a className="unk-header__about" href={ABOUT.url}>{ABOUT.text}</a>
+        <a className="unk-header__about unk-hit48" href={ABOUT.url}>{ABOUT.text}</a>
       </div>
 
       <a className="unknown-wordmark unk-header__logo" href="/unknown" aria-label="UNKNOWN home">
