@@ -89,7 +89,15 @@ export function initPantsSection(root) {
   const grey = (s) => greys[s - 1];
 
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const fades = items.map((it) => qa("[data-pants-fade]", it).concat(qa("[data-pants-buy]", it)));
+  // each pair's text fades plus its thumbnail + name inside the one shared buy bar
+  const fades = items.map((it, j) => qa("[data-pants-fade]", it).concat(qa(`[data-pants-buyitem="${j}"]`)));
+  const bar = q("[data-pants-bar]");
+  const cta = /** @type {HTMLAnchorElement} */ (q("[data-pants-cta]"));
+  // pair k (1 … N): its product URL and name, for the one CTA
+  const pairs = qa("[data-pants-buyitem]").map((el) => ({
+    url: el.dataset.url ?? "",
+    name: el.querySelector(".unk-pants__buy-name")?.textContent ?? "",
+  }));
   /** @type {HTMLElement[][]} */
   let lines = items.map(() => []);
 
@@ -216,6 +224,9 @@ export function initPantsSection(root) {
       } else put(it, 0);
     });
 
+    // the buy bar's shell: hidden on the intro (state 0), it fades in with the first pair
+    put(bar, i > 0 ? 1 : rm ? e : span(e, P.fadeIn));
+
     // atmosphere: clouds drift with progress at two speeds (depth)
     if (!rm) {
       move(cloudBack, tx(-u * 0.8 * vw, cloudLift * 0.5));
@@ -250,10 +261,18 @@ export function initPantsSection(root) {
       it.setAttribute("aria-hidden", String(!on));
     });
     counter.textContent = a === 0 ? "—" : pad(a);
+    // the one CTA always points at the pair on screen; on the intro it is out of reach
+    const pair = pairs[Math.max(0, a - 1)];
+    if (pair) {
+      cta.href = pair.url;
+      cta.setAttribute("aria-label", `View ${pair.name}`);
+    }
+    cta.tabIndex = a === 0 ? -1 : 0;
+    cta.setAttribute("aria-hidden", String(a === 0));
     prev.setAttribute("aria-disabled", String(a === 0));
     next.setAttribute("aria-disabled", String(a === n - 1));
     if (announce && a > 0) {
-      const name = items[a].querySelector(".unk-pants__buy-name")?.textContent;
+      const name = pairs[a - 1]?.name;
       const price = items[a].querySelector(".unk-pants__price")?.textContent;
       status.textContent = `${a} of ${n - 1}: ${name}, ${price}`;
     }

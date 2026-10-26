@@ -35,6 +35,9 @@ export const PANTS_LABEL = "PANTS";
 export const PANTS_BASE_IMAGE = `${IMAGES}/model-base.webp`;
 
 /** Text shown with the base pants, before the first pair (factual, no marketing copy). */
+/** The collection link at the top right of the pinned section (Liquid: a section setting). */
+export const PANTS_VIEW_ALL = { label: "View all", url: `${STORE}/collections/pants` };
+
 export const PANTS_INTRO = {
   title: "", // set below from the number of pairs shown, e.g. "4 pairs"
   meta: "Scroll to try each one on",
