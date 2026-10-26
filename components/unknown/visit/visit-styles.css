@@ -1,5 +1,8 @@
 /* UNKNOWN visit + email sign-up (values from components/unknown/tokens.css). Spacing above the
-   section: .unk-section (section gap). */
+   section: .unk-section (section gap). The section also keeps the section gap below its content,
+   so the white runs a full section gap before the footer's warm wall starts (the footer then has
+   its own section-gap top padding inside the wall). */
+.unk-section.unk-visit { padding-bottom: var(--section-gap); }
 .unk-visit__grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
