@@ -4,7 +4,7 @@ A visual prototype of a new UNKNOWN homepage, built to be ported section by sect
 theme. Each section is self-contained: its own folder, plain CSS, a small plain-JS file where it
 has behaviour, and a data file holding all copy, prices, images and links. No new libraries.
 
-Page order: **Rack hero → Pants → New Arrivals → Caps → Lookbook → Visit + email → Footer.**
+Page order: **Rack hero → Pants → New Arrivals → Two Piece → Caps → Lookbook → Visit + email → Footer.**
 (The "Subtle Growth" drop band was removed.) Route: `app/unknown/page.tsx`.
 
 ## Files
@@ -19,6 +19,7 @@ Page order: **Rack hero → Pants → New Arrivals → Caps → Lookbook → Vis
 | Rack hero, phones (< 600px) | `mobile-rack/` (`MobileRack.tsx`, `mobile-rack-behaviour.js`, `mobile-rack-styles.css`) | `mobile-rack-behaviour.js` | inside `sections/unknown-hero.liquid` |
 | Pants | `pants-section/` | `pants-section-behaviour.js` | `sections/unknown-pants.liquid` (see `pants-section/HANDOFF.md`) |
 | New Arrivals | `new-arrivals/` | CSS only (hover) | `sections/unknown-new-arrivals.liquid` |
+| Two Piece | `two-piece/` | CSS only | `sections/unknown-two-piece.liquid` (one product picker) |
 | Caps | `caps/` | CSS only (hover) | `sections/unknown-caps.liquid` |
 | Lookbook | `lookbook/` | `lookbook-behaviour.js` (arrow buttons) | `sections/unknown-lookbook.liquid` |
 | Visit + email | `visit/` | `visit-behaviour.js` (prototype submit) | `sections/unknown-visit.liquid` |
@@ -55,14 +56,16 @@ Every value on /unknown comes from a published system. One rule per row, with it
 | Hero ABOUT, Close (focus view) | Label Large, uppercase |
 | Hero rack caption (desktop hover), phone rack caption | Label Medium / Label Large |
 | Menu: top-level rows / children | Title Medium / Body Large |
-| Section label ("Just in", "Headwear", "Worn in Lagos", "Visit the store", "Email list"), pants "PANTS" | Label Small, uppercase |
+| Section label ("Just in", "Headwear", "Visit the store", "Email list"), pants "PANTS" | Label Small, uppercase |
+| Lookbook label "Look-Book" / headline | Label Medium, uppercase / Headline Medium |
+| Two Piece eyebrow / product name / price | Label Medium, uppercase / Title Large / Title Medium |
 | Section titles (New Arrivals, Caps, Lookbook) | Headline Large |
 | Pants product name | Headline Large (was a fluid 28-46px) |
 | Pants price / intro line / counter / buy-bar name | Body Large / Body Medium / Label Medium / Label Medium |
 | Text links, Add to cart, Sign up | Label Large, uppercase |
 | Card names (New Arrivals, Caps) / prices | Label Large (same metrics as M3 Title Small) / Body Medium |
 | Visit address and email lead / hours / email field / status line | Title Large / Body Large / Body Large / Body Medium |
-| Footer | **unchanged on purpose** (brief: keep the footer exactly as it is): 15px links, 13px address and base line, 11px column titles. Mapping them would be Body Large 16 / Body Medium 14 / Label Small 11 |
+| Footer | **unchanged on purpose** (brief: keep the footer exactly as it is): 15px links, 13px base line, 11px column titles. Mapping them would be Body Large 16 / Body Medium 14 / Label Small 11 |
 
 **What the audit changed** (git diff against the previous round, `e41921d`): 62 spacing declarations, 68 type declarations, 16 motion declarations, 4 radius and 7 target declarations rewritten; 134 token references renamed onto the new scale (36 of them changed value: durations and easing onto M3, the fluid gutter onto the window-class margins, targets 44 → 48). Off-scale values found and replaced:
 
@@ -110,37 +113,54 @@ Every value on /unknown comes from a published system. One rule per row, with it
 
 ## Phone rack (`mobile-rack/`, compact screens only)
 
-**Not yet measured.** The reference reel for this rack did not reach the build (only the earlier
-videos are in `reference/unknown/`), so the behaviour below follows the written brief and every
-tunable value sits in one `CONFIG` block at the top of `mobile-rack-behaviour.js` (and three
-custom properties at the top of `mobile-rack-styles.css`), marked provisional. Re-measure the reel
-at 60 fps and replace them.
+Measured from the client's reel (`reference/unknown/video-c-mobile-rack.mp4`; method and raw
+numbers in `reference/unknown/MOTION.md`, "v4") before coding; every value lives in the `CONFIG`
+block of `mobile-rack-behaviour.js` and the custom properties at the top of
+`mobile-rack-styles.css`.
 
-| What | Now (provisional unless noted) | Where |
+| What | Provisional (round 6) | Measured from the reel, now used |
 |---|---|---|
-| Rod | static, edge to edge past both screen edges, centred 24px under the 64px header | `--umr-rail-y` |
-| Garment size | photo width 64vw (250px at 390): the centred front view ~1.12 x larger | `--umr-iw`, `CENTRE_SCALE` |
-| Hanger spacing | 33.3vw: three across a 390px screen (130px) | `--umr-pitch` |
-| Drag | 1:1 with the finger once it has moved 6px more sideways than vertically | `DRAG_START` |
-| Release glide | velocity over the last 100ms, exponential decay, time constant 325ms, aimed to land a garment exactly in the centre (snap) | `TAU`, `VELOCITY_WINDOW` |
-| Ends | rubber band: 35% of the finger's travel past the first / last garment, springs back (the brief suspects the reel returns to the first garment at the end: check, and switch to wrap-around if so) | `RUBBER` |
-| Side / front | every garment shows its side view; the one at rest in the centre turns to its front (and grows to 1.12, the desktop hover scale, so the focus view opens without a jump) with the desktop rack's turn spring (stiffness 120, damping 14). It turns back as soon as the row moves | `TURN_K`, `TURN_C` |
-| Sway | none (the brief: only if the reel shows it) | – |
-| Tap | centred garment opens the existing focus view; another garment glides to the centre; ←/→ keys move one garment | – |
-| Vertical swipes | scroll the page: `touch-action: pan-y` and horizontal-intent detection | – |
-| Indicators | none | – |
-| Reduced motion | drag works, the row snaps without gliding, the turn is instant, no sway | – |
+| Rail | static, past both screen edges, 24px under the header | static; an end bracket 1.5vw in from each edge (not past the edges); centre 26vw under the header icons; ~1.3vw thick |
+| Garments across | 3 | 3 whole + slivers at both edges |
+| Hanger spacing | 33.3vw | **27.8vw** |
+| Garment size | photo 64vw wide | sized so each hangs **66vw** from the rail to the hem (photo 55vw wide); side views ~17-19vw wide |
+| Centred front view | 1.12 x larger | same size as the side views (front hem = side hem) |
+| Neighbours of the front view | not moved | pushed out **10.9vw** each side (further garments shift too), over **400ms**, ease-out |
+| Drag | 1:1 | 1:1 (confirmed) |
+| Glide | time constant 325ms, aimed to land on a garment | time constant **100ms** (speed x0.715 per 33ms), ~430ms to rest, **no snap mid-glide** |
+| Settle | turn when the glide ends | rest **300ms**, then the garment nearest the centre is eased into the centre (**300ms**, ease-in-out) |
+| Side to front | 3D turn (desktop spring) | **cross-fade**, **100ms**, starting 100ms into the spread |
+| Centre | nearest the screen centre | nearest the screen centre when the row stops (confirmed) |
+| Sway | none | damped pendulum about the hook: period **1.37s**, damping ratio **0.2**, ~3.9deg for a fast glide; the hem lags as the row speeds up and swings on as it slows |
+| Ends | rubber band 0.35 | **not measurable** (the reel never reaches an end; it loops back to its own first frame, which is what read as "returning to the first garment"): rubber band 0.35 kept, the only unmeasured value |
+| Tap | centre opens the focus view | confirmed (the reel's focus view: Close, Front / Back, counter) |
+| Indicators | none | none (the dots under the reel belong to the reel itself) |
 
 Implementation: pointer events, one `requestAnimationFrame` loop that runs only while something
 moves and writes only `transform` / `opacity` (plus a z-index and the caption text when the centred
-garment changes); layout is read on resize only. Each photo hangs by its own measured hook loop
-(the same geometry as `components/Garment.tsx`); the soft shadow sits inside the turning card so a
-turn never redraws it. Photos share files with the desktop rack (same `sizes`), all decoded once the
-page is idle. The first garment is server-rendered already turned to its front, so the first paint
-needs no JavaScript (it is the mobile LCP image).
+garment changes); layout is read on resize only. Vertical swipes scroll the page
+(`touch-action: pan-y` + horizontal-intent detection, 6px). Each photo hangs by its own measured
+hook loop (same geometry as `components/Garment.tsx`); every side view faces left (`mirrorSide`,
+below). The first garment is server-rendered centred and facing front with its neighbours pushed
+out, so the first paint needs no JavaScript (it is the mobile LCP image). Reduced motion: dragging
+works, the row snaps without gliding, the swap and the gap are instant, nothing sways.
+The focus view opens from the centred front view (`origin.bodyScale: 1`); when it closes, the rack
+takes over on the side view and turns to the front after the usual 300ms rest (`resume()`).
 **Liquid:** inside `sections/unknown-hero.liquid`, one `<li>` per garment block (side + front
 image, `image_url` widths as the desktop rack); load `mobile-rack-behaviour.js` and call
 `initMobileRack(el, { onSelect })`, where `onSelect(index, origin)` opens the focus view.
+
+## Every garment faces left (`mirrorSide`)
+
+Each side photo was checked one by one (which side the front placket, print or hood is on). The
+**black jacket** and the **green plaid shirt** face right; the other five face left. Those two
+carry `mirrorSide: true` in `lib/unknown-products.ts`: their side photo (only) is drawn with
+`transform: scaleX(-1)` about the middle of its hook loop, on the desktop rack, its hook crest, the
+focus view's fly-in / out and the phone rack. Front and back photos are never flipped. Measured
+after the flip: every hanger neck stays within 0.2px of its slot. **Known:** the black jacket's side
+photo has "unknown" embroidered down the sleeve; mirrored, that small lettering reads backwards
+(about 5px tall on the desktop rack, larger on phones). A left-facing side photo of the jacket would
+fix it. Liquid: a per-block checkbox setting `mirror_side`.
 
 ## Fonts and loading them in Shopify
 
@@ -187,10 +207,26 @@ page.
   where one exists. 4 across on desktop, 2 across on phones.
 - "View all" → `/collections/headwear`.
 
+**Two Piece** (`two-piece/`, between New Arrivals and Caps)
+- One product as an editorial moment: a 4:5 photo cropped to the figure (`two-piece.data.ts` holds
+  the crop box: the store photo has wide white margins), the details beside it on expanded and
+  medium widths, under it on compact: eyebrow "Two piece" (Label Medium), name (Title Large),
+  price (Title Medium), one text link "View product" (no arrow; no "View all": one design).
+- Prototype data: UNKNOWN JT LOGO PIECE, ₦120,000, `/products/unknown-jt-logo-piece`; the store
+  has one photo for it (original in `reference/two-piece/`), so there is no image swap. With two or
+  more photos, swap them on hover / tap with M3 motion (standard easing, medium-2).
+- **Liquid:** `sections/unknown-two-piece.liquid` with settings `label` (text, "Two piece") and
+  `product` (product picker: picks one product). Name `product.title`, price
+  `{{ product.price | money }}`, link `product.url`, photo `product.featured_media` (crop with
+  `object-fit: cover` + `object-position`, or a `crop` focal point setting), `product.media[1]` for
+  the optional swap.
+
 **Lookbook** (`lookbook/`)
 - Photos: 14 looks from `/pages/unknown-lookbook` (store originals in `reference/lookbook/`,
   web versions in `public/products/unknown/lookbook/`).
-- Settings: `label`, `title` ("Lookbook"), `link_url` (→ `/pages/unknown-lookbook`, "View all").
+- Settings: `label` (text, "Look-Book", Label Medium), `title` (text, Headline Medium; the
+  prototype shows "Off the rack", **provisional** until the client confirms the heading). No
+  "View all" link (removed on every breakpoint).
 - Blocks: type `look`, settings `image` (image_picker, with its alt text) and optional `product`
   (product picker). No visible caption ("Look 01" etc. were removed); when a product is set, its
   name shows as a text link under the photo on hover (always visible on touch screens; with a
@@ -210,10 +246,13 @@ page.
 - `id="visit"` is kept as an anchor (the footer's "Visit the store" link).
 
 **Footer** (`footer/`): menus from `linklists` (Shop: New arrivals, Pants, All products;
-UNKNOWN: About, Visit the store), address + hours from the same settings as Visit. Layout: brand
-block left; the two link columns sit side by side as one group on the right edge of the content
-(64px apart); on compact screens the group stacks under the brand block (48px apart). Content,
-type and colours unchanged.
+UNKNOWN: About, Visit the store). Layout: wordmark left; the two link columns sit side by side as
+one group on the right edge of the content (64px apart); on compact screens the group stacks under
+the wordmark (48px apart); copyright row below. Colours exactly as before round 6: background
+`#E9E8E4`, text `#151515`, muted `#5C5C5C` (round 6's shared white section background had
+overridden the background; fixed with a two-class rule). The address and opening-hours lines under
+the wordmark were **removed** (the Visit section right above shows both); to bring them back,
+restore the `<p>` in `Footer.tsx` and its rule in `footer-styles.css` (git `5f68f27`).
 
 **Hero** (`UnknownShowroom.tsx`): header from `header/` (see above), wordmark as an image setting
 (`image_picker`, SVG), garments as blocks (one per garment with front/side/back images). The
@@ -232,14 +271,16 @@ grey-zip-hoodie, blue-striped-tee; the 4 tees after them are kept but off.
 
 | What | Where | Needed |
 |---|---|---|
-| Phone rack reference reel | `mobile-rack/` CONFIG + `mobile-rack-styles.css` | the 10s 60fps reel, to measure size, spacing, glide, ends, turn timing and sway; values are provisional until then |
+| Pants photos with more torso | `assets/products-src/unknown/pants/` | all five regenerated with the navel and ~15% bare torso above the waistband, so one shared fade zone works (see the pants HANDOFF, "Fade zone") |
+| Left-facing side photo of the black jacket | `public/products/unknown/black-jacket-side.webp` | its sleeve lettering reads backwards when mirrored |
+| Lookbook heading | `lookbook/lookbook.data.ts` | the client's chosen heading ("Off the rack" is the brief's example) |
 | Developer's new draft hero (desktop + mobile screenshots) | hero | to compare the white header with icons pixel by pixel |
 | Jackets collection | `header/header.data.ts` | the collection URL (the live store's own menu links Jackets to `#`) |
 | Original vector logo | `public/products/unknown/brand/unknown-wordmark.svg` | the brand's SVG (current one is traced from a raster) |
 | Red sweatpant photo | `pants-section/pants.data.ts` (`hidden`) | the photo, generated in the base pose |
 | Brown + cream photos in the base pose | `assets/products-src/unknown/pants/` | regenerated (arms differ: a second pair of hands can show for a moment mid-swap) |
 | Lookbook product links | `lookbook/lookbook.data.ts` | which product each look shows (only 3 are linked) |
-| Add to cart | pants buy bar | links to the product page; real cart needs a size picker |
+| Add to cart | pants buy bar | links to the current pair's product page (see the pants HANDOFF) |
 
 ## Regenerating the misaligned pants photos (brown, cream)
 

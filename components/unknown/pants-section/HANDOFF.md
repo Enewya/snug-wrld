@@ -34,17 +34,51 @@ unknown-logo-sweatpant-red.webp     not supplied yet: red is switched off (`hidd
 <handle>-grey.webp                  greyscale copy of each pair (the ghost), made by the same script
 ```
 
-Every model image has a short soft fade baked into its top edge (the crop starts at the waist):
-a smoothstep over the top 5.7% of the image, so the fade's 10-90% span is **3.9% of the model's
-visible height**, measured to match the reference (`reference/unknown/MOTION.md`, "v3"). The body
-is fully opaque below it. The waist mist sits **behind** the model (atmosphere only, it never
-veils the body).
+### Fade zone (the top edge of every model photo)
+
+Rule: **the fade sits on bare skin only and never covers the pants.** Every photo shows a band of
+skin above its waistband; its fade ends at least 16 CSS px above the top of its waistband at every
+viewport width, and nothing (fade, mist, cloud, mask) sits on any pixel below a waistband.
+
+Measured per photo (aligned frame, 1086 x 1448 px; `assets/products-src/unknown/pants/aligned/fade-zones.json`):
+
+| Photo | Its top edge | Waistband top | Fade | Clear skin above the waistband | Fade vs reference (84px) |
+|---|---|---|---|---|---|
+| model-base (state 0) | 0 | 111 | 0-47 | 64px | 37px short |
+| denim jean | 2 | 117 | 2-53 | 64px | 33px short |
+| side eye baggy pant | 0 | 108 | 0-44 | 64px | 40px short |
+| logo sweatpant brown | 44 | 153 | 44-89 | 64px | 39px short |
+| LGT strikes (last; the client's reference look) | 129 | 236 | 129-172 | 64px | 42px short |
+
+On screen the fade ends 17 CSS px (360 wide), 21 (390), 30 (768), 26 (1024) and 32 (1440) above the
+waistband for every pair; the mist's lower edge stays above every waistband (overlays in
+`reference/unknown/qa/round7/4-fade-*.jpg`).
+
+Why one fade per photo, not one shared zone: with the bodies aligned (same torso, shoulders, hips),
+the waistbands sit at different heights (the LGT joggers ride ~125px lower), and the photos start at
+different heights (the LGT photo is framed tighter and starts 129px down; the brown one 44px). A
+single zone ending 16 CSS px (64px) above the highest waistband (108) would have to start above the
+top of every photo, so the brown and LGT photos would show a hard edge across the torso. Each photo
+therefore gets the same rule: its fade ends 64px above its own waistband and starts no higher than its
+own top edge, so every pair shows the same 64px band of clear skin. The fades are shorter (42-53px)
+than the reference's 84px because each photo has only ~110px of skin above its waistband.
+
+To make one shared zone (and the reference fade length) possible, regenerate all five photos with
+more torso. Missing skin above each photo's top, in its own source pixels, for a shared zone from
+y -21 to 61: base 21, denim 23, side eye 19, brown 69, LGT 175. Prompt (one per photo, the base
+chinos photo as the first reference image, the product photo as the second):
+
+> Use the first image as the exact pose and framing reference, but frame the shot so the navel and
+> about 15% of bare torso above the waistband are visible. Keep everything else identical, same
+> model, arms, stance, sneakers, lighting and white background; change only the pants.
+
+The waist mist sits **behind** the model and ends 3% into the frame (atmosphere only).
 
 Atmosphere: `public/products/unknown/atmosphere/` (pre-rendered transparent WebP, made by
 `scripts/generate-unknown-clouds.py`): `clouds-back.webp` 1600×700 (17 KB), `clouds-front.webp`
 1600×500 (14 KB), `mist.webp` 1600×360 (11 KB). No live blur anywhere.
 
-Pipeline: `scripts/prepare-unknown-pants.py` (cut-out, align, common crop), then
+Pipeline: `scripts/prepare-unknown-pants.py` (cut-out, align by body, per-photo skin-only fade), then
 `scripts/optimize-unknown-pants.mjs` (WebP). Details: `assets/products-src/unknown/pants/PROCESSING.md`.
 Known issue: brown and cream have the arms at a different angle, so a second pair of hands shows
 for a moment mid-swap (never at rest); regeneration prompt in the page-level HANDOFF.
@@ -70,7 +104,7 @@ type PantsItem = {
 div.unk-hold                           wraps the hero and this section
   div.unk-hold__hero                   the hero, position: sticky (held while the section rises over it)
   section.unk-pants  style="--unk-pants-count: N+1"   (N pairs + the base state)
-    .unk-pants__feather                30vh soft edge above the section, with the mist image; JS fades
+    .unk-pants__feather                8vh white edge above the section, with a faint mist band; JS fades
                                        it in over the first 8% of the rise (hidden at rest on the hero)
     [data-pants-stage]                 the pinned screen (sky gradient)
       .unk-pants__sky > img[data-cloud="back"], img[data-cloud="front"]
@@ -80,10 +114,14 @@ div.unk-hold                           wraps the hero and this section
         img[data-pants-grey] × N       greyscale copies: the ghost at the right / sliding in
       div[data-cloud="mist"]           mist around the crop line, behind the figure (CSS background)
       button[data-pants-peek]          invisible box where the ghost rests (clickable: next pair)
+      .unk-pants__all > a               "View all" (section setting: label + URL, /collections/pants)
       article[data-pants-item]         state 0 intro ("4 pairs" / "Scroll to try each one on")
       article[data-pants-item] × N     [data-pants-name] (plain text, split into lines by JS),
-                                       [data-pants-fade] price + View product link, [data-pants-buy] bar
-      [data-pants-current] [data-pants-progress] [data-pants-prev] [data-pants-next] [data-pants-status]
+                                       [data-pants-fade] price
+      [data-pants-current] [data-pants-progress] [data-pants-prev] [data-pants-next]
+      [data-pants-bar]                 the one buy bar: [data-pants-buyitem="k" data-url] thumbnail + name
+                                       per pair (cross-fade), a[data-pants-cta] the single CTA
+      [data-pants-status]
 (no tail element: the next section's top padding carries the fade from the sky into white,
  see "Release" below)
 ```
@@ -93,9 +131,11 @@ div.unk-hold                           wraps the hero and this section
 Measured first; numbers in `reference/unknown/MOTION.md` (v2 table).
 
 - **Entry:** the hero is held (`position: sticky`) and the section scrolls up over it. Its top
-  edge is a 30vh feather (clear → sky) with a mist band, so there is never a hard line. Two cloud
-  layers rise a little slower than the section (depth) and drift sideways with progress at two
-  speeds; the waist mist drifts the other way. All by `transform`.
+  edge is a short, faint white fade (8vh, white to the near-white sky; the reference's edge is almost
+  crisp: under 1% of the screen height) with a faint white mist band (10vh at 60%). Nothing in the
+  veil is darker than ~2.6% grey (measured; was 4.0-4.3%). Two cloud layers (45% / 40% opacity) rise
+  a little slower than the section and drift sideways with progress; the waist mist drifts the other
+  way. All by `transform`; the hero is clean at rest.
 - **Pinning** is CSS: the stage is `position: sticky`. The section is `112svh + (states - 1.2) x
   94svh` tall: a 0.12-screen lead-in on the first state, then 0.94 of a screen per state, ending
   exactly where the last pair has settled (so it **releases immediately**, no dead scroll). The
@@ -141,8 +181,28 @@ Measured first; numbers in `reference/unknown/MOTION.md` (v2 table).
 ## Type and colour
 
 Hanken Grotesk on M3 roles: label Label Small, product name Headline Large (32/40), price Body
-Large, intro line Body Medium, counter and buy-bar name Label Medium, Add to cart Label Large.
-Sky (re-tuned for the white hero): `#F0F3F6` → `#F8FAFB`, ink 16.4:1, mute 6.0:1 (AA). Loading the
+Large, intro line Body Medium, counter and buy-bar name Label Medium, Add to cart and View all
+Label Large. Sky, white to white: `#F9FAFB` → `#FDFDFD` (2.0% / 0.8% below white), ink 17.5:1,
+mute 6.4:1 (AA).
+
+## Layout of the text and links
+
+- Top row of the pinned stage, at 24px: "PANTS" on the left margin, **"View all"** on the right
+  margin (the shared text link: plain, underline under the text, animated on hover, Label Large,
+  48px target), to `/collections/pants`. It stays for the whole pinned range. The row sits at the top
+  because at the label's old height (30% down) the next pair's ghost rests and travels through the
+  right margin on large screens; measured at 1440 / 1024 / 768 / 390 / 360 over 41 positions each
+  (every rest and mid-swap), its 48px target overlaps no pants image or ghost pixel. The model frame
+  starts at 64px, below the row.
+- Left column: product name and price only (the "View product" link was removed).
+- The bottom bar's button is the **single CTA** for the pair on screen: its href and
+  `aria-label="View [product name]"` follow the current pair on every swap (also after fast
+  scrolling and the previous / next buttons); on the intro it is out of the tab order. Its label
+  ("Add to cart"), shape and position are unchanged. In the prototype it links to the product page;
+  **in Shopify the developer must decide between a variant picker with a real add-to-cart and a link
+  to the product page.**
+- The section holds exactly two links: one to the current pair, one to the collection. Tab order:
+  View all, previous, next, the CTA. Loading the
 font in Shopify: see the page-level HANDOFF.
 
 ## Accessibility
@@ -154,7 +214,8 @@ model images are decorative (`alt=""`) because the name is announced.
 
 ## Shopify version
 
-- **Section settings:** `label` (text, default "PANTS"), `base_image` (image_picker),
+- **Section settings:** `label` (text, default "PANTS"), `view_all_label` (text, "View all") and
+  `view_all_url` (url, `/collections/pants`), `base_image` (image_picker),
   `intro_meta` (text, "Scroll to try each one on"; the intro title is "{{ section.blocks.size }} pairs").
   Cloud images ship as theme assets (`asset_url`), not settings.
 - **Blocks:** type `pair`, limit 8, settings `product` (product picker), `model_image`
@@ -163,9 +224,10 @@ model images are decorative (`alt=""`) because the name is announced.
   text (title case; defaults to the product title). Name, price and URL come from the product.
   If a merchant ever skips the grey image, fall back to the colour image with CSS
   `filter: grayscale(1)` (works, but costs frames on low-end devices).
-- **Markup:** loop the blocks for the layers, again for the grey copies, again for the articles;
-  `block.shopify_attributes` on each article; `style="--unk-pants-count: {{ section.blocks.size | plus: 1 }}"`. The buy bar shows thumbnail,
-  name and Add to cart only (the price is shown once, under the name on the left).
+- **Markup:** loop the blocks for the layers, again for the grey copies, again for the articles,
+  and once more inside the one buy bar (thumbnail + name per pair, `data-url="{{ product.url }}"`);
+  `block.shopify_attributes` on each article; `style="--unk-pants-count: {{ section.blocks.size | plus: 1 }}"`.
+  The buy bar shows thumbnail, name and the one CTA (the price is shown once, on the left).
   Images: `{{ block.settings.model_image | image_url: width: 1086 | image_tag: widths: '540, 800, 1086', sizes: '(max-width: 760px) 90vw, 45vh', alt: '' }}`.
 - **JS:** wrap in a custom element so the theme editor's section reloads work automatically:
   ```js
@@ -182,5 +244,5 @@ model images are decorative (`alt=""`) because the name is announced.
   `.unk-hold + .unk-section` padding / fade rule (in the theme: a class on that section).
 - **CSS:** drop the `body:has()` rule (a theme page scrolls normally); no ancestor of the section
   may have `overflow: hidden/auto` (it would break `position: sticky`).
-- **Still to decide:** real add to cart needs a size choice (or quick-add drawer) before posting
-  to `/cart/add`; sold-out and compare-at states.
+- **Still to decide:** the CTA: a variant picker with a real add-to-cart (`/cart/add` needs a size)
+  or a link to the product page (as in the prototype); sold-out and compare-at states.

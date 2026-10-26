@@ -73,3 +73,12 @@ in an upper (y 1150-1300) and a lower (y 1550-1700) band relative to its hook.
 | Sway | yes: a damped pendulum about the hook. Period ~1.37 s, peak ~3.9 deg (27 px hem offset over 400 px), damping ratio ~0.2 (about half the amplitude per half swing); the hem lags when the row speeds up and swings forward when it slows |
 | Tap on the centred garment | opens the focus view (Close, Front / Back, "05 / 10", name, price) |
 | Indicators | the dots under the reel belong to the reel itself, not the page |
+
+## v5: hero-to-pants entry veil (measured October 26)
+
+`video-b-full-reel.mov`, 0.3-1.1 s: where the reference's white section rises over its dark hero,
+the luminance on a column over the curtain steps from the hero (~105-115) to the section (~210-225 on
+camera) within ~6 px of an ~800 px screen: under 1% of the screen height. No grey haze above the
+edge. Ours had a 30vh feather in a tinted sky (#F0F3F6) plus a 26vh mist band: darkest veil tone
+4.0-4.3% grey. Now: 8vh white fade, white-to-white sky (#F9FAFB -> #FDFDFD), mist band 10vh at 60%,
+clouds 45% / 40%: darkest tone 2.0-2.6% grey at the start, middle and end of the entry.
