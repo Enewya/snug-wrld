@@ -40,7 +40,11 @@ function shiftFor(i: number, hovered: number | null) {
 }
 
 /** Where a rack garment hangs, in viewport px: its anchor (rod top on its slot) and its sizes. */
-export type RackOrigin = { x: number; y: number; iw: number; rod: number; hovered: boolean };
+export type RackOrigin = {
+  x: number; y: number; iw: number; rod: number; hovered: boolean;
+  /** Body scale the garment shows at its origin (default: 1.12 when hovered, else 1). */
+  bodyScale?: number;
+};
 
 /** Reads the current on-screen anchor of rack garment `i` (for the focus view's fly in / out). */
 export function rackOrigin(i: number, hovered = false): RackOrigin | null {

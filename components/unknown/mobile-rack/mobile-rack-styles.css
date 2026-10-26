@@ -1,10 +1,14 @@
-/* UNKNOWN mobile rack (< 600px). Geometry values are provisional until measured against the
-   reference reel (see HANDOFF.md, "Mobile rack"): three hangers across, garments drawn large. */
+/* UNKNOWN mobile rack (< 600px). Geometry measured from the client's reel
+   (reference/unknown/MOTION.md, "v4"): three garments across, the rail static under the header. */
 .umr {
-  --umr-iw: 64vw; /* rendered photo width: the side views read large, the centred front fits between its neighbours */
-  --umr-pitch: 33.333vw; /* three hangers across the screen */
-  --umr-rail-y: calc(64px + var(--space-24)); /* just under the 64px header */
-  --rod: calc(var(--umr-iw) * 0.03039 - 1px); /* fits inside every hook loop (as the desktop rack) */
+  /* rendered photo width: our photos hang 1.2 photo widths from hook to hem, so 55vw gives the
+     reel's 66vw from the rail to the hem */
+  --umr-iw: 55vw;
+  --umr-pitch: 27.8vw; /* hanger spacing at rest (reel: 326-330px of 1180) */
+  --umr-push: 10.9vw; /* how far each neighbour moves out from the front-facing garment */
+  /* rail centre 26vw under the header icons (reel); our icons sit in the middle of the 64px bar */
+  --umr-rail-y: calc(32px + 26vw);
+  --rod: calc(var(--umr-iw) * 0.03039 - 1px); /* fits inside every hook loop; ~1.3vw, as the reel */
   position: absolute;
   inset: 0;
   overflow: hidden;
@@ -18,14 +22,20 @@
   inherits: true;
   initial-value: 0px;
 }
-.umr { --umr-iw-px: var(--umr-iw); } /* resolved in px for the behaviour file */
+@property --umr-pitch-px {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+/* resolved in px for the behaviour file */
+.umr { --umr-iw-px: var(--umr-iw); --umr-pitch-px: var(--umr-pitch); }
 
-/* the rod: static, past both screen edges */
+/* the rail: static, from 1.5vw to 1.5vw with an end bracket at each end (the shared rail parts) */
 .umr__rail {
   position: absolute;
   z-index: 200;
-  left: calc(-1 * var(--space-24));
-  right: calc(-1 * var(--space-24));
+  left: 1.5vw;
+  right: 1.5vw;
   top: var(--umr-rail-y);
   height: var(--rod);
   transform: translateY(-50%);
@@ -48,24 +58,18 @@
   width: 0;
   height: 0;
 }
+/* sways about the hook (rotate on this layer; the shadow inside is drawn once) */
 .umr__garment {
   position: absolute;
   left: 0;
   top: 0;
   width: 0;
   height: 0;
-  perspective: calc(var(--umr-iw) * 4);
+  transform-origin: 0 0;
+  will-change: transform;
 }
-.umr__card {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 0;
-  height: 0;
-  transform-origin: 0 0; /* turn and grow around the hook */
-  will-change: transform; /* own layer: the turn only re-composites it, the shadow is drawn once */
-}
-/* the desktop rack's soft garment shadow, inside the turning card so a turn never redraws it */
+.umr__card { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+/* the desktop rack's soft garment shadow */
 .umr__photo { position: absolute; pointer-events: none; filter: drop-shadow(0 6px 8px rgba(20, 20, 18, 0.08)); }
 .umr__photo img { display: block; width: 100%; height: 100%; }
 
@@ -75,7 +79,7 @@
   left: calc(-1 * max(var(--target), var(--umr-pitch) / 2));
   top: 0;
   width: max(var(--target) * 2, var(--umr-pitch));
-  height: calc(var(--umr-iw) * 1.25);
+  height: calc(var(--umr-iw) * 1.2);
   padding: 0;
   border: 0;
   border-radius: var(--radius-button);
@@ -89,7 +93,7 @@
   position: absolute;
   left: var(--margin);
   right: var(--margin);
-  top: calc(var(--umr-rail-y) + var(--umr-iw) * 1.25 * 1.12 + var(--space-24));
+  top: calc(var(--umr-rail-y) + var(--umr-iw) * 1.2 + var(--space-24));
   margin: 0;
   text-align: center;
   font: var(--type-label-l);

@@ -33,6 +33,12 @@ function box(src: string): React.CSSProperties {
   };
 }
 
+/** Side photo that faces right: mirrored about its hook loop, so the hook stays on the rod. */
+function mirror(src: string): React.CSSProperties {
+  const m = photos[src];
+  return { transform: "scaleX(-1)", transformOrigin: `${((m.loopCenterX / m.width) * 100).toFixed(3)}% 0` };
+}
+
 /**
  * Compact-screen rack (< 600px): a static rod edge to edge under the header, the garments large
  * (about three across), dragged sideways 1:1 with momentum; the garment that comes to rest in the
@@ -54,21 +60,32 @@ const MobileRack = forwardRef<MobileRackHandle, Props>(function MobileRack({ pro
   useImperativeHandle(ref, () => ({
     origin: (i) => api.current?.origin(i) ?? null,
     jumpTo: (i) => api.current?.jumpTo(i),
+    resume: () => api.current?.resume(),
     destroy: () => {},
   }), []);
 
   return (
     <div ref={root} className="umr" role="group" aria-roledescription="carousel" aria-label="The rack: drag sideways, tap the centre piece to open it">
-      <div className="umr__rail" aria-hidden="true"><div className="rail-tube" /></div>
+      {/* the rail: static, an end bracket 1.5vw in from each edge (as in the reel) */}
+      <div className="umr__rail" aria-hidden="true">
+        <div className="rail-tube" />
+        <div className="rail-end l"><div className="rail-plate" /><div className="rail-cap" /></div>
+        <div className="rail-end r"><div className="rail-plate" /><div className="rail-cap" /></div>
+      </div>
       <ul className="umr__track" data-umr-track role="list">
         {products.map((p, i) => (
           <li key={p.slug} className="umr__item" data-umr-item
-            style={{ "--i": i, visibility: hiddenIndex === i ? "hidden" : undefined } as React.CSSProperties}>
+            style={{
+              "--i": i,
+              visibility: hiddenIndex === i ? "hidden" : undefined,
+              // garment 0 starts centred and facing front, so its neighbours start pushed out
+              transform: i === 0 ? undefined : "translate3d(var(--umr-push), 0, 0)",
+            } as React.CSSProperties}>
             <div className="umr__garment">
-              {/* the first garment starts in the centre, already turned to its front (the state the
+              {/* the first garment starts in the centre, already showing its front (the state the
                   behaviour file starts in), so the first paint needs no JavaScript */}
-              <div className="umr__card" data-umr-card style={i === 0 ? { transform: "rotateY(0deg) scale(1.12)" } : undefined}>
-                <div className="umr__photo" data-umr-side style={{ ...box(p.side), opacity: i === 0 ? 0 : 1 }}>
+              <div className="umr__card">
+                <div className="umr__photo" data-umr-side style={{ ...box(p.side), opacity: i === 0 ? 0 : 1, ...(p.mirrorSide ? mirror(p.side) : {}) }}>
                   {/* same `sizes` as the desktop rack, so both share one cached file per photo */}
                   <Image src={p.side} width={photos[p.side].width} height={photos[p.side].height} sizes="36vh" alt=""
                     draggable={false} loading={i < 3 ? "eager" : "lazy"} />

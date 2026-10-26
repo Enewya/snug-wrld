@@ -47,3 +47,29 @@ skin (39 columns) = **3.9% of the visible height**; frames with motion blur read
 fade the body is fully opaque; nothing veils it. Ours was 8.0% (a 9% linear ramp) plus a mist band
 in front of the waist. Now: smoothstep over 5.7% of the image height = 3.87% of the visible height,
 mist moved behind the model.
+
+## v4: mobile rack (measured October 26, before coding)
+
+Source: `video-c-mobile-rack.mp4` (the client's reel: a direct phone screen recording, 1180 x 2556,
+60 fps, 601 frames; the page in it renders at 30 fps, so motion is measured in 33.3 ms steps; the
+reel loops at frame ~480). 1180 px = 100vw. Hanger positions were tracked automatically on the row
+y = 1010 (between rail and price tags) in every frame; sway from the garment's horizontal centroid
+in an upper (y 1150-1300) and a lower (y 1550-1700) band relative to its hook.
+
+| What | Measured |
+|---|---|
+| Rail | static; 15 px thick (1.3vw) at y 976-990; spans x 18-1146 with an end bracket at each end (1.5vw in from the left edge; 2.9vw on the right, partly under the reel's overlay), not past the edges; centre 26vw below the header icons |
+| Garments visible | 3 whole garments plus slivers at both edges |
+| Hanger spacing at rest | 326-330 px = **27.8vw** |
+| Side-view garment | 17-19% of the viewport wide; hangs ~66vw from the rail to the hem |
+| Centred front view | 44% of the viewport wide; same hem height as the side views (no extra scale) |
+| Spacing around the centred front view | neighbours pushed out to 456-458 px (38.7vw) from it: **+10.9vw** each side; garments further out shift by the same amount |
+| Drag | follows the finger 1:1 |
+| Glide after release | exponential decay, **ratio 0.715 per 33.3 ms = time constant ~100 ms**; from 86 px/frame to rest in ~430 ms (12-13 steps); glide distance = release speed x 100 ms |
+| Snap | no snap at the end of a glide (rests 8-44 px off centre); after a short dwell the garment nearest the centre is centred by an eased move (bell-shaped speed, **300 ms**, ease-in-out) |
+| Side to front | starts **~300 ms** after the row comes to rest (rest at frame 289, spread starts 308); neighbours spread over ~400 ms (ease-out); the side photo **cross-fades** to the front photo (not a 3D turn) in **~100 ms**, starting ~100 ms into the spread |
+| Centre | the garment nearest the screen centre when the row stops |
+| Ends | never reached in the reel (it loops back to its first frame, which is what reads as "returning to the first garment"): end behaviour cannot be measured |
+| Sway | yes: a damped pendulum about the hook. Period ~1.37 s, peak ~3.9 deg (27 px hem offset over 400 px), damping ratio ~0.2 (about half the amplitude per half swing); the hem lags when the row speeds up and swings forward when it slows |
+| Tap on the centred garment | opens the focus view (Close, Front / Back, "05 / 10", name, price) |
+| Indicators | the dots under the reel belong to the reel itself, not the page |

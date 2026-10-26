@@ -37,6 +37,7 @@ export default function UnknownShowroom() {
   const closed = useCallback(() => {
     setSelection(null);
     setShown(null);
+    if (compact()) mobile.current?.resume();
     document.querySelector<HTMLAnchorElement>(".unknown-wordmark")?.focus({ preventScroll: true });
   }, []);
   const closeStart = useCallback(() => setActive(false), []);
