@@ -1,6 +1,7 @@
-// Writes the UNKNOWN pants-section photos: one WebP per aligned cut-out, transparency kept.
+// Writes the UNKNOWN pants-section layers: one WebP per layer (body, hands, each pants and its
+// grey copy), transparency kept.
 //
-//   node scripts/optimize-unknown-pants.mjs      (after scripts/prepare-unknown-pants.py)
+//   node scripts/optimize-unknown-pants.mjs      (after scripts/build-unknown-pants-layers.py)
 //
 // A copy of scripts/optimize-images.mjs scoped to the pants folders (same quality ladder and
 // 200 KB budget). Sources: assets/products-src/unknown/pants/aligned/<name>.png. Output:

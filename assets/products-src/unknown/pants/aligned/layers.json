@@ -1,0 +1,72 @@
+{
+ "registration": {
+  "unknown-denim-jean": {
+   "scale": 1,
+   "dx": 0,
+   "dy": 0,
+   "note": "already on the base"
+  },
+  "unknown-side-eye-baggy-pant": {
+   "scale": 0.9829,
+   "dx": -9.92,
+   "dy": -1.2,
+   "err": 2.79
+  },
+  "unknown-logo-sweatpant-brown": {
+   "scale": 1,
+   "dx": 0,
+   "dy": 0,
+   "note": "already on the base"
+  },
+  "unknown-lgt-strikes-joggers": {
+   "scale": 1.0009,
+   "dx": 0.51,
+   "dy": -1.21,
+   "err": 2.08
+  }
+ },
+ "waistband": {
+  "model-base": 104,
+  "unknown-denim-jean": 109,
+  "unknown-side-eye-baggy-pant": 104,
+  "unknown-logo-sweatpant-brown": 99,
+  "unknown-lgt-strikes-joggers": 100
+ },
+ "checks": {
+  "unknown-denim-jean": {
+   "revealed_px": 1581,
+   "filled_under_hands_px": 2413,
+   "rebuild_mean_abs": 2.52,
+   "rebuild_px_over_40": 0.598
+  },
+  "unknown-side-eye-baggy-pant": {
+   "revealed_px": 259,
+   "filled_under_hands_px": 4206,
+   "rebuild_mean_abs": 2.74,
+   "rebuild_px_over_40": 0.83
+  },
+  "unknown-logo-sweatpant-brown": {
+   "revealed_px": 159,
+   "filled_under_hands_px": 1933,
+   "rebuild_mean_abs": 2.65,
+   "rebuild_px_over_40": 0.657
+  },
+  "unknown-lgt-strikes-joggers": {
+   "revealed_px": 55,
+   "filled_under_hands_px": 2169,
+   "rebuild_mean_abs": 2.51,
+   "rebuild_px_over_40": 0.47
+  },
+  "model-base": {
+   "filled_under_hands_px": 1985,
+   "rebuild_mean_abs": 1.01,
+   "rebuild_px_over_40": 0.407
+  }
+ },
+ "fade": {
+  "start": 0,
+  "end": 35,
+  "highest_waistband": 99,
+  "safe": 64
+ }
+}
