@@ -3,6 +3,7 @@ import { Hanken_Grotesk } from "next/font/google";
 import UnknownShowroom from "@/components/unknown/UnknownShowroom";
 import PantsSection from "@/components/unknown/pants-section/PantsSection";
 import NewArrivals from "@/components/unknown/new-arrivals/NewArrivals";
+import TwoPiece from "@/components/unknown/two-piece/TwoPiece";
 import Caps from "@/components/unknown/caps/Caps";
 import Lookbook from "@/components/unknown/lookbook/Lookbook";
 import Visit from "@/components/unknown/visit/Visit";
@@ -33,6 +34,7 @@ export default function UnknownPage() {
         <PantsSection />
       </div>
       <NewArrivals />
+      <TwoPiece />
       <Caps />
       <Lookbook />
       <Visit />

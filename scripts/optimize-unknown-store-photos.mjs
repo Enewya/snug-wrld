@@ -1,9 +1,9 @@
-// Writes the served WebPs for the /unknown store photography (lookbook, caps, new arrivals).
+// Writes the served WebPs for the /unknown store photography (lookbook, caps, new arrivals, two piece).
 //
 //   node scripts/optimize-unknown-store-photos.mjs
 //
 // Sources (not served, downloaded from unk-nown.com's Shopify CDN): reference/lookbook,
-// reference/caps, reference/new-arrival. Output: public/products/unknown/<folder>/<name>.webp,
+// reference/caps, reference/new-arrival, reference/two-piece. Output: public/products/unknown/<folder>/<name>.webp,
 // longest side capped (lookbook 1600, products 1200), quality 78 stepping down to stay under
 // 300 KB. next/image then serves each at the size it is displayed.
 import { mkdirSync, readdirSync, statSync } from "node:fs";
@@ -14,6 +14,7 @@ const JOBS = [
   { src: "reference/lookbook", out: "public/products/unknown/lookbook", max: 1600 },
   { src: "reference/caps", out: "public/products/unknown/caps", max: 1200 },
   { src: "reference/new-arrival", out: "public/products/unknown/new-arrival", max: 1200 },
+  { src: "reference/two-piece", out: "public/products/unknown/two-piece", max: 1500 },
 ];
 const MAX_KB = 300;
 

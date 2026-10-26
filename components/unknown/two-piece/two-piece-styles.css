@@ -1,0 +1,61 @@
+/* UNKNOWN two piece (values from components/unknown/tokens.css). Spacing above the section:
+   .unk-section (section gap). Expanded: photo on 5 of 12 columns (a 4:5 photo that stays shorter
+   than the screen), details from column 7, sitting on the photo's lower edge. Medium: 5 of 8
+   columns beside the details. Compact: stacked. */
+.unk-two__grid {
+  display: grid;
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+  column-gap: var(--gutter);
+  row-gap: var(--space-24);
+  align-items: end;
+}
+.unk-two__well {
+  position: relative;
+  grid-column: 1 / -1;
+  display: block;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: var(--unk-radius);
+  background: var(--unk-tint);
+}
+.unk-two__img {
+  position: absolute;
+  height: auto;
+  max-width: none;
+  /* the store photo is shot on white: multiply turns that into the well tone (as the cards) */
+  mix-blend-mode: multiply;
+}
+.unk-two__details {
+  grid-column: 1 / -1;
+  display: grid;
+  justify-items: start;
+}
+/* M3 roles: eyebrow Label Medium, name Title Large, price Title Medium */
+.unk-two__label {
+  margin-bottom: var(--space-8);
+  font: var(--type-label-m);
+  letter-spacing: var(--track-label-m);
+  text-transform: uppercase;
+  color: var(--unk-mute);
+}
+.unk-two__name {
+  margin: 0;
+  font: var(--type-title-l);
+  letter-spacing: var(--track-title-l);
+}
+.unk-two__price {
+  margin: var(--space-4) 0 0;
+  font: var(--type-title-m);
+  letter-spacing: var(--track-title-m);
+  font-variant-numeric: tabular-nums;
+}
+.unk-two__link { margin-top: var(--space-16); }
+
+@media (min-width: 600px) {
+  .unk-two__well { grid-column: 1 / span 5; }
+  .unk-two__details { grid-column: 6 / -1; }
+}
+@media (min-width: 840px) {
+  .unk-two__well { grid-column: 1 / span 5; }
+  .unk-two__details { grid-column: 7 / -1; padding-bottom: var(--space-32); }
+}
