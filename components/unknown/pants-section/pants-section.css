@@ -108,9 +108,10 @@ body:has(.unk-pants) {
   height: auto;
   max-width: none;
 }
-/* faint: white clouds on a near-white sky (were 100% / 90%) */
-.unk-pants__cloud--back { top: -2%; opacity: 0.45; }
-.unk-pants__cloud--front { bottom: 6%; opacity: 0.4; }
+/* faint: white clouds on a near-white sky. The faintness is baked into the images' alpha
+   (scripts/generate-unknown-clouds.py), never a layer opacity: that cost frames while they move */
+.unk-pants__cloud--back { top: -2%; }
+.unk-pants__cloud--front { bottom: 6%; }
 /* mist around the crop line, BEHIND the figure: atmosphere only, it never veils the body (the
    reference shows the model fully clear right up to a short, soft fade baked into the image:
    3.9% of the visible height, see reference/unknown/MOTION.md "v3") */

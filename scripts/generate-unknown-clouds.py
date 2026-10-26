@@ -47,10 +47,12 @@ def layer(name, w, h, cover, softness, blur, envelope, max_alpha, quality=72):
 
 
 bump = lambda c, s: (lambda t: np.exp(-((t - c) / s) ** 2))  # noqa: E731
+# The faintness is baked into max_alpha (was 0.9 / 0.85 with CSS opacity 0.45 / 0.4): a layer
+# opacity on these moving images cost frames on the first pass, baked alpha costs nothing.
 # back: a broad bank in the upper-middle of the stage
-layer("clouds-back", 1600, 700, cover=0.55, softness=0.35, blur=14, envelope=bump(0.45, 0.32), max_alpha=0.9)
+layer("clouds-back", 1600, 700, cover=0.55, softness=0.35, blur=14, envelope=bump(0.45, 0.32), max_alpha=0.405)
 # front: lighter puffs lower down, moved a little faster for depth
-layer("clouds-front", 1600, 500, cover=0.45, softness=0.3, blur=10, envelope=bump(0.55, 0.3), max_alpha=0.85)
+layer("clouds-front", 1600, 500, cover=0.45, softness=0.3, blur=10, envelope=bump(0.55, 0.3), max_alpha=0.34)
 # mist: a soft horizontal band that sits over the model's waist where the crop fades out, and on
 # the section's top edge so the entry has no hard line
 layer("mist", 1600, 360, cover=0.7, softness=0.45, blur=18, envelope=bump(0.5, 0.26), max_alpha=1.0)
