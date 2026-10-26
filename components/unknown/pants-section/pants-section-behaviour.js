@@ -174,7 +174,12 @@ export function initPantsSection(root) {
   function measure() {
     vh = window.innerHeight;
     vw = window.innerWidth / 100;
+    // the warm-up below moves the section with a transform for a few frames; read its place without
+    // it (a re-measure during warm-up, e.g. on fonts ready, used to shift every state on desktop)
+    const warmT = root.style.transform;
+    root.style.transform = "";
     top = root.getBoundingClientRect().top + window.scrollY;
+    root.style.transform = warmT;
     travel = Math.max(1, root.offsetHeight - stage.offsetHeight);
     const f = figure.getBoundingClientRect(); // the canvas (each layer is cropped to its content)
     const pk = peekHit.getBoundingClientRect();
