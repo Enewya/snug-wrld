@@ -1,14 +1,14 @@
 "use client";
 
 /* Model images use next/image so they are served at display size with a srcset, exactly what
-   `image_url` + `image_tag: widths:` produces in the Liquid version. The thumbnail and the cloud
-   layers stay plain <img> (tiny / already sized). */
+   `image_url` + `image_tag: widths:` produces in the Liquid version. The cloud layers stay plain
+   <img> (already sized). */
 /* eslint-disable @next/next/no-img-element */
 
 import Image from "next/image";
 import { useEffect, useRef } from "react";
 import UnkLink from "../link/UnkLink";
-import { PANTS_ATMOSPHERE, PANTS_BASE_IMAGE, PANTS_INTRO, PANTS_LABEL, PANTS_VIEW_ALL, pants } from "./pants.data";
+import { PANTS_ATMOSPHERE, PANTS_BASE_IMAGE, PANTS_BODY_IMAGE, PANTS_HANDS_IMAGE, PANTS_INTRO, PANTS_LABEL, PANTS_VIEW_ALL, PANTS_VIEW_PRODUCT, pants } from "./pants.data";
 import { initPantsSection } from "./pants-section-behaviour";
 import "./pants-section.css";
 
@@ -44,31 +44,33 @@ export default function PantsSection() {
             <img className="unk-pants__cloud unk-pants__cloud--back" data-cloud="back" src={PANTS_ATMOSPHERE.back} alt="" width={1600} height={700} />
             <img className="unk-pants__cloud unk-pants__cloud--front" data-cloud="front" src={PANTS_ATMOSPHERE.front} alt="" width={1600} height={500} />
           </div>
-          <h2 id="unk-pants-title" className="unk-pants__label">{PANTS_LABEL}</h2>
 
-          {/* one fixed 3:4 frame; every layer fills it identically (no per-product sizing). All
-              eager: each is decoded right after load anyway (pants-section-behaviour.js), and any of them can
-              become the largest image on screen as the visitor scrolls. Low fetch priority for the
-              pairs the entry doesn't show, so they never hold up the hero's photos on a slow phone. */}
+          {/* one fixed 3:4 canvas; every layer fills it identically. Bottom to top: the body (never
+              moves or fades), the pants of each state (the base chinos, then each pair), the grey
+              pants-only ghosts, and the hands, which stay in front of whatever pants are on. All
+              eager: each is decoded right after load anyway (pants-section-behaviour.js), and any of
+              them can become the largest image on screen. Low fetch priority for the pairs the entry
+              doesn't show, so they never hold up the hero's photos on a slow phone. */}
           <div className="unk-pants__figure" aria-hidden="true">
+            <Image className="unk-pants__layer" data-pants-body src={PANTS_BODY_IMAGE} alt="" {...MODEL} loading="eager" />
             <Image className="unk-pants__layer" data-pants-layer src={PANTS_BASE_IMAGE} alt="" {...MODEL} loading="eager" style={{ opacity: 1 }} />
             {pants.map((p, i) => (
               <Image key={p.handle} className="unk-pants__layer" data-pants-layer src={p.image} alt="" {...MODEL}
                 loading="eager" fetchPriority={i === 0 ? "auto" : "low"} style={{ opacity: 0 }} />
             ))}
-            {/* grey copies: the ghost waiting at the right, sliding onto the body */}
+            {/* grey copies: the ghost waiting at the right, sliding onto the body (pants only) */}
             {pants.map((p, i) => (
               <Image key={p.handle} className="unk-pants__layer" data-pants-grey src={p.grey} alt="" {...MODEL}
                 loading="eager" fetchPriority={i === 0 ? "auto" : "low"} style={{ opacity: i === 0 ? "var(--peek-opacity)" : 0 }} />
             ))}
+            <Image className="unk-pants__layer" data-pants-hands src={PANTS_HANDS_IMAGE} alt="" {...MODEL} loading="eager" />
           </div>
           {/* soft mist over the waist, where the crop fades out */}
           <div className="unk-pants__mist" data-cloud="mist" style={{ backgroundImage: `url(${PANTS_ATMOSPHERE.mist})` }} aria-hidden="true" />
           <button type="button" className="unk-pants__peek-hit" data-pants-peek tabIndex={-1} aria-hidden="true" />
 
-          {/* the collection link mirrors the PANTS label on the right; first in the tab order */}
-          <span className="unk-pants__all"><UnkLink href={PANTS_VIEW_ALL.url}>{PANTS_VIEW_ALL.label}</UnkLink></span>
-
+          {/* details, top to bottom: PANTS eyebrow, name, price, View product */}
+          <h2 id="unk-pants-title" className="unk-pants__label">{PANTS_LABEL}</h2>
           <article className="unk-pants__item" data-pants-item style={{ opacity: 1 }}>
             <div className="unk-pants__info">
               <h3 className="unk-pants__name" data-pants-name>{PANTS_INTRO.title}</h3>
@@ -76,7 +78,8 @@ export default function PantsSection() {
             </div>
           </article>
           {pants.map((p) => (
-            <article key={p.handle} className="unk-pants__item" data-pants-item aria-hidden inert style={{ opacity: 0 }}>
+            <article key={p.handle} className="unk-pants__item" data-pants-item data-url={p.url} data-name={p.name}
+              aria-hidden inert style={{ opacity: 0 }}>
               <div className="unk-pants__info">
                 <h3 className="unk-pants__name" data-pants-name>{p.display}</h3>
                 <p className="unk-pants__price" data-pants-fade>{p.price}</p>
@@ -84,6 +87,15 @@ export default function PantsSection() {
             </article>
           ))}
 
+          {/* the one link to a pair: under the price of the pair on screen; pants-section-behaviour.js
+              moves it to that pair's text, points it at that pair and cross-fades it with the price */}
+          <span className="unk-pants__view" data-pants-view style={{ opacity: 0 }}>
+            <UnkLink href={pants[0]?.url ?? PANTS_VIEW_ALL.url} data-pants-cta aria-label={`View ${pants[0]?.name}`}
+              tabIndex={-1} aria-hidden="true">{PANTS_VIEW_PRODUCT}</UnkLink>
+          </span>
+
+          {/* bottom row: counter, progress and arrows on the left, the collection link on the right
+              (last in the tab order: View product, previous, next, View all) */}
           <div className="unk-pants__nav">
             <p className="unk-pants__count" aria-hidden="true">
               <span data-pants-current>—</span> / {pad(pants.length)}
@@ -95,25 +107,7 @@ export default function PantsSection() {
             <button type="button" className="unk-icon-btn unk-state" data-pants-next aria-label="Next pants">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </button>
-          </div>
-          {/* one buy bar for the section: each pair's thumbnail + name cross-fade inside it; the single
-              link always points at the pair on screen (pants-section-behaviour.js updates it) */}
-          <div className="unk-pants__buy" data-pants-bar style={{ opacity: 0 }}>
-            <span className="unk-pants__buy-stack" aria-hidden="true">
-              {pants.map((p, i) => (
-                <span key={p.handle} className="unk-pants__buy-item" data-pants-buyitem={i + 1} data-url={p.url} style={{ opacity: 0 }}>
-                  <img className="unk-pants__thumb" src={p.image} alt="" width={1086} height={1448} loading="lazy" decoding="async" />
-                  <span className="unk-pants__buy-name">{p.name}</span>
-                </span>
-              ))}
-            </span>
-            <a className="unk-pants__cart unk-state" data-pants-cta href={pants[0]?.url} aria-label={`View ${pants[0]?.name}`}
-              tabIndex={-1} aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
-                <path d="M5 8h14l-1 12H6L5 8Z M9 8V6a3 3 0 0 1 6 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-              </svg>
-              Add to cart
-            </a>
+            <span className="unk-pants__all"><UnkLink href={PANTS_VIEW_ALL.url}>{PANTS_VIEW_ALL.label}</UnkLink></span>
           </div>
           <p className="unk-sr" aria-live="polite" data-pants-status />
         </div>

@@ -2,9 +2,10 @@
  * PANTS SECTION DATA: the only file to edit to change what the section shows.
  *
  * Order here = scroll order. Names, prices and links are copied from the live store and will come
- * from Shopify product blocks in the theme version (see HANDOFF.md). Every image is a 3:4
- * portrait (1086 × 1448) of the same model in the same pose, cut out and aligned to the base by
- * scripts/prepare-unknown-pants.py (see assets/products-src/unknown/pants/PROCESSING.md).
+ * from Shopify product blocks in the theme version (see HANDOFF.md). Every image is a layer of one
+ * fixed 3:4 canvas (1086 × 1448): the body once, then each pair's pants only, then the hands on
+ * top. All made from the model photos by scripts/build-unknown-pants-layers.py (see
+ * assets/products-src/unknown/pants/PROCESSING.md).
  */
 
 export type PantsItem = {
@@ -16,10 +17,11 @@ export type PantsItem = {
   display: string;
   /** Display price, already formatted. */
   price: string;
-  /** Product page (the "Add to cart" placeholder links here for now). */
+  /** Product page (the section's "View product" link points here). */
   url: string;
+  /** This pair's pants only, on the shared canvas (transparent elsewhere). */
   image: string;
-  /** Greyscale copy (baked by the image script) for the peek and the ghost. */
+  /** Greyscale copy of the pants (baked by the image script) for the ghost. */
   grey: string;
   /** Left out of the section until its model image exists. */
   hidden?: boolean;
@@ -31,13 +33,20 @@ const IMAGES = "/products/unknown/pants";
 /** Small label above the product name. */
 export const PANTS_LABEL = "PANTS";
 
-/** The model in neutral pants: the rest state before the first pair arrives. */
+/** The neutral grey chinos (pants only): the rest state before the first pair arrives. */
 export const PANTS_BASE_IMAGE = `${IMAGES}/model-base.webp`;
 
-/** Text shown with the base pants, before the first pair (factual, no marketing copy). */
-/** The collection link at the top right of the pinned section (Liquid: a section setting). */
+/** The model without pants (never moves, never fades) and his hands (always in front). */
+export const PANTS_BODY_IMAGE = `${IMAGES}/body.webp`;
+export const PANTS_HANDS_IMAGE = `${IMAGES}/hands.webp`;
+
+/** The collection link at the bottom right of the pinned section (Liquid: a section setting). */
 export const PANTS_VIEW_ALL = { label: "View all", url: `${STORE}/collections/pants` };
 
+/** The one link to the pair on screen, under its price (Liquid: a section setting). */
+export const PANTS_VIEW_PRODUCT = "View product";
+
+/** Text shown with the base pants, before the first pair (factual, no marketing copy). */
 export const PANTS_INTRO = {
   title: "", // set below from the number of pairs shown, e.g. "4 pairs"
   meta: "Scroll to try each one on",

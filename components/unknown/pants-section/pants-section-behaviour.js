@@ -7,18 +7,23 @@
  * - The hero above is held in place (CSS sticky) while this section rises over it with a
  *   feathered, misty top edge; once its top reaches the top of the screen the stage pins (CSS
  *   sticky) for N+1 screens of scrolling.
- * - States: 0 = the model in the neutral base pants, 1..N = each pair. At rest on a state, only
- *   that state's image shows, with the next pair waiting as a faint grey ghost at the right.
+ * - Layers, on one fixed canvas: the body (torso, arms, shoes) never moves or fades; above it the
+ *   pants of each state (pants only); above those the hands, so they stay in front of any pants.
+ *   Only the pants layers move.
+ * - States: 0 = the model in the neutral base chinos, 1..N = each pair. At rest on a state, only
+ *   that state's pants show, with the next pair waiting as a faint grey ghost (pants only) at the
+ *   right.
  * - One requestAnimationFrame loop drives everything. Scroll position becomes a progress value
  *   `u` (0 = base, 1 = first pair, ...) smoothed with a lerp, so motion is soft and a fast flick
  *   still lands exactly where the page stopped. Each state holds still for the first and last 20%
  *   of its screen; the middle 60% scrubs the swap (it follows the scroll and plays backwards):
  *     1. the ghost slides left onto the body (ease-out), still faint;
  *     2. it turns solid (grey copy fades out, colour copy fades in);
- *     3. only then does the outgoing image fade, drifting 2% of the frame to the LEFT (a short
- *        overlap, so the body is never see-through);
+ *     3. only then do the outgoing pants fade, drifting 2% of the frame to the LEFT (a short
+ *        overlap, so the legs are never see-through);
  *     4. the following pair's ghost slides in from beyond the right edge;
- *     the name rolls up line by line; price, link and buy bar cross-fade.
+ *     the name rolls up line by line; the price and the View product link cross-fade (the link
+ *     moves under the incoming pair's price while it is invisible, and points at that pair).
  *   Timings: reference/unknown/MOTION.md (v2 table).
  * - The cloud layers (pre-rendered WebP) drift sideways with progress at two speeds for depth,
  *   and rise a little slower than the section during the entry.
@@ -70,7 +75,8 @@ export function initPantsSection(root) {
   const qa = (/** @type {string} */ s, el = root) => /** @type {HTMLElement[]} */ ([...el.querySelectorAll(s)]);
 
   const stage = q("[data-pants-stage]");
-  const colour = qa("[data-pants-layer]"); // [base, pair 1, ... pair N]
+  const colour = qa("[data-pants-layer]"); // pants only: [base chinos, pair 1, ... pair N]
+  const fixed = qa("[data-pants-body], [data-pants-hands]"); // never move
   const greys = qa("[data-pants-grey]"); // [pair 1, ... pair N]
   const items = qa("[data-pants-item]"); // [intro, pair 1, ... pair N]
   const peekHit = q("[data-pants-peek]");
@@ -89,15 +95,13 @@ export function initPantsSection(root) {
   const grey = (s) => greys[s - 1];
 
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-  // each pair's text fades plus its thumbnail + name inside the one shared buy bar
-  const fades = items.map((it, j) => qa("[data-pants-fade]", it).concat(qa(`[data-pants-buyitem="${j}"]`)));
-  const bar = q("[data-pants-bar]");
+  const fades = items.map((it) => qa("[data-pants-fade]", it));
+  const view = q("[data-pants-view]");
   const cta = /** @type {HTMLAnchorElement} */ (q("[data-pants-cta]"));
-  // pair k (1 … N): its product URL and name, for the one CTA
-  const pairs = qa("[data-pants-buyitem]").map((el) => ({
-    url: el.dataset.url ?? "",
-    name: el.querySelector(".unk-pants__buy-name")?.textContent ?? "",
-  }));
+  // pair k (1 … N): its product URL and name, for the one View product link
+  const pairs = items.slice(1).map((it) => ({ url: it.dataset.url ?? "", name: it.dataset.name ?? "" }));
+  /** height of each state's text block (name + price), so the link sits under the right one */
+  let textH = items.map(() => 0);
   /** @type {HTMLElement[][]} */
   let lines = items.map(() => []);
 
@@ -177,6 +181,12 @@ export function initPantsSection(root) {
     peekX = pk.left - f.left;
     edgeX = peekX + window.innerWidth * 0.3;
     peekO = parseFloat(getComputedStyle(root).getPropertyValue("--peek-opacity")) || 0.2;
+    textH = items.map((it) => /** @type {HTMLElement} */ (it.querySelector(".unk-pants__info"))?.offsetHeight ?? 0);
+    placeView();
+  }
+  /** the View product link under the active pair's price (a CSS variable; read by the stylesheet) */
+  function placeView() {
+    view.style.setProperty("--view-y", `${textH[Math.max(0, active)] ?? 0}px`);
   }
 
   /** Draw the state for progress u (0 … n-1). @param {number} u */
@@ -224,8 +234,10 @@ export function initPantsSection(root) {
       } else put(it, 0);
     });
 
-    // the buy bar's shell: hidden on the intro (state 0), it fades in with the first pair
-    put(bar, i > 0 ? 1 : rm ? e : span(e, P.fadeIn));
+    // the View product link: with the price of a pair, none on the intro (state 0)
+    const vOut = cur > 0 ? (rm ? 1 - e : 1 - span(e, P.fadeOut)) : 0;
+    const vIn = rm ? e : span(e, P.fadeIn);
+    put(view, vOut + vIn); // (the two never overlap: fadeOut ends before fadeIn starts)
 
     // atmosphere: clouds drift with progress at two speeds (depth)
     if (!rm) {
@@ -261,7 +273,7 @@ export function initPantsSection(root) {
       it.setAttribute("aria-hidden", String(!on));
     });
     counter.textContent = a === 0 ? "—" : pad(a);
-    // the one CTA always points at the pair on screen; on the intro it is out of reach
+    // the one View product link always points at the pair on screen; on the intro it is out of reach
     const pair = pairs[Math.max(0, a - 1)];
     if (pair) {
       cta.href = pair.url;
@@ -269,6 +281,7 @@ export function initPantsSection(root) {
     }
     cta.tabIndex = a === 0 ? -1 : 0;
     cta.setAttribute("aria-hidden", String(a === 0));
+    placeView();
     prev.setAttribute("aria-disabled", String(a === 0));
     next.setAttribute("aria-disabled", String(a === n - 1));
     if (announce && a > 0) {
@@ -315,7 +328,14 @@ export function initPantsSection(root) {
     if (!raf) raf = requestAnimationFrame(tick);
   };
 
+  // out of range (the section more than a screen away): nothing on screen depends on the scroll,
+  // so the handler returns before doing any work
+  let wasFar = false;
   function onScroll() {
+    const y = window.scrollY;
+    const far = y + vh * 2 < top || y > top + travel + vh;
+    if (far && wasFar) return;
+    wasFar = far;
     target = fromScroll();
     entry();
     idle = false;
@@ -359,7 +379,7 @@ export function initPantsSection(root) {
       return el.decode ? el.decode().catch(() => {}) : Promise.resolve();
     }));
     // what the entry shows first (base, first pair + its ghost, clouds), then warm, then the rest
-    decode([colour[0], colour[1], greys[0], cloudBack, cloudFront, mist])
+    decode([...fixed, colour[0], colour[1], greys[0], cloudBack, cloudFront, mist])
       .then(warm)
       .then(() => decode([...colour.slice(2), ...greys.slice(1)]));
   };

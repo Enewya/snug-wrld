@@ -26,11 +26,8 @@ body:has(.unk-pants) {
   --sky-bottom: #fdfdfd;
   --peek-opacity: 0.2;
   /* the model: one fixed 3:4 frame, centred, between the top margin and the bottom row */
-  /* the label row (PANTS left, View all right) runs along the top of the stage; the frame starts
-     below its 48px link target (8-56px), so the next pair's ghost never passes under the link */
-  --row-top: var(--space-24);
   --fig-top: max(var(--space-64), 5svh);
-  /* bottom row: inset + 48px target + inset */
+  /* bottom row (counter, arrows, View all): inset + 48px target + 32px clear above it */
   --fig-bottom: calc(var(--pants-inset) + var(--target) + var(--space-32));
   --fig-h: calc(100svh - var(--fig-top) - var(--fig-bottom));
   --fig-w: calc(var(--fig-h) * 0.75);
@@ -118,8 +115,8 @@ body:has(.unk-pants) {
 .unk-pants__mist {
   position: absolute;
   z-index: 0;
-  /* ends 3% into the frame, above every photo's fade end (fade-zones.json: 44px of 1448 at the
-     earliest), so no mist sits on any pixel below a waistband */
+  /* ends 3% into the frame (43px of 1448): past the body's fade (0-35px) and well above the
+     highest waistband (99px; aligned/layers.json), so no mist sits on any pixel of the pants */
   top: calc(var(--fig-top) - var(--fig-h) * 0.09);
   left: 50%;
   width: calc(var(--fig-w) * 2.2);
@@ -129,8 +126,8 @@ body:has(.unk-pants) {
   pointer-events: none;
 }
 
-/* bottom inset of the stage's last row (buy bar). Page-level so the next section can subtract it:
-   the visible gap from the buy bar to New Arrivals is then exactly the section gap. */
+/* bottom inset of the stage's last row (counter, arrows, View all). Page-level so the next section can subtract it:
+   the visible gap from that row to New Arrivals is then exactly the section gap. */
 .unk-page { --pants-inset: var(--space-32); }
 @media (max-width: 760px), (max-aspect-ratio: 5/4) {
   .unk-page { --pants-inset: var(--space-16); }
@@ -180,11 +177,12 @@ body:has(.unk-pants) {
   clip-path: inset(0 30%); /* only the pants themselves are clickable */
 }
 
-/* ---------- Text ---------- */
+/* ---------- Text: PANTS eyebrow, name, price, View product (top to bottom) ---------- */
+/* M3 Label Small, 16px line; the name starts 8px under it */
 .unk-pants__label {
   position: absolute;
   left: var(--margin);
-  top: var(--row-top);
+  top: var(--info-top);
   margin: 0;
   font: var(--type-label-s);
   letter-spacing: var(--track-label-s);
@@ -193,16 +191,15 @@ body:has(.unk-pants) {
 }
 /* text, controls and the ghost's hit box stay above the figure (z-index 1) where they overlap it */
 .unk-pants__label,
-.unk-pants__all,
 .unk-pants__info,
-.unk-pants__buy,
+.unk-pants__view,
 .unk-pants__nav,
 .unk-pants__peek-hit { z-index: 2; }
 /* one article per pair, all stacked; pants-section-behaviour.js shows the current (and next) one */
 .unk-pants__info {
   position: absolute;
   left: var(--margin);
-  top: calc(var(--info-top) + var(--space-32));
+  top: calc(var(--info-top) + var(--space-24));
   width: var(--info-w);
 }
 /* M3 Headline Large */
@@ -232,36 +229,40 @@ body:has(.unk-pants) {
   letter-spacing: var(--track-body-l);
   font-variant-numeric: tabular-nums;
 }
-/* "View all" (the shared .unk-link): on the PANTS label's row, against the right content margin,
-   its 48px target centred on the label's 16px line. The row sits at the top of the stage: at the
-   old label height (30% down) the next pair's ghost rests and travels through the right margin on
-   large screens, so the link would have overlapped it. */
-.unk-pants__all {
+/* "View product" (the shared .unk-link, M3 Label Large, 48px target): 16px under the price of the
+   pair on screen. --view-y is that pair's text height (pants-section-behaviour.js); the 48px target
+   is centred on the 20px text line, so its box starts 14px above the text. */
+.unk-pants__view {
   position: absolute;
-  right: var(--margin);
-  top: calc(var(--row-top) - var(--space-16));
+  left: var(--margin);
+  top: calc(var(--info-top) + var(--space-24) + var(--view-y, 0px) + var(--space-16) - (var(--target) - 20px) / 2);
 }
 
-/* ---------- Bottom row: progress + arrows (left), buy bar (centre) ---------- */
+/* ---------- Bottom row: counter, progress + arrows (left), View all (right) ---------- */
 .unk-pants__nav {
   position: absolute;
   left: var(--margin);
-  /* centred on the buy bar (inset + 8px padding) */
-  bottom: calc(var(--pants-inset) + var(--space-8));
+  right: var(--margin);
+  bottom: var(--pants-inset);
   display: flex;
   align-items: center;
   gap: var(--space-16);
   height: var(--target);
+  pointer-events: none; /* the empty middle of the row never blocks the stage */
 }
-/* M3 Label Medium */
+.unk-pants__nav > * { pointer-events: auto; }
+/* M3 Label Medium, on a 20px line like the link's, so the two texts share a baseline */
 .unk-pants__count {
   margin: 0;
   font: var(--type-label-m);
+  line-height: 20px;
   letter-spacing: var(--track-label-m);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 .unk-pants__progress {
   position: relative;
+  flex: none;
   width: var(--space-64);
   height: 1px;
   background: var(--unk-line);
@@ -273,101 +274,26 @@ body:has(.unk-pants) {
   transform: scaleX(0);
   transform-origin: 0 50%;
 }
+/* "View all" (the shared .unk-link): pushed to the right content margin */
+.unk-pants__all { margin-left: auto; }
 
-
-.unk-pants__buy {
-  position: absolute;
-  left: 50%;
-  bottom: var(--pants-inset);
-  /* centring uses `translate`, so pants-section-behaviour.js can drive `transform` freely */
-  translate: -50% 0;
-  display: flex;
-  align-items: center;
-  gap: var(--space-16);
-  padding: var(--space-8);
-  border: var(--unk-hairline);
-  border-radius: var(--unk-radius); /* 12px container */
-  background: rgba(255, 255, 255, 0.9);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  white-space: nowrap;
-}
-.unk-pants__thumb {
-  width: 40px;
-  height: 40px;
-  object-fit: cover;
-  object-position: 50% 45%;
-  border-radius: var(--unk-radius);
-  background: var(--unk-tint);
-}
-/* every pair's thumbnail + name share one grid cell (they cross-fade); the cell is as wide as the
-   widest pair, so the bar keeps one width */
-.unk-pants__buy-stack { display: grid; }
-.unk-pants__buy-item {
-  grid-area: 1 / 1;
-  display: flex;
-  align-items: center;
-  gap: var(--space-16);
-  min-width: 0;
-}
-.unk-pants__buy-name {
-  max-width: clamp(120px, 16vw, 260px);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font: var(--type-label-m);
-  letter-spacing: var(--track-label-m);
-}
-
-.unk-pants__cart {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-8);
-  height: var(--target);
-  padding: 0 var(--space-24);
-  border-radius: var(--radius-button);
-  background: var(--unk-ink);
-  color: #fff;
-  font: var(--type-label-l); /* M3 Label Large; state layer from .unk-state */
-  letter-spacing: var(--track-label-l);
-  text-transform: uppercase;
-  text-decoration: none;
-}
-
-/* the buy bar drops the name where it would reach the arrows (the name is large on the left) */
-@media (max-width: 1180px) {
-  .unk-pants__buy-name { display: none; }
-}
-
-/* ---------- Phones and tall screens: name on top, pants in the middle, buy row at the bottom ---------- */
+/* ---------- Phones and tall screens: details on top, pants in the middle, bottom row ---------- */
 @media (max-width: 760px), (max-aspect-ratio: 5/4) {
   .unk-pants {
     --info-top: var(--space-24);
-    /* label + up to three 40px lines of name + the 24px price line + gaps: the text never covers the pants */
-    --fig-top: calc(var(--info-top) + var(--space-24) + 3 * 40px + var(--space-8) + 24px + var(--space-16));
-    /* buy row (inset + 64px bar) + 8 + nav row (48px) */
-    --fig-bottom: calc(var(--pants-inset) + var(--space-64) + var(--space-8) + var(--target));
+    /* eyebrow (16) + 8 + up to three 40px lines of name + 8 + the 24px price line + the View
+       product row (48px target, its text 16px under the price) + 16 clear: the details never
+       cover the pants */
+    --fig-top: calc(var(--info-top) + var(--space-24) + 3 * 40px + var(--space-8) + 24px + var(--space-16) - (var(--target) - 20px) / 2 + var(--target) + var(--space-16));
+    /* bottom row (inset + 48px) + 16 clear */
+    --fig-bottom: calc(var(--pants-inset) + var(--target) + var(--space-16));
     --fig-h: min(calc(100svh - var(--fig-top) - var(--fig-bottom)), calc((100vw - 2 * var(--margin)) / 0.75));
     --peek-x: calc(var(--fig-w) * 0.62);
     --info-w: calc(100vw - 2 * var(--margin));
   }
-  .unk-pants__info { top: calc(var(--info-top) + var(--space-24)); }
   /* the price stays with the name */
   .unk-pants__price { margin-top: var(--space-8); }
   .unk-pants__meta { margin-top: var(--space-8); }
-  .unk-pants__nav {
-    right: var(--margin);
-    bottom: calc(var(--pants-inset) + var(--space-64) + var(--space-8));
-  }
-  .unk-pants__progress { flex: 1; }
-  .unk-pants__buy {
-    left: var(--margin);
-    right: var(--margin);
-    bottom: var(--pants-inset);
-    translate: none;
-    justify-content: space-between;
-    padding-left: var(--space-16);
-  }
-  .unk-pants__thumb { display: none; }
-  .unk-pants__buy-stack { flex: 1; min-width: 0; }
-  .unk-pants__buy-name { display: block; min-width: 0; max-width: none; flex: 1; }
+  /* the progress line takes what the row has left */
+  .unk-pants__progress { flex: 1; width: auto; min-width: 0; }
 }
