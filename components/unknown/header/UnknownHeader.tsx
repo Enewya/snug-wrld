@@ -8,6 +8,9 @@ import Icon from "./Icon";
 import { ABOUT, ICON_LINKS, NAV } from "./header.data";
 import { initHeaderMenu } from "./header-behaviour";
 import "./header-styles.css";
+import { CurrencyMenuRow, CurrencyPicker } from "../currency/Currency";
+import { initCurrency } from "../currency/currency-behaviour";
+import { CURRENCY } from "../currency/currency.data";
 
 type Props = {
   /** Shown instead of the icons while the focus view is open (its Close button). */
@@ -27,6 +30,9 @@ type Props = {
 export default function UnknownHeader({ close, focus = false }: Props) {
   const ref = useRef<HTMLElement>(null);
   useEffect(() => (ref.current ? initHeaderMenu(ref.current) : undefined), []);
+  // re-run when Close swaps in and out: the desktop picker leaves the DOM while the focus view is open
+  const closing = !!close;
+  useEffect(() => (ref.current ? initCurrency(ref.current, { storageKey: CURRENCY.storageKey, fallback: CURRENCY.default }) : undefined), [closing]);
 
   return (
     <header ref={ref} className={`unk-header${focus ? " unk-header--focus" : ""}`}>
@@ -41,6 +47,7 @@ export default function UnknownHeader({ close, focus = false }: Props) {
       <div className="unk-header__end">
         {close ?? (
           <>
+            <CurrencyPicker />
             <a className="unk-header__icon unk-state" href={ICON_LINKS.search.url} aria-label={ICON_LINKS.search.label}><Icon paths={Search02} /></a>
             <a className="unk-header__icon unk-state" href={ICON_LINKS.account.url} aria-label={ICON_LINKS.account.label}><Icon paths={User02} /></a>
             <a className="unk-header__icon unk-state" href={ICON_LINKS.cart.url} aria-label={ICON_LINKS.cart.label}><Icon paths={ShoppingCart02} /></a>
@@ -80,6 +87,7 @@ export default function UnknownHeader({ close, focus = false }: Props) {
               )}
             </li>
           ))}
+          <CurrencyMenuRow />
         </ul>
       </nav>
     </header>
