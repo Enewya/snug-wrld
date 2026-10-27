@@ -6,6 +6,7 @@ import NewArrivals from "@/components/unknown/new-arrivals/NewArrivals";
 import TwoPiece from "@/components/unknown/two-piece/TwoPiece";
 import Caps from "@/components/unknown/caps/Caps";
 import Lookbook from "@/components/unknown/lookbook/Lookbook";
+import Slides from "@/components/unknown/slides/Slides";
 import Visit from "@/components/unknown/visit/Visit";
 import Footer from "@/components/unknown/footer/Footer";
 import RevealInit from "@/components/unknown/reveal/RevealInit";
@@ -40,6 +41,7 @@ export default function UnknownPage() {
       <NewArrivals />
       <TwoPiece />
       <Caps />
+      <Slides />
       <Lookbook />
       <Visit />
       <Footer />

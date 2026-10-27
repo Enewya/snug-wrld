@@ -1,0 +1,95 @@
+/* UNKNOWN Slides (values from components/unknown/tokens.css). Spacing above: .unk-section (section
+   gap, Carbon 64 / 96). Mirrors Two Piece: expanded, details on columns 1-6 sitting on the panel's
+   lower edge, panel on columns 8-12 (5 of 12, as Two Piece's photo); medium, details 1-3, panel 4-8;
+   compact, stacked with the panel first. */
+.unk-slides__grid {
+  display: grid;
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+  column-gap: var(--gutter);
+  row-gap: var(--space-24);
+  align-items: end;
+}
+.unk-slides__panel {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: var(--unk-radius); /* 12px */
+  background: var(--unk-tint); /* #f4f4f2: one tone off white */
+}
+.unk-slides__tilt {
+  position: absolute;
+  inset: 0;
+  transition: transform var(--dur-medium-4) var(--ease-standard);
+  will-change: auto;
+}
+.unk-slides__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: 50% 100%; /* the heels run off the photo: they sit on the panel's bottom edge */
+  opacity: 0;
+  transition: opacity var(--dur-medium-2) var(--ease-emphasized-accelerate);
+  -webkit-user-drag: none;
+  user-select: none;
+}
+.unk-slides__img[data-on] { opacity: 1; transition-timing-function: var(--ease-emphasized-decelerate); }
+.unk-slides__img[data-slides-view="1"] { object-position: 50% 50%; object-fit: cover; }
+.unk-slides__details {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: grid;
+  justify-items: start;
+}
+/* M3 roles: eyebrow Label Medium, name Headline Medium, price Title Medium */
+.unk-slides__label {
+  margin-bottom: var(--space-8);
+  font: var(--type-label-m);
+  letter-spacing: var(--track-label-m);
+  text-transform: uppercase;
+  color: var(--unk-mute);
+}
+.unk-slides__name {
+  margin: 0;
+  font: var(--type-headline-m);
+  letter-spacing: var(--track-headline-m);
+}
+.unk-slides__price {
+  margin: var(--space-4) 0 0;
+  font: var(--type-title-m);
+  letter-spacing: var(--track-title-m);
+  font-variant-numeric: tabular-nums;
+}
+/* Pair / Strap: two 48px text toggles, the active one underlined (no pill: one quiet control) */
+.unk-slides__toggle { display: flex; gap: var(--space-8); margin-top: var(--space-16); margin-inline-start: calc(-1 * var(--space-12)); }
+.unk-slides__opt {
+  min-width: var(--target);
+  min-height: var(--target);
+  padding: 0 var(--space-12);
+  border: 0;
+  border-radius: var(--radius-button);
+  background: none;
+  color: var(--unk-mute);
+  font: var(--type-label-l);
+  letter-spacing: var(--track-label-l);
+  cursor: pointer;
+}
+.unk-slides__opt[aria-pressed="true"] { color: var(--unk-ink); text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 1px; }
+.unk-slides__opt:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+@media (hover: hover) { .unk-slides__opt:hover { color: var(--unk-ink); } }
+.unk-slides__link { margin-top: var(--space-8); }
+
+@media (min-width: 600px) {
+  .unk-slides__details { grid-column: 1 / span 3; grid-row: 1; }
+  .unk-slides__panel { grid-column: 4 / -1; grid-row: 1; }
+}
+@media (min-width: 840px) {
+  .unk-slides__details { grid-column: 1 / span 6; padding-bottom: var(--space-32); }
+  .unk-slides__panel { grid-column: 8 / span 5; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .unk-slides__img, .unk-slides__tilt { transition: none; }
+}
