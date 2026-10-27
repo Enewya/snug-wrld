@@ -9,6 +9,7 @@ import { preloadFocus } from "@/lib/preload";
 import UnknownHeader from "./header/UnknownHeader";
 import MobileRack, { type MobileRackHandle } from "./mobile-rack/MobileRack";
 import DesktopRack, { type DesktopRackHandle } from "./desktop-rack/DesktopRack";
+import SizePicker from "./size-picker/SizePicker";
 
 type Selection = { start: number; origin: RackOrigin; key: number };
 const keepWhite = () => {};
@@ -54,8 +55,8 @@ export default function UnknownShowroom() {
 
   return (
     <div className="unknown-showroom">
-      <UnknownHeader close={selection ? (
-        <button className="unknown-close" type="button" onClick={() => view.current?.close()}>Close <span aria-hidden="true">×</span></button>
+      <UnknownHeader focus={active} close={selection ? (
+        <button className="unknown-close" type="button" aria-label="Close detail view" onClick={() => view.current?.close()}>Close <span aria-hidden="true">✕</span></button>
       ) : undefined} />
       <div className="unknown-wall" aria-hidden="true" />
       <main>
@@ -84,7 +85,8 @@ export default function UnknownShowroom() {
         </div>}
         {selection && <FocusView key={selection.key} ref={view} products={unknownProducts}
           start={selection.start} origin={selection.origin} getOrigin={getOrigin}
-          onIndex={onIndex} onTint={keepWhite} onCloseStart={closeStart} onClosed={closed} />}
+          onIndex={onIndex} onTint={keepWhite} onCloseStart={closeStart} onClosed={closed}
+          actions={p => <SizePicker key={p.slug} product={p} />} />}
       </main>
     </div>
   );

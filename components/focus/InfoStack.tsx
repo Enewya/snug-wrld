@@ -12,6 +12,10 @@ type Props = {
   /** No back photo: the pill's space is kept (so nothing below moves) but it isn't shown. */
   hasBack: boolean;
   onFace: (back: boolean) => void;
+  /** Optional one-line price under the name (UNKNOWN). Snug Wrld passes none. */
+  price?: string;
+  /** Optional replacement for the availability link (UNKNOWN: size picker + link). */
+  actions?: React.ReactNode;
 };
 
 const NAME_PX = 24;
@@ -23,7 +27,7 @@ const DESKTOP = "(min-width: 641px)";
  * availability link. The name box has a fixed height; on desktop a long name shrinks (down to
  * 18px) to stay on one line, on mobile it may take the two lines reserved for it.
  */
-export default function InfoStack({ name, url, face, animateFace, hasBack, onFace }: Props) {
+export default function InfoStack({ name, url, face, animateFace, hasBack, onFace, price, actions }: Props) {
   const back = face === "back";
   const nameRef = useRef<HTMLHeadingElement>(null);
 
@@ -47,6 +51,7 @@ export default function InfoStack({ name, url, face, animateFace, hasBack, onFac
       <h2 className="info-name" ref={nameRef}>
         {name}
       </h2>
+      {price !== undefined && <p className="info-price">{price}</p>}
       <div
         className={`seg${animateFace ? " seg-animate" : ""}`}
         role="group"
@@ -62,9 +67,9 @@ export default function InfoStack({ name, url, face, animateFace, hasBack, onFac
           BACK
         </button>
       </div>
-      {url && <a className="info-cta" href={url} target="_blank" rel="noopener" aria-label={`See availability of ${name} (opens in a new tab)`}>
+      {actions ?? (url && <a className="info-cta" href={url} target="_blank" rel="noopener" aria-label={`See availability of ${name} (opens in a new tab)`}>
         SEE AVAILABILITY ↗
-      </a>}
+      </a>)}
     </div>
   );
 }

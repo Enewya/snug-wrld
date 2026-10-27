@@ -12,6 +12,8 @@ import "./header-styles.css";
 type Props = {
   /** Shown instead of the icons while the focus view is open (its Close button). */
   close?: React.ReactNode;
+  /** Focus view open: ABOUT and the wordmark fade out, as on Snug Wrld (bm-09). */
+  focus?: boolean;
 };
 
 /**
@@ -22,17 +24,17 @@ type Props = {
  * wider) and sits on the left margin below that (see header-styles.css and HANDOFF.md).
  * All menu behaviour lives in header-behaviour.js (plain JS, same file in the theme).
  */
-export default function UnknownHeader({ close }: Props) {
+export default function UnknownHeader({ close, focus = false }: Props) {
   const ref = useRef<HTMLElement>(null);
   useEffect(() => (ref.current ? initHeaderMenu(ref.current) : undefined), []);
 
   return (
-    <header ref={ref} className="unk-header">
+    <header ref={ref} className={`unk-header${focus ? " unk-header--focus" : ""}`}>
       <div className="unk-header__start">
-        <a className="unk-header__about unk-hit48" href={ABOUT.url}>{ABOUT.text}</a>
+        <a className="unk-header__about unk-hit48" href={ABOUT.url} tabIndex={focus ? -1 : undefined}>{ABOUT.text}</a>
       </div>
 
-      <a className="unknown-wordmark unk-header__logo" href="/unknown" aria-label="UNKNOWN home">
+      <a className="unknown-wordmark unk-header__logo" href="/unknown" aria-label="UNKNOWN home" tabIndex={focus ? -1 : undefined}>
         <img src={UNKNOWN_LOGO.src} width={UNKNOWN_LOGO.width} height={UNKNOWN_LOGO.height} alt={UNKNOWN_LOGO.alt} />
       </a>
 

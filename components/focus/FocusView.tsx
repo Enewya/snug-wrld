@@ -33,6 +33,8 @@ type Props = {
   onCloseStart: () => void;
   /** Garment is back on its hook. */
   onClosed: () => void;
+  /** Optional replacement for the availability link under the pill (UNKNOWN: size picker). */
+  actions?: (product: Product) => React.ReactNode;
 };
 
 const HOVER_BODY_SCALE = 1.12; // must match RackItem
@@ -65,7 +67,7 @@ const hemOfView = (v: { front: string; back?: string }) => Math.max(hemOf(v.fron
  * the info stack sits at a fixed y under the stage and never moves between products.
  */
 const FocusView = forwardRef<FocusHandle, Props>(function FocusView(
-  { products = defaultProducts, start, origin, getOrigin, onIndex, onTint, onCloseStart, onClosed },
+  { products = defaultProducts, start, origin, getOrigin, onIndex, onTint, onCloseStart, onClosed, actions },
   ref,
 ) {
 const STAGE = Math.max(...products.flatMap((p) => (p.colourways ?? [p]).map(hemOfView)));
@@ -382,6 +384,8 @@ const TAG_X = Math.max(
           animateFace={pill.animate}
           hasBack={!!view.back}
           onFace={face}
+          price={product.price}
+          actions={actions?.(product)}
         />
       </motion.div>
     </div>

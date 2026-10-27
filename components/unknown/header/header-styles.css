@@ -75,23 +75,39 @@
 .is-menu-open .unk-burger span:first-child { transform: translateY(3.25px) rotate(45deg); }
 .is-menu-open .unk-burger span:last-child { transform: translateY(-3.25px) rotate(-45deg); }
 
-/* the focus view's Close button, in place of the icons */
+/* focus view: ABOUT and the wordmark fade out (300ms) and Close takes the icons' place, exactly as
+   on Snug Wrld (components/shell/Header.tsx): Archivo 12px, weight 500, uppercase, 0.08em, ✕ at
+   13px semibold, 10px gap, 48px target, right-aligned. Snug's values over the token scale (HANDOFF). */
+.unk-header__about,
+.unk-header__logo { transition: opacity 300ms; }
+.unk-header--focus .unk-header__about,
+.unk-header--focus .unk-header__logo { opacity: 0; pointer-events: none; }
 .unk-header .unknown-close {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-8);
+  justify-content: flex-end;
+  gap: 10px;
+  min-width: var(--target);
   min-height: var(--target);
-  padding: 0 var(--space-12);
+  /* Snug's spot: 2.2vw from the right edge, centred in a 10.4vh (min 64px) header band */
+  position: absolute;
+  right: 2.2vw;
+  top: calc(env(safe-area-inset-top) + max(10.4vh, 64px) / 2);
+  transform: translateY(-50%);
+  padding: 0;
   border: 0;
-  border-radius: var(--radius-button);
   background: none;
   color: inherit;
-  font: var(--type-label-l);
-  letter-spacing: var(--track-label-l);
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
+  white-space: nowrap;
   cursor: pointer;
 }
-.unk-header .unknown-close span { font-size: 24px; line-height: 1; }
+.unk-header .unknown-close span { font-size: 13px; font-weight: 600; }
 
 /* ---------- compact (< 600px, and touch phones in landscape): search, account, cart,
    hamburger on the right ---------- */

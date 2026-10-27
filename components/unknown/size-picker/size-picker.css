@@ -1,0 +1,35 @@
+/* UNKNOWN size picker. Pills copy the FRONT / BACK pill (globals.css .seg): 32px tall, 1px ink
+   border, full radius, Archivo 10px at 0.14em; each pill's touch target is 48 x 48. */
+.usp { display: grid; justify-items: center; }
+.usp__sizes {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-8, 8px);
+  margin-top: var(--g-size, 16px);
+  height: var(--size-h, 32px);
+}
+.usp__size {
+  position: relative;
+  min-width: 48px;
+  height: 32px;
+  padding: 0 var(--space-12, 12px);
+  box-sizing: border-box;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+/* 48px target without changing the visual size */
+.usp__size::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 48px; transform: translateY(-50%); }
+.usp__size[aria-checked="true"] { background: var(--ink); color: var(--paper); }
+@media (hover: hover) { .usp__size:not(:disabled):not([aria-checked="true"]):hover { background: rgba(21, 21, 19, 0.08); } }
+/* unavailable: struck through, not selectable (text stays 4.5:1: ink at 60% on white is 4.7:1) */
+.usp__size:disabled { cursor: not-allowed; color: rgba(21, 21, 21, 0.6); border-color: rgba(21, 21, 21, 0.3); text-decoration: line-through; }
+.usp__size:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.usp__cta { margin-top: var(--g-cta); }
+.usp__cta-space { display: block; margin-top: var(--g-cta); height: var(--cta-h); }

@@ -65,7 +65,8 @@ export const unknownProducts: Product[] = tops
     back: `/products/unknown/${slug}-back.webp`,
     ...(mirrorSide ? { mirrorSide } : {}),
     ...(handle ? { handle, url: `${STORE}/products/${handle}` } : {}),
-    ...(price ? { price } : {}),
+    // every garment gets a price line (empty when there is no store match) so the detail view never shifts
+    price: price ?? "",
     sizes: sizes ?? PLACEHOLDER_SIZES,
     ...(sizes ? {} : { sizesPlaceholder: true }),
   }));

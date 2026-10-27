@@ -43,14 +43,29 @@
 .unknown-intro select { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 .unknown-intro select:focus { position: static; width: auto; height: var(--target); clip-path: none; background: #fff; padding: 0 var(--space-24); border: 1px solid #101010; border-radius: var(--radius-button); outline-offset: var(--space-4); font: var(--type-body-l); }
 
-.unknown-showroom .focus { --fy: max(110px, 15dvh); --fiw: min(45dvh, 68vw, var(--fit-h) / var(--stage)); --g-cta: 0px; --cta-h: 0px; --g-hem: 32px; --fit-h: calc(100dvh - 75px - var(--fy) - var(--g-hem) - var(--stack)); }
-@media (max-width: 599px) {
-  .unknown-showroom .focus { --fy: max(110px, 16dvh); --fiw: min(40dvh, 72vw, var(--fit-h) / var(--stage)); --g-hem: 24px; --fit-h: calc(100dvh - 95px - var(--fy) - var(--g-hem) - var(--stack)); }
-  .unknown-showroom .focus-arrow { bottom: var(--space-32); }
+/* Detail view: Snug Wrld's own values (globals.css .focus: hook at 12vh / 14vh, garment
+   min(45vh, 70vw, 100vw - 480px) / min(40vh, 58vw), 48px under the stage, name 24px / 20px, 24px,
+   FRONT / BACK pill, 24px, link; circular 48px arrows 6vw in; 100% radius pill). Only differences:
+   no ticker, and a price line + a size row (components/unknown/size-picker) in the stack. */
+.unknown-showroom .focus {
+  --price-h: 20px; /* price line, under the name */
+  --g-size: 16px; /* pill to size row */
+  --size-h: 32px; /* size row (48px targets) */
+  --stack: calc(var(--name-h) + var(--price-h) + var(--g-pill) + var(--pill-h) + var(--g-size) + var(--size-h) + var(--g-cta) + var(--cta-h));
+  /* no ticker: the garment only has to stay 16px clear of the bottom edge */
+  --fit-h: calc(100vh - 16px - var(--fy) - var(--g-hem) - var(--stack));
 }
-/* 12px corners for the focus view's controls on /unknown */
-.unknown-showroom .focus-arrow,
-.unknown-showroom .focus-arrow::before,
-.unknown-showroom .focus-arrow:focus-visible { border-radius: var(--radius-button); }
-.unknown-showroom .seg { border-radius: var(--radius-button); }
-.unknown-showroom .seg-knob { border-radius: 9px; } /* concentric inside the 12px pill (3px inset) */
+/* the stack sits at Snug's stage depth (1.24857 x the garment width: its deepest hem), so name,
+   pill and link land at Snug's y; UNKNOWN's own deepest hem (1.2187) is shallower */
+.unknown-showroom .focus-info { top: calc(var(--fy) + var(--fiw) * max(var(--stage), 1.24857) + var(--g-hem)); }
+/* price: Snug's secondary text (the rack caption): 12px, 0.01em, #66645e (5.9:1 on white) */
+.unknown-showroom .info-price {
+  margin: 0;
+  height: var(--price-h);
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 12px;
+  line-height: var(--price-h);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: #66645e;
+}
