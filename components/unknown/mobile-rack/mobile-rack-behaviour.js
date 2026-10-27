@@ -44,19 +44,33 @@ const CONFIG = {
 };
 
 /** @typedef {{ x: number, y: number, iw: number, rod: number, hovered: boolean, bodyScale?: number }} Origin */
-/** @typedef {{ origin: (i: number) => Origin | null, jumpTo: (i: number) => void, resume: () => void, destroy: () => void }} MobileRackApi */
+/** @typedef {{ origin: (i: number) => Origin | null, jumpTo: (i: number) => void, resume: () => void, nudge: (px: number, outMs: number, backMs: number) => void, destroy: () => void }} MobileRackApi */
 /** @typedef {{ from: number, to: number, t0: number, dur: number, ease: (t: number) => number }} Tween */
 
 const easeInOut = (/** @type {number} */ t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 const easeOut = (/** @type {number} */ t) => 1 - (1 - t) ** 3;
 const linear = (/** @type {number} */ t) => t;
+/** cubic-bezier(x1, y1, x2, y2) as an easing function (for M3's emphasized curves) */
+const bezier = (/** @type {number} */ x1, /** @type {number} */ y1, /** @type {number} */ x2, /** @type {number} */ y2) => (/** @type {number} */ t) => {
+  let u = t;
+  for (let k = 0; k < 8; k++) {
+    const x = 3 * (1 - u) ** 2 * u * x1 + 3 * (1 - u) * u * u * x2 + u ** 3 - t;
+    const dx = 3 * (1 - u) ** 2 * x1 + 6 * (1 - u) * u * (x2 - x1) + 3 * u * u * (1 - x2);
+    if (Math.abs(x) < 1e-4 || !dx) break;
+    u = Math.max(0, Math.min(1, u - x / dx));
+  }
+  return 3 * (1 - u) ** 2 * u * y1 + 3 * (1 - u) * u * u * y2 + u ** 3;
+};
+/** M3 motion: emphasized decelerate (out) and emphasized (back) */
+const emphasizedDecelerate = bezier(0.05, 0.7, 0.1, 1);
+const emphasized = bezier(0.2, 0, 0, 1);
 
 /**
  * @param {HTMLElement} root the `.umr` element
- * @param {{ onSelect: (index: number, origin: Origin) => void }} opts
+ * @param {{ onSelect: (index: number, origin: Origin) => void, onDragStart?: () => void, onSwipe?: () => void }} opts
  * @returns {MobileRackApi}
  */
-export function initMobileRack(root, { onSelect }) {
+export function initMobileRack(root, { onSelect, onDragStart, onSwipe }) {
   const track = /** @type {HTMLElement} */ (root.querySelector("[data-umr-track]"));
   const items = /** @type {HTMLElement[]} */ ([...root.querySelectorAll("[data-umr-item]")]);
   const garments = items.map((it) => /** @type {HTMLElement} */ (it.querySelector(".umr__garment")));
@@ -66,7 +80,7 @@ export function initMobileRack(root, { onSelect }) {
   const caption = root.querySelector("[data-umr-caption]");
   const n = items.length;
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-  if (!n || !track) return { origin: () => null, jumpTo: () => {}, resume: () => {}, destroy: () => {} };
+  if (!n || !track) return { origin: () => null, jumpTo: () => {}, resume: () => {}, nudge: () => {}, destroy: () => {} };
 
   // ---------- state ----------
   let pitch = 1; // px between hangers (read on resize)
@@ -95,6 +109,10 @@ export function initMobileRack(root, { onSelect }) {
   let lastV = 0;
   let raf = 0;
   let last = 0;
+  // the swipe hint's nudge: a px offset of the whole row, out and back (components/unknown/swipe-hint)
+  let nudgeX = 0;
+  /** @type {{ px: number, t0: number, out: number, back: number } | null} */
+  let nudgeTw = null;
 
   /** @param {Tween | null} tw @param {number} now */
   const val = (tw, now) => (tw ? tw.from + (tw.to - tw.from) * tw.ease(Math.min(1, Math.max(0, (now - tw.t0) / tw.dur))) : 0);
@@ -125,7 +143,7 @@ export function initMobileRack(root, { onSelect }) {
   }
 
   function render() {
-    write(track, "transform", `translate3d(${(-pos * pitch).toFixed(2)}px, 0, 0)`);
+    write(track, "transform", `translate3d(${(-pos * pitch + nudgeX).toFixed(2)}px, 0, 0)`);
     const push = CONFIG.PUSH_VW * vw * spread;
     const swing = reduced.matches ? "" : ` rotate(${((th * 180) / Math.PI).toFixed(3)}deg)`;
     for (let i = 0; i < n; i++) {
@@ -208,12 +226,20 @@ export function initMobileRack(root, { onSelect }) {
     }
     if (spreadTw) { spread = val(spreadTw, now); if (done(spreadTw, now)) { spread = spreadTw.to; spreadTw = null; } else moving = true; }
     if (faceTw) { face = now < faceTw.t0 ? faceTw.from : val(faceTw, now); if (done(faceTw, now)) { face = faceTw.to; faceTw = null; } else moving = true; }
+    if (nudgeTw) {
+      const t = now - nudgeTw.t0;
+      if (t >= nudgeTw.out + nudgeTw.back) { nudgeX = 0; nudgeTw = null; }
+      else {
+        nudgeX = t < nudgeTw.out ? nudgeTw.px * emphasizedDecelerate(t / nudgeTw.out) : nudgeTw.px * (1 - emphasized((t - nudgeTw.out) / nudgeTw.back));
+        moving = true;
+      }
+    }
     // while the row moves freely, the garment nearest the centre is the one that will turn
     if ((mode === "drag" || mode === "glide") && spread === 0 && face === 0) setCentre(Math.max(0, Math.min(n - 1, Math.round(pos))));
 
     // sway: damped pendulum driven by the row's acceleration (vw/s^2)
     if (!reduced.matches) {
-      const x = (-pos * pitch) / vw;
+      const x = (-pos * pitch + nudgeX) / vw;
       const v = (x - lastX) / dt;
       const a = (v - lastV) / dt;
       lastX = x;
@@ -235,7 +261,7 @@ export function initMobileRack(root, { onSelect }) {
   }
   const kick = () => {
     if (!raf) {
-      lastX = (-pos * pitch) / vw;
+      lastX = (-pos * pitch + nudgeX) / vw;
       raf = requestAnimationFrame(tick);
     }
   };
@@ -268,6 +294,9 @@ export function initMobileRack(root, { onSelect }) {
       if (Math.abs(dx) < CONFIG.DRAG_START || Math.abs(dx) < Math.abs(dy)) return;
       mode = "drag";
       dragged = true;
+      nudgeX = 0;
+      nudgeTw = null;
+      onDragStart?.();
       unturn(e.timeStamp);
       try { root.setPointerCapture(e.pointerId); } catch { /* pointer already gone */ }
     }
@@ -282,6 +311,7 @@ export function initMobileRack(root, { onSelect }) {
     if (!gesture || e.pointerId !== gesture.id) return;
     const wasDrag = mode === "drag";
     const s = gesture.samples;
+    const startPos = gesture.pos;
     gesture = null;
     if (!wasDrag) {
       // a tap: handled by the button's click; a still row turns its centre garment (again)
@@ -294,6 +324,9 @@ export function initMobileRack(root, { onSelect }) {
     const a = s[0];
     const b = s[s.length - 1];
     const v = b.t > a.t ? (b.pos - a.pos) / (b.t - a.t) : 0; // garments per ms
+    // a successful swipe: the row will come to rest on another garment
+    const restAt = Math.max(0, Math.min(n - 1, Math.round(pos + v * CONFIG.TAU)));
+    if (restAt !== Math.round(startPos)) onSwipe?.();
     const now = performance.now();
     if (reduced.matches || pos < 0 || pos > n - 1) {
       turnTo(reduced.matches ? Math.round(pos + v * CONFIG.TAU) : pos < 0 ? 0 : n - 1, now);
@@ -393,10 +426,19 @@ export function initMobileRack(root, { onSelect }) {
   root.addEventListener("keydown", onKey);
   window.addEventListener("resize", onResize);
 
+  /** Drift the row px sideways and back (outMs emphasized-decelerate, backMs emphasized), unless it
+   *  is being touched or moving. @param {number} px @param {number} outMs @param {number} backMs */
+  function nudge(px, outMs, backMs) {
+    if (reduced.matches || mode !== "rest" || gesture) return;
+    nudgeTw = { px, t0: performance.now(), out: outMs, back: backMs };
+    kick();
+  }
+
   return {
     origin,
     jumpTo,
     resume,
+    nudge,
     destroy() {
       cancelAnimationFrame(raf);
       if (hasIdle) window.cancelIdleCallback(idle);

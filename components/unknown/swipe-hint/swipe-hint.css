@@ -1,0 +1,32 @@
+/* Phone rack swipe hint: "Swipe to explore" in M3 Label Medium, quiet grey (--unk-mute, 6.6:1 on
+   white), centred under the rack's caption (never over a garment), between two thin chevrons that
+   pulse sideways (a gesture glyph, not a link). Never takes a tap. */
+.ush {
+  position: absolute;
+  left: var(--margin);
+  right: var(--margin);
+  /* under the caption: rack bottom + 24px, caption line (20px), 8px */
+  top: calc(var(--umr-rail-y) + var(--umr-iw) * 1.2 + var(--space-24) + 20px + var(--space-8));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+  min-height: 20px;
+  margin: 0;
+  color: var(--unk-mute);
+  font: var(--type-label-m);
+  letter-spacing: var(--track-label-m);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 200ms linear;
+}
+.ush[data-ush-on] { opacity: 1; }
+.ush__chev { width: 12px; height: 12px; flex: none; }
+.ush[data-ush-on] .ush__chev--l { animation: ush-pulse-l 1.2s var(--ease-standard, cubic-bezier(0.2, 0, 0, 1)) infinite; }
+.ush[data-ush-on] .ush__chev--r { animation: ush-pulse-r 1.2s var(--ease-standard, cubic-bezier(0.2, 0, 0, 1)) infinite; }
+@keyframes ush-pulse-l { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-3px); } }
+@keyframes ush-pulse-r { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(3px); } }
+@media (prefers-reduced-motion: reduce) {
+  .ush[data-ush-on] .ush__chev--l,
+  .ush[data-ush-on] .ush__chev--r { animation: none; }
+}

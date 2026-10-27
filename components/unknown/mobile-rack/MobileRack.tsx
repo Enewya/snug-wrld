@@ -7,6 +7,9 @@ import { photos, photoScale } from "@/lib/photo-catalog";
 import type { RackOrigin } from "@/components/rack/Rack";
 import { initMobileRack, type MobileRackApi } from "./mobile-rack-behaviour";
 import "./mobile-rack-styles.css";
+import SwipeHint from "../swipe-hint/SwipeHint";
+import { initSwipeHint } from "../swipe-hint/swipe-hint-behaviour";
+import { SWIPE_HINT } from "../swipe-hint/swipe-hint.data";
 
 type Props = {
   products: Product[];
@@ -46,21 +49,30 @@ function mirror(src: string): React.CSSProperties {
  */
 const MobileRack = forwardRef<MobileRackHandle, Props>(function MobileRack({ products, onSelect, hiddenIndex = null }, ref) {
   const root = useRef<HTMLDivElement>(null);
+  const hint = useRef<HTMLParagraphElement>(null);
   const api = useRef<MobileRackApi | null>(null);
   const select = useRef(onSelect);
   useEffect(() => { select.current = onSelect; }, [onSelect]);
 
   useEffect(() => {
     if (!root.current) return;
-    const a = initMobileRack(root.current, { onSelect: (i, o) => select.current(i, o) });
+    let h: ReturnType<typeof initSwipeHint> | null = null;
+    const a = initMobileRack(root.current, {
+      onSelect: (i, o) => select.current(i, o),
+      onDragStart: () => h?.dragStart(),
+      onSwipe: () => h?.swiped(),
+    });
     api.current = a;
-    return () => { a.destroy(); api.current = null; };
+    // the phone rack is display:none on wider screens: no hint there
+    if (hint.current && root.current.offsetParent) h = initSwipeHint(hint.current, root.current, a, SWIPE_HINT);
+    return () => { h?.destroy(); a.destroy(); api.current = null; };
   }, []);
 
   useImperativeHandle(ref, () => ({
     origin: (i) => api.current?.origin(i) ?? null,
     jumpTo: (i) => api.current?.jumpTo(i),
     resume: () => api.current?.resume(),
+    nudge: (px, outMs, backMs) => api.current?.nudge(px, outMs, backMs),
     destroy: () => {},
   }), []);
 
@@ -100,6 +112,7 @@ const MobileRack = forwardRef<MobileRackHandle, Props>(function MobileRack({ pro
       </ul>
       </div>
       <p className="umr__caption" data-umr-caption aria-live="polite">{products[0]?.name}</p>
+      <SwipeHint ref={hint} />
       <p id="umr-hint" className="unk-sr">Tap the piece in the centre to open it. Use the left and right arrow keys to move along the rack.</p>
     </div>
   );
