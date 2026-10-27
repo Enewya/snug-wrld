@@ -8,9 +8,10 @@ Kept byte-for-byte as supplied, renamed to the file names the section expects:
 | `model-base.webp` | grey chinos: the neutral in-between state, not a product |
 | `unknown-denim-jean.webp` | olive washed denim |
 | `unknown-side-eye-baggy-pant.webp` | grey wide sweatpant with curved seams |
-| `unknown-logo-sweatpant-brown.webp` | brown logo sweatpant (regenerated in the base pose, 26 Oct 2026) |
+| `unknown-logo-sweatpant-brown.webp` | brown logo sweatpant, wide leg (regenerated in the base pose, 27 Oct 2026) |
 | `unknown-lgt-strikes-joggers.webp` | cream sweatpant with the lightning-crack graphic (regenerated in the base pose, 26 Oct 2026) |
-| `unknown-logo-sweatpant-red.webp` | not supplied yet (the red pair is switched off in `pants.data.ts`) |
+| `unknown-logo-sweatpant-red.webp` | red logo sweatpant, wide leg (generated in the base pose, 27 Oct 2026) |
+| `previous/unknown-logo-sweatpant-brown.webp` | the earlier brown photo (26 Oct). Not shown; still one of the four photos the body layer is built from (with its mask in `previous/masks/`) |
 
 ## Pipeline
 
@@ -35,7 +36,37 @@ and the share of pixels more than 40 levels off). `aligned/contact-sheet.jpg`: e
 checkerboard, the composite and the original, plus the body, the hands and a 50% overlay of all
 composites.
 
-## Last run (26 Oct 2026)
+## Body references (round 10)
+
+The body and hands layers come from four fixed photos (`BODY_REFS` in the script: denim, side eye,
+the previous brown, LGT), so adding or replacing a pair never changes them: after adding red and
+replacing brown, `body.png`, `hands.png`, the base and the other three pairs (colour and grey) are
+pixel-identical to the previous run. A pair outside the references (now brown and red) gets two
+extra clean-ups, because a separately generated photo's skin and shoes differ from the base's by more
+than the "same pixel" threshold: within 40 px of its waistband, pixels closer in colour to the base's
+skin there than to the pair's fabric are dropped (skin); in the shoe zone, neutral pixels
+(chroma < 8, L* > 30) are dropped (shoe leather, laces, its shadows). Only for clearly coloured
+fabric (chroma > 20), so a cream or grey pair would need its own check.
+
+## Last run (27 Oct 2026)
+
+| Photo | Registration | Waistband top (px) | Rebuild: mean / px > 40 |
+|---|---|---|---|
+| base chinos | (the base) | 104 | 1.0 / 0.41% |
+| denim | already on the base | 109 | 2.5 / 0.60% |
+| side eye | scale 0.983, shift −9.9, −1.2 px | 104 | 2.7 / 0.83% |
+| brown (new, wide leg) | already on the base | 102 | 3.5 / 1.08% |
+| red (new, wide leg) | scale 1.001, shift 0.5, −1.7 px | 102 | 2.8 / 0.89% |
+| cream (LGT) | scale 1.001, shift 0.5, −1.2 px | 100 | 2.5 / 0.47% |
+
+Fade unchanged: 0–35 px, 65–74 px above every waistband (red and brown 67). Brown and red each have
+~2,500 px (0.2% of the figure) of shoe top that the base chinos covered and their hems don't; those
+show the page's white right under the hem (white shoe on white: no visible edge). After the clean-ups, shoe-coloured
+pixels left in the hems: red 2, brown 0; skin-hued pixels at red's waist: 66 (its edge). Brown can't
+be checked by colour (its fabric is skin-toned): checked by eye at 2x on black, no skin above the
+waistband (`reference/unknown/qa/round10/3-cutouts-*.jpg`).
+
+## Previous run (26 Oct 2026)
 
 | Photo | Registration | Waistband top (px) | Rebuild: mean / px > 40 |
 |---|---|---|---|

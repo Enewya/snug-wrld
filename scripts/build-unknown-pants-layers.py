@@ -44,7 +44,17 @@ from scipy import ndimage
 DIR = Path("assets/products-src/unknown/pants")
 OUT = DIR / "aligned"
 BASE = "model-base"
-PAIRS = ["unknown-denim-jean", "unknown-side-eye-baggy-pant", "unknown-logo-sweatpant-brown", "unknown-lgt-strikes-joggers"]
+PAIRS = ["unknown-denim-jean", "unknown-side-eye-baggy-pant", "unknown-logo-sweatpant-brown", "unknown-logo-sweatpant-red",
+         "unknown-lgt-strikes-joggers"]
+# The body and hands layers are built from these four photos only and never change when a pair is
+# added or replaced (round 10: the brown photo was regenerated; the body still comes from the
+# previous brown, kept in previous/). A new or replaced pair only gets its own pants layers.
+BODY_REFS = {
+    "unknown-denim-jean": "unknown-denim-jean",
+    "unknown-side-eye-baggy-pant": "unknown-side-eye-baggy-pant",
+    "ref:unknown-logo-sweatpant-brown": "previous/unknown-logo-sweatpant-brown",
+    "unknown-lgt-strikes-joggers": "unknown-lgt-strikes-joggers",
+}
 W, H = 1086, 1448
 SAME = 18  # max channel difference that still counts as "the same pixel" (JPEG/WebP noise is ~6)
 SAME_SHOE = 10  # tighter in the shoe zone: the grey wide pants are only ~18 off the grey chinos
@@ -55,13 +65,19 @@ FADE_LEN = 84  # the reference's fade length (source px), when there is room for
 TORSO = (360, 725)  # x range of the torso; arms hang outside it (measured on the base)
 
 
+def src_of(key):
+    """File stem (under DIR) of a photo key: pairs and the base by name, body refs by BODY_REFS."""
+    return BODY_REFS.get(key, key)
+
+
 def load(name):
-    return np.asarray(Image.open(DIR / f"{name}.webp").convert("RGB")).astype(np.float32)
+    return np.asarray(Image.open(DIR / f"{src_of(name)}.webp").convert("RGB")).astype(np.float32)
 
 
 def subject_mask(name):
-    p = DIR / "masks" / f"{name}.png"
-    src = DIR / f"{name}.webp"
+    stem = src_of(name)
+    p = DIR / (f"previous/masks/{stem.split('/')[-1]}.png" if stem.startswith("previous/") else f"masks/{stem}.png")
+    src = DIR / f"{stem}.webp"
     if not p.exists() or p.stat().st_mtime < src.stat().st_mtime:
         p.parent.mkdir(exist_ok=True)
         from rembg import new_session, remove
@@ -120,12 +136,15 @@ def register(base, alpha_b, img, alpha):
 def main():
     OUT.mkdir(exist_ok=True)
     names = [BASE] + PAIRS
-    rgb = {n: load(n) for n in names}
-    alpha = {n: subject_mask(n) for n in names}
+    refs = list(BODY_REFS)
+    extra = [r for r in refs if r not in PAIRS]  # body-only photos (not output)
+    photos = PAIRS + extra
+    rgb = {n: load(n) for n in names + extra}
+    alpha = {n: subject_mask(n) for n in names + extra}
     report = {"registration": {}, "waistband": {}, "checks": {}}
 
     # 2. registration (only where a photo is off the base by more than half a pixel)
-    for n in PAIRS:
+    for n in photos:
         a = alpha[n]
         xs_b = np.where(alpha[BASE][40] > 0.5)[0]
         xs = np.where(a[40] > 0.5)[0]
@@ -142,11 +161,11 @@ def main():
 
     # 3. body = identical in every photo (and part of the subject)
     base = rgb[BASE]
-    diff = {n: np.abs(rgb[n] - base).max(2) for n in PAIRS}
+    diff = {n: np.abs(rgb[n] - base).max(2) for n in photos}
     # a little smoothing so single noisy pixels do not flip
-    dmed = {n: ndimage.median_filter(diff[n], 3) for n in PAIRS}
-    same_count = sum((dmed[n] < SAME).astype(np.int8) for n in PAIRS)
-    shoe_same = sum((dmed[n] < SAME_SHOE).astype(np.int8) for n in PAIRS)
+    dmed = {n: ndimage.median_filter(diff[n], 3) for n in photos}
+    same_count = sum((dmed[n] < SAME).astype(np.int8) for n in refs)
+    shoe_same = sum((dmed[n] < SAME_SHOE).astype(np.int8) for n in refs)
     lb_base = lab(base)
     shoe_white = (lb_base[..., 0] > 84) & (np.hypot(lb_base[..., 1], lb_base[..., 2]) < 4)
     yy0 = np.arange(H)[:, None]
@@ -169,7 +188,7 @@ def main():
     # pants of each pair: its subject minus the body (where it still shows the body), clear of
     # the hands' ring
     pants = {BASE: ndimage.binary_opening(chinos & ~arms_pad, iterations=2)}
-    for n in PAIRS:
+    for n in photos:
         subj = alpha[n] > 0.5
         same = dmed[n] < SAME
         p = subj & ~(body & same) & ~arms_pad
@@ -204,14 +223,14 @@ def main():
                 elif side > 0 and f > e:
                     p[y, e + 1:f + 1] = True
         return p
-    for n in names:
+    for n in names + extra:
         pants[n] = mend_edges(pants[n])
 
     # spots a pair reveals that the chinos covered: in the pair they are not pants-coloured but
     # skin (waist) or white shoe (above a cuff). Colour test only inside those small zones.
-    L = {n: lab(rgb[n]) for n in names}
+    L = {n: lab(rgb[n]) for n in names + extra}
     revealed = {}
-    for n in PAIRS:
+    for n in photos:
         zone = chinos & (alpha[n] > 0.5)
         lb = L[n]
         skin = (lb[..., 1] > 8) & (lb[..., 2] > 8) & (lb[..., 0] < 72)
@@ -227,8 +246,18 @@ def main():
             sizes = ndimage.sum(r, lab_, range(1, k + 1))
             r = np.isin(lab_, 1 + np.where(sizes > 40)[0])
         revealed[n] = r
-        pants[n] &= ~r
         report["checks"].setdefault(n, {})["revealed_px"] = int(r.sum())
+    # the body takes in the spots its reference photos reveal; a pair's revealed spots leave its
+    # pants layer only where the body already has them (otherwise they stay in the pants, so the
+    # composite never shows a hole)
+    body_cover = body.copy()
+    for n in refs:
+        body_cover |= revealed[n]
+    for n in photos:
+        cut = revealed[n] & body_cover
+        pants[n] &= ~cut
+        if n in PAIRS:
+            report["checks"][n]["revealed_kept_in_pants_px"] = int((revealed[n] & ~body_cover).sum())
 
     # waistband of each pants: its top edge, median over the centre columns
     def waist(p):
@@ -238,12 +267,14 @@ def main():
             if len(ys):
                 tops.append(ys.min())
         return int(np.median(tops))
-    for n in names:
+    for n in names + extra:
         report["waistband"][n] = waist(pants[n])
-    top_waist = min(report["waistband"].values())
+    # the fade comes from the body's own photos, so it never moves; every pair is checked against it
+    top_waist = min(report["waistband"][n] for n in [BASE] + refs)
     fade_end = top_waist - SAFE
     fade_start = max(0, fade_end - FADE_LEN)
     report["fade"] = {"start": fade_start, "end": fade_end, "highest_waistband": top_waist, "safe": SAFE}
+    report["fade"]["clear_above_each_waistband"] = {n: report["waistband"][n] - fade_end for n in names}
     print("waistbands", report["waistband"], "fade", fade_start, "-", fade_end)
 
     # 4. hands: base arm pixels outside the torso band, below the chest, matted against the chinos
@@ -265,7 +296,7 @@ def main():
     # body layer: base body + revealed spots; soft edge against the backdrop, shared top fade
     body_rgb = base.copy()
     body_a = np.where(body, alpha[BASE], 0.0)
-    for n in PAIRS:
+    for n in refs:
         body_rgb[revealed[n]] = rgb[n][revealed[n]]
         body_a = np.where(revealed[n], np.maximum(body_a, alpha[n]), body_a)
     t = np.clip((np.arange(H) - fade_start) / max(1, fade_end - fade_start), 0, 1)
@@ -288,6 +319,27 @@ def main():
             fabric = np.median(L[n][orig & ~near], axis=0)
             closer_to_skin = de < np.linalg.norm(L[n] - fabric, axis=-1)
             orig &= ~(near & closer_to_skin & (de < 16))
+        if n not in BODY_REFS and n != BASE:
+            # a pair that is not one of the body's photos was generated separately, so its skin and
+            # shoes differ from the base's by more than SAME. Waist band: pixels closer in colour to
+            # the base's own pixel there (skin) than to this pair's fabric are skin, not pants.
+            # Shoe zone: neutral light pixels (chroma < 8, L* > 55) are shoe (laces, shading); the
+            # strong red and brown fabrics never are. (Fabric median from the legs.)
+            yy_ = np.arange(H)[:, None]
+            legs = orig & (yy_ > 400) & (yy_ < SHOE_Y)
+            fab = np.median(L[n][legs], axis=0)
+            lb_base_ = lab(base)
+            waist_zone = (yy_ < report["waistband"][n] + 40) & body
+            skinish = np.linalg.norm(L[n] - lb_base_, axis=-1) < 1.25 * np.linalg.norm(L[n] - fab, axis=-1)
+            before_ = orig.copy()
+            orig &= ~(waist_zone & skinish)
+            # shoe zone: neutral pixels (chroma < 8, L* > 30: white leather down to its shadows)
+            neutral = (np.hypot(L[n][..., 1], L[n][..., 2]) < 8) & (L[n][..., 0] > 30) & (yy_ > SHOE_Y)
+            if np.hypot(fab[1], fab[2]) > 20:  # only for clearly coloured fabric
+                orig &= ~neutral
+            orig = np.where(yy_ < report["waistband"][n] + 40, ndimage.binary_opening(orig, iterations=3), orig)
+            orig = np.where(yy_ > SHOE_Y, ndimage.binary_opening(orig, iterations=2), orig)
+            report["checks"].setdefault(n, {})["new_pair_cleanup_px"] = int((before_ & ~orig).sum())
         # hems: thin slivers of shoe (shading, laces) along the bottom edge are not fabric
         hem = np.arange(H)[:, None] > SHOE_Y
         orig = np.where(hem, ndimage.binary_opening(orig, iterations=4), orig)
@@ -310,7 +362,7 @@ def main():
         a = np.where(fill, 1.0, a)
         # where the pants meet the body (waist, hands, shoes) the edge is the cut line itself:
         # a 1px feather so it is not stair-stepped
-        edge = full & ~ndimage.binary_erosion(full) & ndimage.binary_dilation(body | revealed.get(n, np.zeros_like(body)))
+        edge = full & ~ndimage.binary_erosion(full) & ndimage.binary_dilation(body | (revealed.get(n, np.zeros_like(body)) & body_cover))
         a = np.where(edge, a * 0.6, a)
         layers[n] = np.dstack([col, a[..., None] * 255]).clip(0, 255).astype(np.uint8)
         report["checks"].setdefault(n, {})["filled_under_hands_px"] = int(fill.sum())
