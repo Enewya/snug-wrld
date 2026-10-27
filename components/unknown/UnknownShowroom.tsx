@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import Rack, { rackOrigin, type RackOrigin } from "@/components/rack/Rack";
+import { rackOrigin, type RackOrigin } from "@/components/rack/Rack";
 import FocusView, { type FocusHandle } from "@/components/focus/FocusView";
 import { unknownProducts } from "@/lib/unknown-products";
 import { preloadFocus } from "@/lib/preload";
 import UnknownHeader from "./header/UnknownHeader";
 import MobileRack, { type MobileRackHandle } from "./mobile-rack/MobileRack";
+import DesktopRack, { type DesktopRackHandle } from "./desktop-rack/DesktopRack";
 
 type Selection = { start: number; origin: RackOrigin; key: number };
 const keepWhite = () => {};
@@ -21,6 +22,7 @@ export default function UnknownShowroom() {
   const view = useRef<FocusHandle>(null);
   const browse = useRef<HTMLSelectElement>(null);
   const mobile = useRef<MobileRackHandle>(null);
+  const desktop = useRef<DesktopRackHandle>(null);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -47,6 +49,7 @@ export default function UnknownShowroom() {
   const onIndex = useCallback((i: number) => {
     setShown(i);
     if (compact()) mobile.current?.jumpTo(i);
+    else desktop.current?.reveal(i);
   }, []);
 
   return (
@@ -62,7 +65,7 @@ export default function UnknownShowroom() {
           animate={active ? { filter: "blur(8px)", opacity: 0.25 } : { filter: "blur(0px)", opacity: 1 }}
           transition={{ duration: 0.5, ease: [0.2, 0, 0, 1] }}>
           <div className="unknown-rack-desktop">
-            <Rack products={unknownProducts} onSelect={open} hiddenIndex={shown} paused={!!selection} />
+            <DesktopRack ref={desktop} products={unknownProducts} onSelect={open} hiddenIndex={shown} paused={!!selection} />
           </div>
           <div className="unknown-rack-mobile">
             <MobileRack ref={mobile} products={unknownProducts} onSelect={open} hiddenIndex={shown} />

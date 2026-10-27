@@ -1,0 +1,39 @@
+/* UNKNOWN desktop rack (600px and up): geometry. The shared rack (globals.css .rack) supplies the
+   garment width (--iw), the rail's height and width (--rail-y, --rail-w) and the hanger layers; this
+   file only lays the row out from the left bracket and clips it at the brackets.
+   Numbers (HANDOFF.md "Desktop rack"):
+   - pitch (centre to centre) = 15.1% of the rail's width: 5 garments fully on the rail and a 6th..7th
+     partly clipped at the right bracket at every width from 1024 to 1920;
+   - first garment's left edge = left bracket's inner face + 24px (margin step);
+   - clip edges = the brackets' inner faces (14px inside each rail end). */
+.udr {
+  --udr-margin: var(--space-24, 24px);
+  --udr-bracket: 14px; /* .rail-end width, globals.css */
+  --udr-pitch: calc(var(--rail-w) * 0.151);
+  --udr-edge: calc((100% - var(--rail-w)) / 2 + var(--udr-bracket));
+  /* the first garment's centre: its left edge (a share of the photo width, from its side photo) one margin step inside */
+  --udr-x0: calc(var(--udr-edge) + var(--udr-margin) + var(--iw) * var(--garment-scale, 1) * var(--udr-first-reach, 0.15));
+  outline: none;
+}
+.udr:focus-visible .udr__rail .rail-plate { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #151515; }
+/* the brackets stay outside the clip, under everything; the tube is drawn again inside the clip */
+.udr__rail { z-index: 0; }
+.udr__rail .rail-tube { visibility: hidden; }
+.udr__tube .rail-end { display: none; }
+.udr__clip {
+  position: absolute;
+  inset: 0;
+  /* nothing is clipped at an end the row is resting against (a hovered garment's wider front view
+     may pass its bracket there); once the row moves past an end, garments are cut at that bracket */
+  --udr-clip-l: -100vw;
+  --udr-clip-r: -100vw;
+  clip-path: inset(-100vh var(--udr-clip-r) -100vh var(--udr-clip-l));
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.udr[data-udr-scrolled] .udr__clip { --udr-clip-l: var(--udr-edge); }
+.udr[data-udr-more] .udr__clip { --udr-clip-r: var(--udr-edge); }
+.udr[data-udr-dragging] { cursor: grabbing !important; }
+.udr .rack-item,
+.udr .rack-caption { left: calc(var(--udr-x0) + (var(--i) + var(--udr-c)) * var(--udr-pitch) - var(--udr-offset, 0px)); }

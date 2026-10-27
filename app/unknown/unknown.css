@@ -21,7 +21,7 @@
   background-position: center top;
 }
 
-.unknown-rack-wrap { position: absolute; inset: 0; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; }
+.unknown-rack-wrap { position: absolute; inset: 0; overflow: hidden; overscroll-behavior-x: contain; }
 .unknown-rack-desktop { position: absolute; inset: 0; }
 .unknown-rack-mobile { display: none; }
 @media (max-width: 599px) {
