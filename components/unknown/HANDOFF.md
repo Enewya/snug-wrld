@@ -4,7 +4,7 @@ A visual prototype of a new UNKNOWN homepage, built to be ported section by sect
 theme. Each section is self-contained: its own folder, plain CSS, a small plain-JS file where it
 has behaviour, and a data file holding all copy, prices, images and links. No new libraries.
 
-Page order: **Rack hero → Pants → New Arrivals → Two Piece → Caps → Lookbook → Visit + email → Footer.**
+Page order: **Rack hero → Pants → New Arrivals → Two Piece → Caps → Slides → Lookbook → Visit + email → Footer.**
 (The "Subtle Growth" drop band was removed.) Route: `app/unknown/page.tsx`.
 
 ## Files
@@ -15,12 +15,16 @@ Page order: **Rack hero → Pants → New Arrivals → Two Piece → Caps → Lo
 | Shared section / link / button styles | `section.css` | – | part of `assets/base.css` |
 | Text link ("View all", "View product", "Get directions") | `link/UnkLink.tsx` + `.unk-link` in `section.css` | CSS only | `snippets/unk-link.liquid` |
 | Hero header + compact menu | `header/` (`UnknownHeader.tsx`, `header.data.ts`, `header-behaviour.js`, `header-styles.css`, `Icon.tsx`) | `header-behaviour.js` | `sections/unknown-header.liquid` (header group) |
-| Rack hero, desktop | `UnknownShowroom.tsx`, `app/unknown/unknown.css`, `lib/unknown-products.ts`, `lib/unknown-brand.ts` | existing rack/focus code (your build) | `sections/unknown-hero.liquid` |
+| Rack hero, desktop | `UnknownShowroom.tsx`, `app/unknown/unknown.css`, `lib/unknown-products.ts`, `lib/unknown-brand.ts`, `desktop-rack/` (`DesktopRack.tsx`, `desktop-rack-behaviour.js`, `desktop-rack.css`) | `desktop-rack-behaviour.js` (scrolling) + the shared rack's hover / turn | `sections/unknown-hero.liquid` |
+| Detail view (focus) | shared `components/focus/` + `.unknown-showroom .focus` in `app/unknown/unknown.css`; size picker in `size-picker/` (`SizePicker.tsx`, `size-picker-behaviour.js`, `size-picker.css`) | shared focus code; `size-picker-behaviour.js` | inside `sections/unknown-hero.liquid` (see "Detail view") |
+| Phone swipe hint | `swipe-hint/` (`SwipeHint.tsx`, `swipe-hint-behaviour.js`, `swipe-hint.css`, `swipe-hint.data.ts`) | `swipe-hint-behaviour.js` + `nudge()` in `mobile-rack-behaviour.js` | inside `sections/unknown-hero.liquid` |
+| Currency selector | `currency/` (`Currency.tsx`, `currency-behaviour.js`, `currency-styles.css`, `currency.data.ts`) | `currency-behaviour.js` | inside the header section + Shopify's localization form |
 | Rack hero, phones (< 600px) | `mobile-rack/` (`MobileRack.tsx`, `mobile-rack-behaviour.js`, `mobile-rack-styles.css`) | `mobile-rack-behaviour.js` | inside `sections/unknown-hero.liquid` |
 | Pants | `pants-section/` | `pants-section-behaviour.js` | `sections/unknown-pants.liquid` (see `pants-section/HANDOFF.md`) |
 | New Arrivals | `new-arrivals/` | CSS only (hover) | `sections/unknown-new-arrivals.liquid` |
 | Two Piece | `two-piece/` | CSS only | `sections/unknown-two-piece.liquid` (one product picker) |
 | Caps | `caps/` | CSS only (hover) | `sections/unknown-caps.liquid` |
+| Slides | `slides/` (`Slides.tsx`, `slides.data.ts`, `slides-behaviour.js`, `slides-styles.css`) | `slides-behaviour.js` (Pair / Strap, tilt) | `sections/unknown-slides.liquid` (one product + two images) |
 | Lookbook | `lookbook/` | `lookbook-behaviour.js` (arrow buttons) | `sections/unknown-lookbook.liquid` |
 | Visit + email | `visit/` | `visit-behaviour.js` (prototype submit) | `sections/unknown-visit.liquid` |
 | Footer | `footer/` | – | `sections/footer.liquid` (theme footer group) |
@@ -315,6 +319,169 @@ grey-zip-hoodie, blue-striped-tee; the 4 tees after them are kept but off.
 - Garment scale: `--garment-scale: 1.095` on `.unknown-showroom .rack` (default 1, so the Snug
   Wrld rack is unchanged).
 
+## Round 9 (27 Oct 2026)
+
+Scripts added: `scripts/check-paths.mjs` (Mac safety: no file names that differ only by case or
+extension; every import matches its file letter for letter; run `node scripts/check-paths.mjs`),
+`scripts/normalise-unknown-hanger.py`, `scripts/build-unknown-slides.py`,
+`scripts/encode-unknown-slides.mjs`. QA artefacts: `reference/unknown/qa/round9/` (README there).
+
+### Live store today (www.unk-nown.com, checked 27 Oct 2026)
+
+The published theme has **no rack on desktop or on mobile**: header with the store menu, a banner
+slideshow, then product carousels ("Tops" and so on). `0-live-site-today.jpg`. The detail view in
+the client's comparison screenshot (UNKNOWN CAELUM JACKET with L / XL / XXL) is therefore not on
+the published theme; it must come from an unpublished preview theme, which this sandbox can't open.
+The developer's Shopify port of the rack lives on `main` (`shopify/`), not live.
+
+### Desktop rack (`desktop-rack/`, 600px and up)
+
+Same garments, hover turn, hover push and click-to-open as the shared rack (Snug Wrld's rack is
+untouched); only the layout and scrolling are new.
+
+| Measure | Value | 1024 × 768 | 1280 × 800 | 1440 × 900 | 1920 × 1080 |
+|---|---|---|---|---|---|
+| rail width | 74.5% of the viewport (unchanged) | 763 px | 954 | 1073 | 1430 |
+| garment photo width | `min(36vh, 22.5vw)` × 1.095 (unchanged) | 252 | 315 | 355 | 426 |
+| garment body width (side view, typical) | ≈ 0.27 photo widths, 9% of the rail | 68 | 85 | 96 | 115 |
+| **pitch** (centre to centre) | **15.1% of the rail width** | 115.2 | 144.0 | 162.0 | 216.0 |
+| **left start** | first garment's left edge = left bracket's inner face + **24px** (margin step); its centre sits 58 / 67 / 72 / 82 px inside the bracket | | | | |
+| **bracket margin** | clip edges = the brackets' inner faces (14px inside each rail end) | | | | |
+| garments fully on the rail | | 6 | 6 | 6 | 6 |
+| **right peek** | the 7th garment's centre vs the right bracket | +15 px (a sliver) | +5 (half) | 0 (half) | −24 (most) |
+
+- Interaction: mouse / pen drag (after 6px, horizontal only), touch drag (`touch-action: pan-y`),
+  trackpad horizontal scroll (vertical wheel is never taken; Shift + wheel works), ← / → keys
+  (the rack is focusable). Release glides with the phone rack's measured momentum (time constant
+  100ms), then eases 300ms so a garment lines up with the left start; past either end it rubber-
+  bands (0.35). No scrollbar (`.unknown-rack-wrap` is `overflow: hidden`).
+- Clipping: at rest against an end nothing is clipped there (so a hovered garment's wider front may
+  pass the bracket); once the row has moved off that end, garments are cut at the bracket.
+- The detail view flies back to the garment's slot; on previous / next the rack first scrolls so
+  that garment is fully on the rail (`reveal(i)`).
+- Liquid: same markup as today's rack, plus `desktop-rack.css` and `desktop-rack-behaviour.js`
+  (no settings).
+
+### Detail view: Snug Wrld's, plus a size picker
+
+Everything comes from the shared focus code with Snug Wrld's own values; UNKNOWN's earlier
+overrides (12px corners, larger garment, higher hook, no link gap) are gone. Only differences: no
+green ticker, a price line, the size row, and the link has no arrow.
+
+Pixel differences vs Snug Wrld (measured in the browser, `2-detail-vs-snug-*.jpg`):
+
+| | 1440 × 900 Snug | 1440 UNKNOWN | 390 × 844 Snug | 390 UNKNOWN |
+|---|---|---|---|---|
+| garment photo (x, y, w × h) | 518, 89, 405 × 540 | 517, 88, 405 × 540 (−1, −1) | 82, 108, 226 × 302 | 81, 107, 226 × 302 (−1, −1) |
+| name | top 662, Archivo Black 24/32, −0.02em, uppercase | same | top 449, 20/24, 2 lines reserved | same |
+| price line | – | 12/20 Archivo, 0.01em, #66645e, top 694 | – | top 497 |
+| FRONT / BACK pill | 152 × 32, full radius, 1px ink, y 718 | same size / radius / border, y 738 (+20: price line) | y 521 | y 541 (+20) |
+| size row | – | y 786: 48 × 32 pills, 8px apart | – | y 589 |
+| "See availability" | y 774, 128 wide (with ↗) | y 842 (+68), 115 wide (no arrow) | y 577 | y 645 |
+| prev / next | 48 × 48 circles (40px ring), x 86 / 1306, y 335 | same | x 23 / 319, y 744 | same |
+| Close | 1341, 23, 67 × 48; Archivo 12px 500 0.08em ✕ | same (text box 1px lower) | 314, 20 | same |
+| wall | grey #e9e8e4 + hook pattern | white + the same pattern (UNKNOWN's paper, kept) | | |
+| rack behind | blur 8px, opacity 0.25, 500ms | same | | |
+| motion in / out | shared FocusView springs | same code | | |
+
+- The UNKNOWN header fades ABOUT and the wordmark out while the view is open (300ms), exactly as
+  Snug's header does; Close sits at Snug's spot (2.2vw from the right, centred in a 10.4vh band).
+- The info stack sits at Snug's stage depth (1.24857 × garment width) so the name, pill and link
+  land at Snug's y; UNKNOWN's own deepest hem (1.2187) is shallower.
+- **Price line kept**: one line under the name in Snug's secondary text style (its rack caption).
+  Empty (but space kept) for garments with no store match.
+- **Size picker** (`size-picker/`): pills shaped like the FRONT / BACK pill, between the pill and
+  the link, `role="radiogroup"`, roving tab stop, ← → ↑ ↓ / Home / End move the selection (skipping
+  unavailable sizes; the detail view's own arrow keys don't fire inside it), 48px targets, filled
+  ink when selected, struck through + disabled when unavailable. Sizes = the product's "Size"
+  option from `/products/<handle>.js` (snapshot in `lib/unknown-products.ts`, refreshed in the
+  browser when the view opens; the store sends `Access-Control-Allow-Origin: *`, but a headless
+  test browser was refused once, in which case the snapshot stays). Garments with no store match
+  show L / XL / XXL flagged `sizesPlaceholder` (the radiogroup is labelled "sample sizes").
+- "See availability" opens the store product page; with a size chosen it adds `?variant=<id>`.
+  No link for garments without a store match (its space is kept).
+- Liquid: price `{{ product.price | money }}`; sizes: loop `product.options_with_values` for the
+  option named Size, and for each value find its variant (`product.variants | where: 'option1', value`
+  or option2) → `data-variant-id`, `disabled` unless `variant.available`; link
+  `{{ product.url }}?variant={{ variant.id }}`.
+
+### Swipe hint (phones; `swipe-hint/`)
+
+Copy, timings and switches in `swipe-hint.data.ts` (theme: section settings). Touch screens only
+(`(hover: none), (pointer: coarse)`). Measured (390 × 844): page load event 0.3s; the hero counts
+as settled after 0.4s on screen with the page loaded; nudge 0.69s → 1.20s (24px left, 240ms M3
+emphasized decelerate out, 360ms emphasized back); label in at 1.87s (= nudge + 1.2s, 200ms fade);
+out at 7.87s (6s); one repeat at 16.07s (8s idle after the fade): nudge + label for 3s; then
+nothing. The first drag hides it at once; a drag that comes to rest on another garment stores
+`unk-swipe-hint-done` (timestamp, try/catch) and the hint stays away for 30 days. Reduced motion:
+no nudge, no chevron pulse, label for 5s once. Label: M3 Label Medium, #5c5c5c (6.6:1), centred
+under the rack's caption (never over a garment), `pointer-events: none`, `aria-live="polite"`
+(the text is filled only while shown, so it's announced once). Chevrons pulse 3px sideways (1.2s).
+
+### White Tranquility jersey (8th garment)
+
+UNKNOWN ORIGINAL TRANQUILITY JERSEY, ₦100,000, `/products/unknown-original-tranquility-jersey`,
+sizes L / XL / 2XL (all available). Last on the rack via `position: 8` in `lib/unknown-products.ts`
+(both racks and the detail view sort by it). Faces left in its side photo (print on the left
+edge), so no mirror. Processing and the hanger normalisation (hook scaled ~15% to the others'
+size, darker walnut colour-matched): `assets/products-src/unknown/PROCESSING.md`. Lettering
+("TRANQUILITY", "unknown") checked against the store's photos: correct.
+
+### Slides (`slides/`)
+
+UNKNOWN F1 (`/products/unknown-f1-slide`), ₦100,000, one variant (Black): real store data. The
+client's photo arrived at **1500 × 2000** (not the 3024 × 4032 original), so the pair is drawn
+from that: cut out (BiRefNet), straightened (the pair's mean axis 2.1° → 0.9°; the two slides sit
+3.3° apart so both can't be vertical), heels cut flat where they run off the photo and placed on
+the panel's bottom edge, one baked contact shadow (silhouette blurred 22px, 12px down, 22%).
+1x 640 × 800 (67 KB) / 2x 1280 × 1600 (171 KB). Strap: a 560 × 700 crop at the photo's own
+resolution (71 KB; no 2x, there are no more pixels). Layout mirrors Two Piece: panel on columns
+8–12 (expanded), 4–8 (medium), first when stacked; details beside it on the panel's lower edge.
+Panel #f4f4f2, 12px radius. Eyebrow Label Medium, name Headline Medium, price Title Medium, one
+"View product" link. Pair / Strap toggle (two 48px text buttons, `aria-pressed`) crossfades in
+300ms (emphasized decelerate in / accelerate out). Tilt: hover + fine pointer only, ≤ 3°,
+transform only, off for reduced motion.
+- Liquid: settings `product` (product picker), `image_pair`, `image_strap` (image pickers), label
+  text. `<img srcset="{{ image | image_url: width: 640 }} 1x, {{ image | image_url: width: 1280 }} 2x">`;
+  price `{{ product.price | money }}`; link `product.url`. Load `slides-behaviour.js` once.
+
+### Currency selector (`currency/`)
+
+- The store's real list is **NGN only**: shop currency NGN; Markets has Canada, Nigeria and the
+  United States, but every country checks out in NGN (cart.js stays NGN with `?country=US`,
+  `?currency=USD` and the localization cookies) and products ship to NG only; the currency menu
+  on the live site is a client-side converter app (Bucks), not Shopify currencies. So the selector
+  ships with one row and no placeholders (`currency.data.ts`, `placeholder: false`).
+- Desktop: "NGN ▾" (Label Medium, 16px chevron, 48px target) first in the right icon group, then a
+  hairline divider, then search / account / cart. Popover: 12px radius, hairline border, M3
+  elevation 2, 48px rows (name left, code right, check on the current one), max 6 rows then it
+  scrolls. Listbox pattern: `aria-haspopup="listbox"`, `aria-expanded`, `aria-activedescendant`,
+  ↑ ↓ Home End, first-letter type-ahead (repeat a letter to cycle), Enter / Space / click choose;
+  Esc, Tab, outside click and choosing close it, focus back on the button. In 400ms emphasized
+  decelerate, out 200ms emphasized accelerate.
+- Compact: the last row of the hamburger panel, "Currency" left and the code right, expanding in
+  place (the menu's own accordion) into radio rows.
+- Kept in `localStorage` (`unk-currency`, try/catch); a stored code that isn't in the list falls
+  back to NGN. No conversion, no rates.
+- Header check: 1440 / 1280 / 1024 / 840 all fit with the centred wordmark (nearest gap at 840:
+  wordmark ends 480, currency starts 600). Compact header unchanged (no desktop trigger there).
+- Liquid: see the comment at the top of `currency-behaviour.js` (localization form, `country_code`,
+  `localization.available_countries`, `localization.country.currency.iso_code`).
+
+### Where Snug Wrld's values or plain numbers replace the token scale (round 9)
+
+| Where | Value | Why |
+|---|---|---|
+| Detail view Close | Archivo 12px, 500, 0.08em, ✕ 13px 600, 10px gap, 2.2vw from the right | copy Snug exactly |
+| Detail view pill, size pills, prev / next | full radius (999px / circle), not 12px | copy Snug exactly |
+| Detail view price line | Archivo 12/20, 0.01em, #66645e | Snug's secondary text |
+| Detail view size pills | Archivo 10px, 0.14em | same as Snug's FRONT / BACK labels |
+| Detail view stack | 48px under the stage, 24px gaps, 16px pill to sizes | Snug's gaps (all on the 8px grid) |
+| Desktop rack pitch | 15.1% of the rail width | layout ratio (see table) |
+| Swipe hint chevrons | 12px glyph, 3px pulse, 1.2s | glyph motion, not spacing |
+| Slides tilt | ≤ 3°, perspective 1200px | motion, not spacing |
+
+
 ## Still missing / placeholders
 
 | What | Where | Needed |
@@ -327,6 +494,9 @@ grey-zip-hoodie, blue-striped-tee; the 4 tees after them are kept but off.
 | Original vector logo | `public/products/unknown/brand/unknown-wordmark.svg` | the brand's SVG (current one is traced from a raster) |
 | Red sweatpant photo | `pants-section/pants.data.ts` (`hidden`) | the photo in the base pose, then one run of the layer script |
 | Lookbook product links | `lookbook/lookbook.data.ts` | which product each look shows (only 3 are linked) |
+| Original slide photo | `assets/products-src/unknown/slides/` | the 3024 × 4032 file (only a 1500 × 2000 copy arrived); then `python3 scripts/build-unknown-slides.py && node scripts/encode-unknown-slides.mjs`, and a 2x strap |
+| Currencies | `currency/currency.data.ts` | the store checks out in NGN only; if USD / CAD are wanted, enable them in Shopify Markets and list them here (or show placeholders: say which) |
+| Store matches for 5 rack garments | `lib/unknown-products.ts` | orange bird vest, black jacket, green plaid shirt, ivory hoodie, grey zip hoodie: no certain store product, so no price / link and placeholder sizes. Beige panel jacket = CAELUM JACKET and blue striped tee = SHHSHHSH JERSEY are matched (names unchanged: say if they should take the store names) |
 | Buying from the pants section | `pants-section/` | removed this round (View product instead); a size picker + cart call if wanted (see the pants HANDOFF) |
 
 ## Adding or replacing a pants photo
@@ -404,6 +574,41 @@ the rack's drag and sway, haptics, the landscape menu with a real on-screen keyb
 field), browser extensions, and memory pressure on low-end Android.
 
 ## Verification (what was measured, and how)
+
+### Round 9 (27 Oct 2026, production build)
+
+Before = commit 5b72c93 (end of round 8) built and served on :3002, after = this branch on :3001,
+same machine, same day. Artefacts: `reference/unknown/qa/round9/`.
+
+- **Gates:** `npx eslint .` clean, `npx tsc --noEmit` clean, `npm run build` clean,
+  `node scripts/check-paths.mjs` OK (631 files: no case / extension clashes, every import exact;
+  it caught `Currency.tsx` vs `currency.css`, renamed to `currency-styles.css`). Hydration: no
+  messages and 0 overlay issues at 1440 / 1024 / 768 / 390 / 360 (/unknown and Snug's /).
+- **Every section** at 1440 / 1024 / 768 / 390 / 360: `gates-matrix-*.jpg`; horizontal overflow 0px
+  at all five.
+- **60 fps recordings** (headed Chromium on a virtual display, ffmpeg x11grab, **no GPU**), frames
+  over 20 ms:
+  - phone rack with the hint, first 8.5s from navigation (390): 0 of 493 after the load event
+    (1 slow frame during the load itself); worst 16.8 ms. `hint-phone-390-60fps.mp4`.
+  - detail view open → next → BACK → close: 390: 3 of 456 (worst 33 ms). 1440: 46-48 of ~445
+    (33-50 ms frames in the hover turn, the open flight and the close flight). The round 8 build
+    measures the same on this machine (46 and 48 in alternating runs): the blurred, full-size
+    flight is software-rendered here; not a regression. `detail-view-{1440,390}-60fps.mp4`.
+  - page scroll: phone 390: 1 of 1302. Desktop 1440: 28-35 of ~1090, all between scroll 400 and
+    850 px (the hero → pants entry); the round 8 build gives 34 of 1000 in the same run (round 8's
+    report of 1 / 1000 was a different machine state). `scroll-*-60fps.mp4`.
+- **Lighthouse 12** (alternating builds): desktop 98 / 99 before, 98 / 99 after (LCP 1.0-1.1 s;
+  CLS 0 before, 0.004 after: one garment layer, the ivory hoodie, reported only inside Lighthouse;
+  no shift in the browser even with 4x CPU and slow network). Mobile before 90 / 84 / 84 / 87, after
+  83 / 84 / 80 / 97 (LCP 2.3-5.1 s on both: simulated throttling dominates). Accessibility 100,
+  best practices 100 on both.
+- **Items:** desktop rack numbers, detail-view pixel differences and swipe-hint timings are in the
+  Round 9 section above; size picker (L → XL → 2XL → wrap, variant ids in the link, reset per
+  product), currency (Esc, outside click, choose, focus return, type-ahead, End scrolls, reload
+  persistence and fallback) and Slides (toggle, aria-hidden, 1x at DPR 1, tilt) were driven in
+  the browser.
+
+### Round 8
 
 All on the production build, round 8 (26 Oct 2026), unless marked dev. Before = commit b4146f6
 (end of round 7) built and measured the same way on the same machine. Sheets, recordings and
