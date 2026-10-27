@@ -86,10 +86,9 @@ const item = (handle: string, name: string, price: string, box: LayerBox, hidden
 const all: PantsItem[] = [
   item("unknown-denim-jean", "UNKNOWN HARDCORE BAGGY DENIM JEAN", "₦145,000", [298, 87, 492, 1119]),
   item("unknown-side-eye-baggy-pant", "UNKNOWN SIDE EYE BAGGY PANT", "₦100,000", [254, 87, 567, 1172]),
-  item("unknown-logo-sweatpant-brown", "UNKNOWN LOGO SWEATPANT BROWN", "₦100,000", [308, 87, 473, 1123]),
-  // OFF until unknown-logo-sweatpant-red.webp exists (box from its run of the build script):
-  // delete `, true` to show it
-  item("unknown-logo-sweatpant-red", "UNKNOWN LOGO SWEATPANT RED", "₦100,000", [0, 0, 1086, 1448], true),
+  // brown and red: regenerated wide-leg photos (27 Oct 2026); boxes from aligned/layers.json
+  item("unknown-logo-sweatpant-brown", "UNKNOWN LOGO SWEATPANT BROWN", "₦100,000", [248, 87, 584, 1167]),
+  item("unknown-logo-sweatpant-red", "UNKNOWN LOGO SWEATPANT RED", "₦100,000", [268, 87, 555, 1144]),
   item("unknown-lgt-strikes-joggers", "UNKNOWN LGT STRIKES", "₦100,000", [316, 83, 456, 1106]),
 ];
 

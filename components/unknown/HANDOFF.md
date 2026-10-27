@@ -492,7 +492,6 @@ transform only, off for reduced motion.
 | Developer's new draft hero (desktop + mobile screenshots) | hero | to compare the white header with icons pixel by pixel |
 | Jackets collection | `header/header.data.ts` | the collection URL (the live store's own menu links Jackets to `#`) |
 | Original vector logo | `public/products/unknown/brand/unknown-wordmark.svg` | the brand's SVG (current one is traced from a raster) |
-| Red sweatpant photo | `pants-section/pants.data.ts` (`hidden`) | the photo in the base pose, then one run of the layer script |
 | Lookbook product links | `lookbook/lookbook.data.ts` | which product each look shows (only 3 are linked) |
 | Original slide photo | `assets/products-src/unknown/slides/` | the 3024 × 4032 file (only a 1500 × 2000 copy arrived); then `python3 scripts/build-unknown-slides.py && node scripts/encode-unknown-slides.mjs`, and a 2x strap |
 | Currencies | `currency/currency.data.ts` | the store checks out in NGN only; if USD / CAD are wanted, enable them in Shopify Markets and list them here (or show placeholders: say which) |

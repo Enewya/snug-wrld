@@ -35,6 +35,9 @@ model photos in `assets/products-src/unknown/pants/` (method, checks and the las
 `PROCESSING.md` there). In short: the body is what is the same in the photos (no skin-colour test,
 so the brown pair, close to skin tone, separates by difference); each photo minus the body is its
 pants. Every pair is registered onto the base first (Side Eye was 1.7% larger: scaled 0.983).
+The body and hands come from four fixed reference photos, so adding or replacing a pair never
+changes them (round 10: red added, brown replaced; body, hands, base and the other three pairs are
+pixel-identical to round 8's files; see PROCESSING.md, "Body references").
 Contact sheet (each pants on a checkerboard, composite vs original, body, hands, 50% overlay):
 `assets/products-src/unknown/pants/aligned/contact-sheet.jpg`.
 
@@ -57,8 +60,10 @@ frames over 20 ms; cropped, 1-3 (the old single-photo build: 1-4).
 Rule: **the fade sits on bare skin only and never covers the pants.** The fade now lives on the
 static body layer only (no pants layer has any fade), so there is one zone for every pair:
 **0-35 px of the canvas**, ending 64 px (16 CSS px when the frame is 362 px tall) above the
-**highest waistband of all pants (99 px, the brown and LGT elastic waistbands)**. Waistbands (top,
-canvas px): base chinos 104, denim 109, side eye 104, brown 99, LGT 100 (`aligned/layers.json`).
+**highest waistband of the body's reference photos (99 px, the previous brown)**. Waistbands
+shown now (top, canvas px): base chinos 104, denim 109, side eye 104, brown 102, red 102, LGT 100
+(`aligned/layers.json`): every one 65-74 px below the fade's end (red and brown 67), so the
+on-screen margins below are the same or 1 source px better.
 
 On screen the fade ends 17.4 CSS px (360 × 740), 21.1 (390 × 844), 30.0 (768 × 1024), 26.2
 (1024 × 768) and 32.0 (1440 × 900) above the highest waistband. **Short screens fall below 16 px**:
@@ -114,7 +119,7 @@ div.unk-hold                           wraps the hero and this section
       div[data-cloud="mist"]           mist around the crop line, behind the figure (CSS background)
       button[data-pants-peek]          invisible box where the ghost rests (clickable: next pair)
       h2.unk-pants__label              "PANTS" eyebrow (on top of the name)
-      article[data-pants-item]         state 0 intro ("4 pairs" / "Scroll to try each one on")
+      article[data-pants-item]         state 0 intro ("5 pairs" / "Scroll to try each one on")
       article[data-pants-item data-url data-name] × N   [data-pants-name] (split into lines by
                                        JS), [data-pants-fade] price
       span[data-pants-view] > a[data-pants-cta]          the one View product link
@@ -193,7 +198,7 @@ and View all Label Large. Sky, white to white: `#F9FAFB` → `#FDFDFD`, ink 17.5
   and out of the tab order.
 - **No bottom bar any more:** thumbnail, name, price and Add to cart were removed; nothing sits
   below or in the middle of the pants.
-- **Bottom row:** counter ("01 / 04"), progress line, previous / next on the left; **"View all"**
+- **Bottom row:** counter ("01 / 05"), progress line, previous / next on the left; **"View all"**
   (same link component, to `/collections/pants`) at the bottom right, on the right content margin,
   on the counter's baseline (both texts on a 20px line in the same 48px row: measured 0px apart).
 - Exactly one link to a pair and one to the collection; tab order View product, previous, next,
@@ -255,3 +260,43 @@ announced.
 - **CSS:** drop the `body:has()` rule (a theme page scrolls normally); no ancestor of the section
   may have `overflow: hidden/auto` (it would break `position: sticky`). The page needs
   `viewport-fit=cover` in its viewport meta for the safe-area insets.
+
+## Round 10: red added, brown replaced (27 Oct 2026)
+
+Five pairs, in this order: denim, side eye, **brown (new wide-leg photo)**, **red (new)**, LGT.
+Red: UNKNOWN LOGO SWEATPANT RED, ₦100,000, `/products/unknown-logo-sweatpant-red`. The counter,
+intro ("5 pairs"), previous / next, the swap, the View product link and its `aria-label`, the
+screen-reader status ("4 of 5: UNKNOWN LOGO SWEATPANT RED, ₦100,000"), preload and decode-ahead all
+read the data list (`pants.length`), so no code changed; checked in the browser at 1440 and 390.
+The previous brown photo is in `assets/products-src/unknown/pants/previous/` (still a body reference).
+
+Alignment of every photo to the base (subject masks after registration; Δ = difference to the base):
+
+| Photo | Arm span px | Δ | Shoe line y | Δ | Left shoe centre x | Δ | Right shoe centre x | Δ | Waistband y | Δ |
+|---|---|---|---|---|---|---|---|---|---|---|
+| base | 618 | – | 1314 | – | 376 | – | 704 | – | 104 | – |
+| denim | 618 | 0.00% | 1314 | 0.00% | 375 | −0.13% | 702 | −0.14% | 109 | +4.81% ⚠ |
+| side eye | 621 | +0.49% | 1313 | −0.08% | 371 | −1.20% | 704 | +0.14% | 104 | 0.00% |
+| brown (new) | 617 | −0.16% | 1314 | 0.00% | 374 | −0.27% | 704 | 0.00% | 102 | −1.92% ⚠ |
+| red (new) | 618 | 0.00% | 1314 | 0.00% | 375 | −0.13% | 704 | 0.00% | 102 | −1.92% ⚠ |
+| LGT | 617 | −0.16% | 1314 | 0.00% | 376 | +0.13% | 704 | +0.14% | 100 | −3.85% ⚠ |
+
+The only values over 1.5% are waistband heights: each garment's own rise, not misregistration, and
+large in percent only because the base value is small (2 px = 1.9%; 0.14% of the 1448 px frame).
+All sit 65 px or more below the fade.
+
+- **Wide hems:** brown's layer spans canvas x 248-832 (584 px, the widest pair), red's 268-823; both
+  inside the 1086 px canvas and inside their own crop (2 px clear). In the browser no pants layer
+  is clipped on any side by the frame, a clip or the viewport at 1440 × 900 or 390 × 844.
+- **Cut-outs** (`reference/unknown/qa/round10/3-cutouts-*.jpg`): first run had skin flecks above
+  brown's waistband and grey shoe slivers inside both hems; fixed in the script (new-pair clean-ups,
+  PROCESSING.md). Shipped: no holes, no skin above either waistband (checked at 2x on black), hems
+  free of shoe (2 shoe-coloured px left in red, 0 in brown), a 1px soft edge like the other pairs.
+  Where the base chinos covered the shoe tops and these hems don't, ~2,500 px (0.2% of the figure)
+  show the page white under the hem: white shoe on white, no visible edge.
+- **Overlay / ghosting:** the five settled states differ by ≤ 1 level on the body at 390 and ≤ 10
+  (sub-pixel resampling) at 1440; the larger differences are the wide hems themselves.
+  `4-overlay-five-composites.jpg`, `4-settled-states-*.jpg`.
+- **Mid-swap** (u ≈ k.46, every transition, 1440 and 390): `4-mid-swap-*.jpg`. Brown → red and
+  red → LGT: body still, only the pants move, the fade on bare skin only.
+- **60 fps** through all five swaps: desktop 1440 0 of 617 frames over 20 ms, phone 390 0 of 634.
