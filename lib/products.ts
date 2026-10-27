@@ -4,6 +4,9 @@
  * to public/products/<base>-{side,front,back}.webp.
  * `node scripts/measure-hooks.mjs` then records each photo's hook loop and garment bounds in `photos` below.
  */
+/** One size of a product: a Shopify variant where known. */
+export type Size = { label: string; variantId?: number; available: boolean };
+
 export type Colourway = { label: string; hex: string; side: string; front: string; back?: string };
 
 export type Product = {
@@ -20,6 +23,11 @@ export type Product = {
   /** First colourway is the one hanging on the rack. */
   colourways?: Colourway[];
   url?: string;
+  /** UNKNOWN only: Shopify handle, display price, sizes (sizesPlaceholder = not from the store). */
+  handle?: string;
+  price?: string;
+  sizes?: Size[];
+  sizesPlaceholder?: boolean;
 };
 
 /** Measured in image pixels by scripts/measure-hooks.mjs. */

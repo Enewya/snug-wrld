@@ -56,7 +56,7 @@ export default function UnknownShowroom() {
       ) : undefined} />
       <div className="unknown-wall" aria-hidden="true" />
       <main>
-        <h1 className="sr-only">UNKNOWN — the rack: seven pieces, three views</h1>
+        <h1 className="sr-only">UNKNOWN — the rack: eight pieces, three views</h1>
         <motion.div className="unknown-rack-wrap" inert={!!selection}
           initial={false}
           animate={active ? { filter: "blur(8px)", opacity: 0.25 } : { filter: "blur(0px)", opacity: 1 }}
